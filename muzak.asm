@@ -2,74 +2,39 @@
 
 	org 100H
 
-next_round:
-
-	in al,60H
-	cmp al,1
-	je quit_app
-
-	call is_tick
-	jnc next_round
-
-	call player
-
-	jmp short next_round
-
-
-quit_app:
-	; just fall through
-
-; ----------------------------------------------------
-is_tick:
-
-	xor ah,ah
-	int 1aH
-	cmp dx,[last_time_value]
-	mov [last_time_value],dx
-	jz .ret_false
-
-	mov al,[tempo_mul_count]
-	inc al
-	mov [tempo_mul_count],al
-	cmp al,3
-	jne .ret_false
-
-	mov byte [tempo_mul_count],0
-	stc
-	retn
-
-.ret_false:
-	clc
-	retn
-
-last_time_value:
-	dw 0
-tempo_mul_count:
-	db 0
-
-; ----------------------------------------------------
-reset_player:
-	mov word [player_ptr],0
-
-player:
+init:
+	xor bp,bp
+	lea si,[song]
 
 	mov al,0b6H
 	out 43H,al
 
-	lea si,[song]
-	mov bx,[player_ptr]
-	mov al,[si+bx]
-	inc bx
-	mov [player_ptr],bx
+	in al,61H
+	or al,3
+	out 61H,al
 
-	cmp al,-1
-	je reset_player
+next_round:
 
-	;;;; call dump
-
+	lodsw
 	or al,al
-	jz .pause
+	jz init
 
+	push ax
+	call play
+	call delay
+
+	pop ax
+	mov al,ah
+	call play
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+
+	jmp short next_round
+; ----------------------------------------------------
+play:
 	xor ah,ah
 	shl ax,4
 
@@ -77,32 +42,31 @@ player:
 	mov al,ah
 	out 42H,al
 
-	in al,61H
-	or al,3
-	out 61H,al
-
-	retn
-
-.pause:
-	in al,61H
-	and al,0fcH
-	out 61H,al
-
-	retn
-
+	; fall thru
 ; ----------------------------------------------------
-; notes
+delay:
 
-	__ equ 0
+	in al,60H
+	cmp al,1
+	je silence
+	
+	xor ah,ah
+	int 1aH
+	cmp dx,bp
+	mov bp,dx
+	jz delay
 
-	; c2 equ 2280
-	; h1 equ 2415
-	; a1 equ 2711
-	; g1 equ 3043
-	; f1 equ 3416
-	; e1 equ 3619
-	; d1 equ 4063
+return:
+	retn
+; ----------------------------------------------------
+silence:
 
+ 	in al,61H
+ 	and al,0fcH
+ 	out 61H,al
+
+ 	int 20H
+; ----------------------------------------------------
 
 	c2 equ 142
 	h1 equ 151
@@ -111,25 +75,12 @@ player:
 	f1 equ 214
 	e1 equ 226
 	d1 equ 254
+	xx equ 1
 
 ; ----------------------------------------------------
 song:
 
-	db c2,c2 , h1,h1
-	db a1,a1 , __,__
-	db __,__ , e1,e1
-	;
-	db f1,f1 , __,__
-	db f1,f1 , g1,d1
-	db d1,__ , __,__ 
-	db __,__ , __,__
-
-	db __,__ , __,__
-
+	db c2,d1, c2,e1, c2,f1, c2,a1
 	db 0
 
-
-player_ptr:
-	dw 0
-
-	include "dump.asm"
+	;include "dump.asm"
