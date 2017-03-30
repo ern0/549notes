@@ -28,9 +28,6 @@ next_round:
 	call play
 	call delay
 	call delay
-	call delay
-	call delay
-	call delay
 
 	jmp short next_round
 ; ----------------------------------------------------
@@ -77,10 +74,12 @@ silence:
 	d1 equ 254
 	xx equ 1
 
+	z1 equ 0
+
 ; ----------------------------------------------------
 song:
 
-	db c2,d1, c2,e1, c2,f1, c2,a1
+	db z1, z1
 	db 0
 
 	;include "dump.asm"
