@@ -1,28 +1,28 @@
 	#define FREQ 8000
-	#define VOLUME_MUL 50
+	#define VOLUME_MUL 10
 
 	#include "main.cpp"
 
 
-	uint32_t playerCounter;
-	uint32_t playerValue;
+	uint32_t freqCounter;
+	uint32_t value;
 
 
 	void playerInit() {
 
-		playerCounter = 0;
-		playerValue = 0;
+		freqCounter = 0;
+		value = 0;
 
 	} // playerInit()
 
 
 	uint32_t playerTick() {
 
-		playerCounter++;
-		if (playerCounter < 100) return playerValue;
-		playerCounter = 0;
+		freqCounter++;
+		if (freqCounter < 12) return value;
+		freqCounter = 0;
 
-		playerValue = playerValue ^ 0xFF;
+		value = value ^ 0xFF;
 
-		return playerValue;
+		return value;
 	} // playerTick()
