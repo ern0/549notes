@@ -3,9 +3,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 	
+	#define u32 uint32_t
 
 	void playerInit();
 	uint32_t playerTick();
+	void noteTick();
+	void freqTick();
+	uint32_t playerMix();
+
 
 	uint32_t audioSample = 0;	
 	uint32_t lastSample = 0;
@@ -37,6 +42,7 @@
 
 		fprintf(stderr,"playing... ");
 		SDL_PauseAudioDevice(dev,0);
+		playerInit();
 		SDL_Delay(55000);
 
 		fprintf(stderr,"\n");
