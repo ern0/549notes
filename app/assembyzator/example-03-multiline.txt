@@ -1,0 +1,52 @@
+X =
+    (
+      // hihat
+      (t % 100 * t & 128) / (3 + (t>>7) % 32)
+      // enable hihat after t>>19
+      * !!(t>>19)
+
+      // arpeggio
+      + (31 & t * Math.pow(2, (
+        // melody
+        ((t>>17) % 2 ? '027' : '037')
+      )[(t>>(
+        // rate
+        16 - 3 * (t>>19) % 13
+      )) %
+        // melody length
+        4
+      ] / 12 -
+        // octave
+        1
+      )) / K
+
+      // enable arpeggio after t>>20
+      * (t>>20 && t<3.4e6)
+
+      // kick drum
+      + ((
+        // envelope
+        K = 1e4 / (
+          t & 16383
+        )
+      ) & 1) * 31
+
+      // bass
+      + (31 & t * Math.pow(2,
+        // melody
+        '7050'
+      [(t>>
+        // rate
+        17
+      ) %
+        // melody length
+        4
+      ] / 12 -
+        // octave
+        4
+      )) / K
+    ) * (
+      // fade out
+      X = ++t>>22 ? X * 0.99999 : 1
+    ) / 212
+  ;

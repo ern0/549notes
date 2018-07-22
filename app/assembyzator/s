@@ -1,3 +1,4 @@
 #!/bin/bash
 
-./assemblyzator.py sample.txt
+clear
+./assemblyzator.py example-03*.txt
