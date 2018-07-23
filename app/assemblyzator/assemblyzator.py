@@ -11,16 +11,72 @@ class Node:
 	lastId = 0
 
 
-	def __init__(self,parent):
+	def __init__(self,parent = None,text = None):
+
+		self.children = []
 
 		self.parent = parent
 
 		Node.lastId += 1
 		self.id = Node.lastId
+		
+		self.text = text
 
 
 	def getName(self):
 		return "var" + str(self.lastId)
+
+
+	def createChild(self,text):
+		
+		child = Node(self,text)
+		return child
+		
+
+	def processRoot(self,fnam):
+		
+		self.load(fnam)
+		self.normalize()
+		self.splitStatements()
+		self.process()
+
+
+	def load(self,fnam):
+		with open(fnam,"r") as file:
+			self.text = file.read()
+
+
+	def normalize(self):
+		
+		self.text = self.text.replace(";","\n")
+		raw = self.text.split("\n")
+		self.text = ""
+
+		for line in raw:
+			
+			if "//" in line: line = line.split("//")[0]
+			line = line.strip()
+			if line == "": continue
+			
+			self.text = self.text + line
+			self.text += ";"
+
+
+	def splitStatements(self):
+		
+		if self.text.count(";") < 2: return
+		
+		statements = self.text.split(";")
+		for stat in statements:
+			if stat == "": continue
+			child = self.createChild(stat)
+			self.children.append(child)
+		
+
+	def process(self):
+
+		pass
+
 
 
 	def dump(self):
@@ -38,43 +94,15 @@ class Node:
 		else:
 			pnam = "n.a."
 		print("   parent: " + pnam)
-
-
-	def processRoot(self,fnam):
-
-		self.load(fnam)
-		self.mormalize()
-		self.process()
-
-
-	def load(self,fnam):
-		with open(fnam,"r") as file:
-			self.text = file.read()
-
-
-	def mormalize(self):
 		
-		self.text = self.text.replace(";","\n")
-		raw = self.text.split("\n")
-		self.text = ""
-
-		for line in raw:
-			if "//" in line: line = line.split("//")[0]
-			line = line.strip()
-			if line == "": continue
-			self.text = self.text + line
-
-
-	def process(self):
-
-		pass
-
+		
+		for child in self.children: child.dump()
 
 
 if __name__ == '__main__':
 
 	try: 
-		root = Node(None)
+		root = Node()
 		root.processRoot(sys.argv[1])
 		print("---- dump ----")
 		root.dump()
