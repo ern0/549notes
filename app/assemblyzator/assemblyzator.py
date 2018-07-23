@@ -8,7 +8,7 @@ import os
 
 class Node:
 
-	lastId = 0
+	nextId = 0
 
 
 	def __init__(self,parent = None,text = None):
@@ -17,14 +17,15 @@ class Node:
 
 		self.parent = parent
 
-		Node.lastId += 1
-		self.id = Node.lastId
+		self.id = Node.nextId
+		Node.nextId += 1
 		
 		self.text = text
 
 
 	def getName(self):
-		return "var" + str(self.lastId)
+		if self.id == 0: return "root"
+		return "var" + str(self.id)
 
 
 	def createChild(self,text):
@@ -71,6 +72,8 @@ class Node:
 			if stat == "": continue
 			child = self.createChild(stat)
 			self.children.append(child)
+		
+		self.text = ""
 		
 
 	def process(self):
