@@ -14,18 +14,15 @@ class Node:
 	def __init__(self,parent = None,text = None):
 
 		self.children = []
-
 		self.parent = parent
 
-		self.id = Node.nextId
+		if Node.nextId == 0:
+			self.name = "root"
+		else:
+			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
 		
 		self.text = text
-
-
-	def getName(self):
-		if self.id == 0: return "root"
-		return "var" + str(self.id)
 
 
 	def createChild(self,text):
@@ -40,6 +37,7 @@ class Node:
 		self.normalize()
 		self.splitStatements()
 		self.process()
+		self.render()
 
 
 	def load(self,fnam):
@@ -65,26 +63,79 @@ class Node:
 
 	def splitStatements(self):
 		
-		if self.text.count(";") < 2: return
+		if self.text.count(";") < 2:
+			self.process()
+			return
 		
 		statements = self.text.split(";")
+		self.text = ""
+
 		for stat in statements:
 			if stat == "": continue
+
 			child = self.createChild(stat)
 			self.children.append(child)
-		
-		self.text = ""
-		
+
+			child.process()
+				
 
 	def process(self):
 
-		pass
+		p = self.findSplitPoint( ("=",) )
+		if p is not None:
+			self.name = self.text[0:p].strip()
+			self.text = self.text[(1 + p):].strip()
 
+
+		return
+		while True:
+
+			p = self.findSplitPoint( ("+","-") )
+			if p is not None: break
+
+			break
+
+		quit()
+
+
+	def findSplitPoint(self,separatorList):
+
+		indent = 0
+		for i in range(0,len(self.text)):
+			c = self.text[i]
+
+			if c == "(": 
+				indent += 1
+				continue
+
+			if c == ")":
+				indent -= 1
+				continue
+
+			if indent > 0: 
+				continue
+
+			if c in separatorList:
+				return i
+
+		return None
+
+
+	def render(self):
+
+		if False:
+			return self.dump()
+
+		for child in self.children:
+			child.render()
+
+		if self.text != "": 
+			print(self.name + " = " + self.text)
 
 
 	def dump(self):
 
-		print(self.getName())
+		print(self.name)
 		
 		print("  formula: " 
 			+ "\"" 
@@ -93,7 +144,7 @@ class Node:
 		)
 
 		if self.parent is not None:
-			pnam = self.parent.getName()
+			pnam = self.parent.name
 		else:
 			pnam = "n.a."
 		print("   parent: " + pnam)
@@ -105,11 +156,14 @@ class Node:
 if __name__ == '__main__':
 
 	try: 
+
 		root = Node()
 		root.processRoot(sys.argv[1])
-		print("---- dump ----")
-		root.dump()
-		print("==============")
+
+		if False:
+			print("---- dump ----")
+			root.dump()
+			print("==============")
 	
 	except KeyboardInterrupt:
 		print(" - interrupted")
