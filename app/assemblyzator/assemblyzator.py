@@ -28,6 +28,7 @@ class Node:
 	def createChild(self,text):
 		
 		child = Node(self,text)
+		self.children.append(child)
 		return child
 		
 
@@ -36,6 +37,9 @@ class Node:
 		self.load(fnam)
 		self.normalize()
 		self.splitStatements()
+
+		print(self.text)
+
 		self.process()
 		self.render()
 
@@ -81,25 +85,17 @@ class Node:
 
 	def process(self):
 		
-		if self.findOpAssignment(): return
-		if self.findOpPlusMinus(): return
-		
+		while True:
+			if self.findAssignment(): break
+			if self.findOperator( ("|",) ): break
+			if self.findOperator( ("^",) ): break
+			if self.findOperator( ("&",) ): break
+			if self.findOperator( ("+","-") ): break
+			if self.findOperator( ("*","/","%") ): break
+			break
 
-	def findOpAssignment(self):
-		
-		p = self.findSplitPoint( ("=",) )
-		if p is None: return False
-		
-		self.name = self.text[0:p].strip()
-		self.text = self.text[(1 + p):].strip()
-		
-		return True
-
-
-	def findOpPlusMinus(self):
-
-		p = self.findSplitPoint( ("+","-") )
-		if p is None: return False
+		for child in self.children:
+			child.process()
 
 
 	def findSplitPoint(self,separatorList):
@@ -125,9 +121,42 @@ class Node:
 		return None
 
 
+	def findAssignment(self):
+		
+		p = self.findSplitPoint( ("=",) )
+		if p is None: return False
+		
+		self.name = self.text[0:p].strip()
+		self.text = self.text[(1 + p):].strip()
+		
+		return True
+
+
+	def findOperator(self,operatorList):
+
+		p = self.findSplitPoint(operatorList)
+		if p is None: return False
+
+		leftFormula = self.text[0:p].strip()
+		left = self.createChild(leftFormula)
+
+		operator = self.text[p]
+
+		rightFormula = self.text[(1 + p):].strip()
+		right = self.createChild(rightFormula)
+
+		self.text = (
+			left.name 
+			+ " " 
+			+ operator 
+			+ " " 
+			+ right.name
+		)
+
+
 	def render(self):
 
-		if False:
+		if True:
 			return self.dump()
 
 		for child in self.children:
