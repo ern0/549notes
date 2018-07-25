@@ -80,22 +80,26 @@ class Node:
 				
 
 	def process(self):
+		
+		if self.findOpAssignment(): return
+		if self.findOpPlusMinus(): return
+		
 
+	def findOpAssignment(self):
+		
 		p = self.findSplitPoint( ("=",) )
-		if p is not None:
-			self.name = self.text[0:p].strip()
-			self.text = self.text[(1 + p):].strip()
+		if p is None: return False
+		
+		self.name = self.text[0:p].strip()
+		self.text = self.text[(1 + p):].strip()
+		
+		return True
 
 
-		return
-		while True:
+	def findOpPlusMinus(self):
 
-			p = self.findSplitPoint( ("+","-") )
-			if p is not None: break
-
-			break
-
-		quit()
+		p = self.findSplitPoint( ("+","-") )
+		if p is None: return False
 
 
 	def findSplitPoint(self,separatorList):
