@@ -35,27 +35,20 @@ class Node:
 	def processFile(self,fnam):
 		
 		self.load(fnam)
-		return self.processRoot()
+		self.processRoot()
 		
 	
 	def processString(self,text):
 		
 		self.text = text
-		return self.processRoot()
+		self.processRoot()
 		
 
 	def processRoot(self):
 		
 		self.normalize()
-
-		print(self.text) ##
-		print("--")	##
-
 		self.splitStatements()
 		self.process()
-		
-		self.dump() ##
-		print("--")	##
 		
 		return self.render()
 
@@ -117,10 +110,11 @@ class Node:
 			if self.procPairOperator( ("+","-") ): break
 			if self.procPairOperator( ("*","/","%") ): break
 
-			if self.procParenthesis(): break
-
+			changed = self.removeOuterParenthesis()
+			if changed: continue
+			
 			break
-
+			
 
 	def procChildren(self):
 		
@@ -188,12 +182,15 @@ class Node:
 		
 		
 	def isAtomicExpression(self,formula):
-		# TODO: handle quotation marks
+		# TODO: handle arrays
 		
 		formula = formula.replace(" ","")
 		
+		insideApostrophe = 0
+		insideQuotation = 0
 		for i in range(0,len(formula)):
 			c = formula[i]
+			
 		
 			if not c in "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
 				return False
@@ -201,9 +198,15 @@ class Node:
 		return True
 		
 		
-	def procParenthesis(self):
-		#TODO
-		return  False
+	def removeOuterParenthesis(self):
+
+		try:
+			if (self.text[0] != '('): return False
+			if (self.text[-1] != ')'): return False
+		except IndexError: return False
+		
+		self.text = self.text[1:-1]
+		return True
 
 
 	def render(self):
@@ -254,8 +257,8 @@ if __name__ == '__main__':
 	try: 
 
 		root = Node()
-		result = root.processFile(sys.argv[1])
-		print(result)
+		root.processFile(sys.argv[1])
+		print( root.render() )
 
 		if False:
 			print("---- dump ----")
