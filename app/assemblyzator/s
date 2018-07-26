@@ -1,10 +1,9 @@
 #!/bin/bash
 
-f=sample.txt
+f=*05*txt
 
 clear
 echo $f
-echo
 echo `cat $f`
 echo 
 

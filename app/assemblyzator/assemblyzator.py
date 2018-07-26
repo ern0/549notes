@@ -6,24 +6,56 @@ sys.dont_write_bytecode = True
 import os
 
 
+class Instruction:
+
+
+	def __init__(self,name,left,op,right):
+
+		self.name = name.strip()
+		self.left = left.strip()
+		self.op = op.strip()
+		self.right = right.strip()
+
+
+	def render(self):
+
+		result = self.name
+		result += " = "
+
+		if self.left == "":
+			result += self.op + self.right
+		else:
+			result += self.left 
+			result += " " + self.op + " "
+			result += self.right
+	
+		return result
+
+
 class Node:
 
 	nextId = 0
+	nodeList = []
+	instructionList = []
 
 
 	def __init__(self,parent = None,text = None):
 
 		self.children = []
 		self.parent = parent
+		Node.nodeList.append(self)
 
 		if Node.nextId == 0:
 			self.name = "root"
 		else:
 			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
-		
-		self.operator = ""
+
 		self.text = text
+		
+		self.leftOperand = ""
+		self.operator = ""
+		self.rightOperand = ""
 
 
 	def createChild(self,text):
@@ -49,9 +81,8 @@ class Node:
 		
 		self.normalize()
 		self.splitStatements()
-		self.process()
-		
-		return self.render()
+		self.parse()
+		self.generateInstructions()
 
 
 	def load(self,fnam):
@@ -79,7 +110,7 @@ class Node:
 		
 		if self.text.count(";") < 2:
 			self.text = self.text.replace(";","")
-			self.process()
+			self.parse()
 			return
 		
 		statements = self.text.split(";")
@@ -91,40 +122,46 @@ class Node:
 			child = self.createChild(stat)
 			self.children.append(child)
 
-			child.process()
+			child.parse()
 				
 
-	def process(self):
+	def parse(self):
 		
-		self.procNode()
-		self.procChildren()
+		self.parseNode()
+		self.parseChildren()
 		
 		
-	def procNode(self):
-		
+	def parseNode(self):
+
 		self.text = self.text.replace("<<","<")
 		self.text = self.text.replace(">>",">")
 		
 		while True:
 
-			if self.procAssignment(): break
-			if self.procPairOperator( ("|",) ): break
-			if self.procPairOperator( ("^",) ): break
-			if self.procPairOperator( ("&",) ): break
-			if self.procPairOperator( ("<",">",) ): break
-			if self.procPairOperator( ("+","-") ): break
-			if self.procPairOperator( ("*","/","%") ): break
+			if self.parseAssignment(): break
+			if self.parsePairOperator( ("|",) ): break
+			if self.parsePairOperator( ("^",) ): break
+			if self.parsePairOperator( ("&",) ): break
+			if self.parsePairOperator( ("<",">",) ): break
+			if self.parsePairOperator( ("+","-") ): break
+			if self.parsePairOperator( ("*","/","%") ): break
 			
 			changed = self.removeOuterParenthesis()
 			if changed: continue
 			
 			break
-			
 
-	def procChildren(self):
+		self.text = (
+			self.leftOperand
+			+ " " + self.operator + " "
+			+ self.rightOperand
+		)
+
+
+	def parseChildren(self):
 		
 		for child in self.children:
-			child.process()
+			child.parse()
 
 
 	def findSplitPoint(self,separatorList):
@@ -150,7 +187,7 @@ class Node:
 		return None
 
 
-	def procAssignment(self):
+	def parseAssignment(self):
 		
 		p = self.findSplitPoint( ("=",) )
 		if p is None: return False
@@ -161,20 +198,20 @@ class Node:
 		return True
 
 
-	def procPairOperator(self,operatorList):
+	def parsePairOperator(self,operatorList):
 
 		p = self.findSplitPoint(operatorList)
 		if p is None: return False
 
 		leftFormula = self.text[0:p].strip()
-		leftReplacement = self.createNodeIfNotAtomic(leftFormula)
+		self.leftOperand = self.createNodeIfNotAtomic(leftFormula)
 
 		self.operator = self.text[p]
 
 		rightFormula = self.text[(1 + p):].strip()
-		rightReplacement = self.createNodeIfNotAtomic(rightFormula)		
+		self.rightOperand = self.createNodeIfNotAtomic(rightFormula)		
 
-		self.text = (leftReplacement + " " + self.operator + " " + rightReplacement)
+		return True
 
 
 	def createNodeIfNotAtomic(self,formula):
@@ -213,66 +250,82 @@ class Node:
 		return True
 
 
-	def render(self):
+	def generateInstructions(self):
+		
+		self.generateChildren()
+		self.generateNode()
 
-		result = self.renderChildren()
-		result += self.renderNode()
-		
-		return result
-		
-	
-	def renderChildren(self):
-		
-		result = ""
+
+	def generateChildren(self):
+
 		for child in self.children:
-			result += child.render()
-
-		return result
+			child.generateInstructions()
 
 
-	def renderNode(self):
-		
-		if self.text == "": 
-			return ""
-			
+	def createInstruction(self,name,left,op,right):
+
+		instruction = Instruction(name,left,op,right)
+		Node.instructionList.append(instruction)
+
+
+	def generateNode(self):
+
+		if self.text == "": return
+
 		if self.operator == "-": 
-			return self.renderNeg()		
+			self.generateNeg()		
+			return
 			
-		result = self.name
-		result += " = "
-		result += self.text
-		result += "\n"
+		a = self.text.split(self.operator)
+		self.leftOperand = a[0]
+		self.rightOperand = a[1]
 		
-		result = result.replace("<","<<")
-		result = result.replace(">",">>")
+		self.operator = self.operator.replace("<","<<")
+		self.operator = self.operator.replace(">",">>")
 		
-		return result
+		self.createInstruction(
+			self.name,
+			self.leftOperand,
+			self.operator,
+			self.rightOperand
+		)
 
 
-	def renderNeg(self):
+	def generateNeg(self):
 		
 		a = self.text.split("-")
 		left = a[0].strip()
 		right = a[1].strip()
-		
-		result = self.name 
-		result += " = "
-		result += "-" + right
-		result += "\n"
-		
-		result += self.name
-		result += " = "
-		result += self.name
-		result += " + " + left
-		result += "\n"
-		
+
+		self.createInstruction(
+			self.name,
+			"",
+			self.operator,
+			right
+		)
+
+		self.createInstruction(
+			self.name,
+			self.name,
+			"+",
+			left
+		)
+				
+
+	def render(self):
+
+		result = ""
+		for instr in Node.instructionList:
+			result += instr.render() + "\n"
+
 		return result
+		
 
 	def dump(self):
 
 		print(self.name)
 		
-		print("  formula: " 
+		print(" text: " 
 			+ "\"" 
 			+ self.text.replace("\n","\", \"") 
 			+ "\""
@@ -282,8 +335,11 @@ class Node:
 			pnam = self.parent.name
 		else:
 			pnam = "n.a."
-		print("   parent: " + pnam)
+		print(" parent: " + pnam)
 		
+		print(" left: " + self.leftOperand)
+		print(" operator: " + self.operator)
+		print(" right: " + self.rightOperand)
 		
 		for child in self.children: child.dump()
 
@@ -294,7 +350,9 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		print( root.render() )
+		print( root.render() ,end="")
+		#print("--")
+		#root.dump()
 	
 	except KeyboardInterrupt:
 		print(" - interrupted")
