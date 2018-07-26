@@ -30,23 +30,34 @@ class Node:
 		child = Node(self,text)
 		self.children.append(child)
 		return child
-		
 
-	def processRoot(self,fnam):
+
+	def processFile(self,fnam):
 		
 		self.load(fnam)
+		return self.processRoot()
+		
+	
+	def processString(self,text):
+		
+		self.text = text
+		return self.processRoot()
+		
+
+	def processRoot(self):
+		
 		self.normalize()
 
-		print(self.text)
-		print("--")	
+		print(self.text) ##
+		print("--")	##
 
 		self.splitStatements()
 		self.process()
 		
-		self.dump()
-		print("--")	
+		self.dump() ##
+		print("--")	##
 		
-		self.render()
+		return self.render()
 
 
 	def load(self,fnam):
@@ -91,15 +102,28 @@ class Node:
 
 	def process(self):
 		
+		self.procNode()
+		self.procChildren()
+		
+		
+	def procNode(self):
+		
 		while True:
-			if self.findAssignment(): break
-			if self.findPairOperator( ("|",) ): break
-			if self.findPairOperator( ("^",) ): break
-			if self.findPairOperator( ("&",) ): break
-			if self.findPairOperator( ("+","-") ): break
-			if self.findPairOperator( ("*","/","%") ): break
+
+			if self.procAssignment(): break
+			if self.procPairOperator( ("|",) ): break
+			if self.procPairOperator( ("^",) ): break
+			if self.procPairOperator( ("&",) ): break
+			if self.procPairOperator( ("+","-") ): break
+			if self.procPairOperator( ("*","/","%") ): break
+
+			if self.procParenthesis(): break
+
 			break
 
+
+	def procChildren(self):
+		
 		for child in self.children:
 			child.process()
 
@@ -127,7 +151,7 @@ class Node:
 		return None
 
 
-	def findAssignment(self):
+	def procAssignment(self):
 		
 		p = self.findSplitPoint( ("=",) )
 		if p is None: return False
@@ -138,7 +162,7 @@ class Node:
 		return True
 
 
-	def findPairOperator(self,operatorList):
+	def procPairOperator(self,operatorList):
 
 		p = self.findSplitPoint(operatorList)
 		if p is None: return False
@@ -151,13 +175,7 @@ class Node:
 		rightFormula = self.text[(1 + p):].strip()
 		rightReplacement = self.createNodeIfNotAtomic(rightFormula)		
 
-		self.text = (
-			leftReplacement 
-			+ " " 
-			+ operator 
-			+ " " 
-			+ rightReplacement
-		)
+		self.text = (leftReplacement + " " + operator + " " + rightReplacement)
 
 
 	def createNodeIfNotAtomic(self,formula):
@@ -170,6 +188,7 @@ class Node:
 		
 		
 	def isAtomicExpression(self,formula):
+		# TODO: handle quotation marks
 		
 		formula = formula.replace(" ","")
 		
@@ -181,14 +200,33 @@ class Node:
 
 		return True
 		
+		
+	def procParenthesis(self):
+		#TODO
+		return  False
+
 
 	def render(self):
 
+		result = self.renderChildren()
+		result += self.renderNode()
+		
+		return result
+		
+	
+	def renderChildren(self):
+		
+		result = ""
 		for child in self.children:
-			child.render()
+			result += child.render()
 
-		if self.text != "": 
-			print(self.name + " = " + self.text)
+		return result
+
+
+	def renderNode(self):
+		
+		if self.text == "": return ""		
+		return self.name + " = " + self.text + "\n"
 
 
 	def dump(self):
@@ -216,7 +254,8 @@ if __name__ == '__main__':
 	try: 
 
 		root = Node()
-		root.processRoot(sys.argv[1])
+		result = root.processFile(sys.argv[1])
+		print(result)
 
 		if False:
 			print("---- dump ----")
