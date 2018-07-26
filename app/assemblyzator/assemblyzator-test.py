@@ -16,7 +16,7 @@ class AssemblyzatorTest(unittest.TestCase):
 		self.staticNode = Node()
 	
 	
-	# atomic expression check
+	# atomic expression checking
 	
 	def test_atomic_expression_simple_pos(self):			
 		self.assertTrue(self.staticNode.isAtomicExpression( "myVar" ))
@@ -35,6 +35,9 @@ class AssemblyzatorTest(unittest.TestCase):
 
 	def test_atomic_expression_mod(self):
 		self.assertFalse(self.staticNode.isAtomicExpression( "myVar % 2" ))
+		
+	
+	# formula 
 		
 if __name__ == "__main__":
 	unittest.main()

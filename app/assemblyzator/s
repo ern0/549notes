@@ -1,4 +1,11 @@
 #!/bin/bash
 
+f=sample.txt
+
 clear
-./assemblyzator.py example.txt
+echo $f
+echo
+echo `cat $f`
+echo 
+
+./assemblyzator.py $f

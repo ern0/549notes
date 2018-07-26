@@ -22,6 +22,7 @@ class Node:
 			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
 		
+		self.operator = ""
 		self.text = text
 
 
@@ -101,15 +102,19 @@ class Node:
 		
 	def procNode(self):
 		
+		self.text = self.text.replace("<<","<")
+		self.text = self.text.replace(">>",">")
+		
 		while True:
 
 			if self.procAssignment(): break
 			if self.procPairOperator( ("|",) ): break
 			if self.procPairOperator( ("^",) ): break
 			if self.procPairOperator( ("&",) ): break
+			if self.procPairOperator( ("<",">",) ): break
 			if self.procPairOperator( ("+","-") ): break
 			if self.procPairOperator( ("*","/","%") ): break
-
+			
 			changed = self.removeOuterParenthesis()
 			if changed: continue
 			
@@ -164,12 +169,12 @@ class Node:
 		leftFormula = self.text[0:p].strip()
 		leftReplacement = self.createNodeIfNotAtomic(leftFormula)
 
-		operator = self.text[p]
+		self.operator = self.text[p]
 
 		rightFormula = self.text[(1 + p):].strip()
 		rightReplacement = self.createNodeIfNotAtomic(rightFormula)		
 
-		self.text = (leftReplacement + " " + operator + " " + rightReplacement)
+		self.text = (leftReplacement + " " + self.operator + " " + rightReplacement)
 
 
 	def createNodeIfNotAtomic(self,formula):
@@ -190,8 +195,7 @@ class Node:
 		insideQuotation = 0
 		for i in range(0,len(formula)):
 			c = formula[i]
-			
-		
+					
 			if not c in "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
 				return False
 
@@ -228,9 +232,41 @@ class Node:
 
 	def renderNode(self):
 		
-		if self.text == "": return ""		
-		return self.name + " = " + self.text + "\n"
+		if self.text == "": 
+			return ""
+			
+		if self.operator == "-": 
+			return self.renderNeg()		
+			
+		result = self.name
+		result += " = "
+		result += self.text
+		result += "\n"
+		
+		result = result.replace("<","<<")
+		result = result.replace(">",">>")
+		
+		return result
 
+
+	def renderNeg(self):
+		
+		a = self.text.split("-")
+		left = a[0].strip()
+		right = a[1].strip()
+		
+		result = self.name 
+		result += " = "
+		result += "-" + right
+		result += "\n"
+		
+		result += self.name
+		result += " = "
+		result += self.name
+		result += " + " + left
+		result += "\n"
+		
+		return result
 
 	def dump(self):
 
@@ -257,13 +293,8 @@ if __name__ == '__main__':
 	try: 
 
 		root = Node()
-		root.processFile(sys.argv[1])
+		root.processFile( sys.argv[1] )
 		print( root.render() )
-
-		if False:
-			print("---- dump ----")
-			root.dump()
-			print("==============")
 	
 	except KeyboardInterrupt:
 		print(" - interrupted")
