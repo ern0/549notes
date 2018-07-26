@@ -1,4 +1,4 @@
 #!/bin/bash
 
 clear
-./assemblyzator.py example-01*.txt
+./assemblyzator.py example.txt

@@ -36,11 +36,16 @@ class Node:
 		
 		self.load(fnam)
 		self.normalize()
-		self.splitStatements()
 
 		print(self.text)
+		print("--")	
 
+		self.splitStatements()
 		self.process()
+		
+		self.dump()
+		print("--")	
+		
 		self.render()
 
 
@@ -68,6 +73,7 @@ class Node:
 	def splitStatements(self):
 		
 		if self.text.count(";") < 2:
+			self.text = self.text.replace(";","")
 			self.process()
 			return
 		
@@ -87,11 +93,11 @@ class Node:
 		
 		while True:
 			if self.findAssignment(): break
-			if self.findOperator( ("|",) ): break
-			if self.findOperator( ("^",) ): break
-			if self.findOperator( ("&",) ): break
-			if self.findOperator( ("+","-") ): break
-			if self.findOperator( ("*","/","%") ): break
+			if self.findPairOperator( ("|",) ): break
+			if self.findPairOperator( ("^",) ): break
+			if self.findPairOperator( ("&",) ): break
+			if self.findPairOperator( ("+","-") ): break
+			if self.findPairOperator( ("*","/","%") ): break
 			break
 
 		for child in self.children:
@@ -132,32 +138,51 @@ class Node:
 		return True
 
 
-	def findOperator(self,operatorList):
+	def findPairOperator(self,operatorList):
 
 		p = self.findSplitPoint(operatorList)
 		if p is None: return False
 
 		leftFormula = self.text[0:p].strip()
-		left = self.createChild(leftFormula)
+		leftReplacement = self.createNodeIfNotAtomic(leftFormula)
 
 		operator = self.text[p]
 
 		rightFormula = self.text[(1 + p):].strip()
-		right = self.createChild(rightFormula)
+		rightReplacement = self.createNodeIfNotAtomic(rightFormula)		
 
 		self.text = (
-			left.name 
+			leftReplacement 
 			+ " " 
 			+ operator 
 			+ " " 
-			+ right.name
+			+ rightReplacement
 		)
 
 
-	def render(self):
+	def createNodeIfNotAtomic(self,formula):
+		
+		if self.isAtomicExpression(formula):
+			return formula
+			
+		node = self.createChild(formula)
+		return node.name
+		
+		
+	def isAtomicExpression(self,formula):
+		
+		formula = formula.replace(" ","")
+		
+		for i in range(0,len(formula)):
+			c = formula[i]
+		
+			if not c in "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
+				return False
 
-		if True:
-			return self.dump()
+		return True
+		
+
+	def render(self):
 
 		for child in self.children:
 			child.render()
