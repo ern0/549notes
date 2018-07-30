@@ -1,7 +1,7 @@
 #!/bin/bash
 
 f=*05*
-#f=example.txt
+f=example.txt
 
 clear
 echo $f

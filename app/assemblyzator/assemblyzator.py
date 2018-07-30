@@ -51,7 +51,7 @@ class Node:
 			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
 
-		self.text = text
+		self.text = self.cleanupFormula(text)
 		
 		self.leftOperand = ""
 		self.operator = ""
@@ -60,11 +60,16 @@ class Node:
 
 	def createChild(self,text):
 
-		for child in self.children:
-			if child.text == text: return child
+		text = self.cleanupFormula(text)
+
+		for child in self.nodeList:
+			if child.text == text: 
+				return child
 			
 		child = Node(self,text)
 		self.children.append(child)
+		self.nodeList.append(child)
+
 		return child
 
 
@@ -76,7 +81,7 @@ class Node:
 	
 	def processString(self,text):
 		
-		self.text = text
+		self.text = self.cleanupFormula(text)
 		self.processRoot()
 		
 
@@ -151,7 +156,7 @@ class Node:
 			
 		self.text = (
 			self.cleanupFormula(self.leftOperand)
-			+ " " + self.operator + " "
+			+ self.operator
 			+ self.cleanupFormula(self.rightOperand)
 		)
 
@@ -169,31 +174,31 @@ class Node:
 		text = text.strip()
 		text = text.replace("<<","<")
 		text = text.replace(">>",">")
-
-		try:
-			if (text[0] != '('): return text
-			if (text[-1] != ')'): return text
-		except IndexError: return text
 				
 		insideApostrophe = False
 		insideQuotation = False
 		parenDepth = 0
 		parenOv = False
+		result = ""
 		
-		for i in range(1,len(text) - 1):
+		for i in range(0,len(text)):
 			c = text[i]
 			
 			if insideApostrophe:
+				result += c
 				if c == "'": insideApostrophe = False
-				text += c
 				continue
 				
 			if insideQuotation:
+				result += c
 				if c == "\"": insideQuotation = False				
-				text += c
 				continue
 				
-			if insideApostrophe or insideQuotation: continue
+			if insideApostrophe or insideQuotation: 
+				result += c
+				continue
+
+			if c != " ": result += c
 						
 			if c == "'": 
 				insideApostrophe = True
@@ -203,15 +208,22 @@ class Node:
 				insideQuotation = True
 				continue				
 			
-			if c == "(": parenDepth += 1
-			if c == ")": parenDepth -= 1
-			if parenDepth < 0:
-				parenOv = True
-				break
+			isFirstOrLast = False
+			if i == 0: isFirstOrLast = True
+			if i == len(text) - 1: isFirstOrLast = True
+			if not isFirstOrLast:
+				if c == "(": parenDepth += 1
+				if c == ")": parenDepth -= 1
+				if parenDepth < 0: parenOv = True
+
+		try:
+			if (result[0] != '('): return result
+			if (result[-1] != ')'): return result
+		except IndexError: return result
 		
-		if not parenOv: text = text[1:-1]
+		if not parenOv: result = result[1:-1]
 		
-		return text
+		return result
 
 
 	def findSplitPoint(self,separatorList):
