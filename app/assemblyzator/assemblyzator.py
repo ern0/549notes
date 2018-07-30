@@ -59,7 +59,10 @@ class Node:
 
 
 	def createChild(self,text):
-		
+
+		for child in self.children:
+			if child.text == text: return child
+			
 		child = Node(self,text)
 		self.children.append(child)
 		return child
@@ -133,28 +136,23 @@ class Node:
 		
 	def parseNode(self):
 
-		self.text = self.text.replace("<<","<")
-		self.text = self.text.replace(">>",">")
-		
 		while True:
 
 			if self.parseAssignment(): break
+			
 			if self.parsePairOperator( ("|",) ): break
 			if self.parsePairOperator( ("^",) ): break
 			if self.parsePairOperator( ("&",) ): break
 			if self.parsePairOperator( ("<",">",) ): break
 			if self.parsePairOperator( ("+","-") ): break
 			if self.parsePairOperator( ("*","/","%") ): break
-			
-			changed = self.removeOuterParenthesis()
-			if changed: continue
-			
-			break
 
+			break
+			
 		self.text = (
-			self.leftOperand
+			self.cleanupFormula(self.leftOperand)
 			+ " " + self.operator + " "
-			+ self.rightOperand
+			+ self.cleanupFormula(self.rightOperand)
 		)
 
 
@@ -162,6 +160,58 @@ class Node:
 		
 		for child in self.children:
 			child.parse()
+
+
+	def cleanupFormula(self,text):
+
+		if text is None: return
+		
+		text = text.strip()
+		text = text.replace("<<","<")
+		text = text.replace(">>",">")
+
+		try:
+			if (text[0] != '('): return text
+			if (text[-1] != ')'): return text
+		except IndexError: return text
+				
+		insideApostrophe = False
+		insideQuotation = False
+		parenDepth = 0
+		parenOv = False
+		
+		for i in range(1,len(text) - 1):
+			c = text[i]
+			
+			if insideApostrophe:
+				if c == "'": insideApostrophe = False
+				text += c
+				continue
+				
+			if insideQuotation:
+				if c == "\"": insideQuotation = False				
+				text += c
+				continue
+				
+			if insideApostrophe or insideQuotation: continue
+						
+			if c == "'": 
+				insideApostrophe = True
+				continue
+				
+			if c == "\"": 
+				insideQuotation = True
+				continue				
+			
+			if c == "(": parenDepth += 1
+			if c == ")": parenDepth -= 1
+			if parenDepth < 0:
+				parenOv = True
+				break
+		
+		if not parenOv: text = text[1:-1]
+		
+		return text
 
 
 	def findSplitPoint(self,separatorList):
@@ -238,17 +288,6 @@ class Node:
 
 		return True
 		
-		
-	def removeOuterParenthesis(self):
-
-		try:
-			if (self.text[0] != '('): return False
-			if (self.text[-1] != ')'): return False
-		except IndexError: return False
-		
-		self.text = self.text[1:-1]
-		return True
-
 
 	def generateInstructions(self):
 		
@@ -270,7 +309,7 @@ class Node:
 
 	def generateNode(self):
 
-		if self.text == "": return
+		if self.text.strip() == "": return
 
 		if self.operator == "-": 
 			self.generateNeg()		
@@ -351,8 +390,9 @@ if __name__ == '__main__':
 		root = Node()
 		root.processFile( sys.argv[1] )
 		print( root.render() ,end="")
-		#print("--")
-		#root.dump()
+		if False:
+			print("--")
+			root.dump()
 	
 	except KeyboardInterrupt:
 		print(" - interrupted")
