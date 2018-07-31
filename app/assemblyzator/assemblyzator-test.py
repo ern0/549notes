@@ -16,25 +16,25 @@ class AssemblyzatorTest(unittest.TestCase):
 		self.staticNode = Node()
 	
 	
-	# atomic expression checking
+	# atomic Formula checking
 	
-	def test_atomic_expression_simple_pos(self):			
-		self.assertTrue(self.staticNode.isAtomicExpression( "myVar" ))
+	def test_atomic_formula_simple_pos(self):			
+		self.assertTrue(self.staticNode.isAtomicFormula( "myVar" ))
 
-	def test_atomic_expression_add(self):
-		self.assertFalse(self.staticNode.isAtomicExpression( "myVar + 1" ))
+	def test_atomic_formula_add(self):
+		self.assertFalse(self.staticNode.isAtomicFormula( "myVar + 1" ))
 
-	def test_atomic_expression_sub(self):
-		self.assertFalse(self.staticNode.isAtomicExpression( "myVar - 2" ))
+	def test_atomic_formula_sub(self):
+		self.assertFalse(self.staticNode.isAtomicFormula( "myVar - 2" ))
 
-	def test_atomic_expression_mul(self):
-		self.assertFalse(self.staticNode.isAtomicExpression( "myVar * 2" ))
+	def test_atomic_formula_mul(self):
+		self.assertFalse(self.staticNode.isAtomicFormula( "myVar * 2" ))
 
-	def test_atomic_expression_div(self):
-		self.assertFalse(self.staticNode.isAtomicExpression( "myVar / 2" ))
+	def test_atomic_formula_div(self):
+		self.assertFalse(self.staticNode.isAtomicFormula( "myVar / 2" ))
 
-	def test_atomic_expression_mod(self):
-		self.assertFalse(self.staticNode.isAtomicExpression( "myVar % 2" ))
+	def test_atomic_formula_mod(self):
+		self.assertFalse(self.staticNode.isAtomicFormula( "myVar % 2" ))
 		
 	
 	# formula cleanup

@@ -60,26 +60,11 @@ class Node:
 		self.rightOperand = ""
 
 
-	def createChild(self,text):
-
-		text = self.cleanupFormula(text)
-
-		for child in self.nodeList:
-			if child.text == text: 
-				child.refCount += 1
-				return child
-			
-		child = Node(self,text)
-		child.refCount += 1
-		self.children.append(child)
-
-		return child
-
-
 	def processFile(self,fnam):
 		
-		self.load(fnam)
-		self.processRoot()
+		with open(fnam,"r") as file:
+			fileContent = file.read()
+		self.processString(fileContent)
 		
 	
 	def processString(self,text):
@@ -90,19 +75,14 @@ class Node:
 
 	def processRoot(self):
 		
-		self.normalize()
+		self.normalizeFullText()
 		self.splitStatements()
 		self.parse()
 		self.applyIdentity()
 		self.generateInstructions()
 
 
-	def load(self,fnam):
-		with open(fnam,"r") as file:
-			self.text = file.read()
-
-
-	def normalize(self):
+	def normalizeFullText(self):
 		
 		self.text = self.text.replace(";","\n")
 		raw = self.text.split("\n")
@@ -121,10 +101,21 @@ class Node:
 	def splitStatements(self):
 		
 		if self.text.count(";") < 2:
-			self.text = self.text.replace(";","")
-			self.parse()
-			return
+			self.parseSingleLine()
+		else:
+			self.parseMultiLine()
+
+
+	def parseSingleLine(self):
+
+		self.text = self.text.replace(";","")
+		if self.text == "":	return
 		
+		self.parse()
+
+
+	def parseMultiLine(self):
+
 		statements = self.text.split(";")
 		self.text = ""
 
@@ -133,7 +124,24 @@ class Node:
 
 			child = self.createChild(stat)
 			child.parse()
-				
+		
+####################################################		
+
+	def createChild(self,text):
+
+		text = self.cleanupFormula(text)
+
+		for child in self.nodeList:
+			if child.text == text: 
+				child.refCount += 1
+				return child
+			
+		child = Node(self,text)
+		child.refCount += 1
+		self.children.append(child)
+
+		return child
+
 
 	def parse(self):
 		
@@ -218,13 +226,19 @@ class Node:
 				if c == ")": parenDepth -= 1
 				if parenDepth < 0: parenOv = True
 
+		parens = False
 		try:
-			if (result[0] != '('): return result
-			if (result[-1] != ')'): return result
-		except IndexError: return result
+			if (result[0] == '('): parens = True
+			if (result[-1] == ')'): parens = True
+		except IndexError: pass
 		
-		if not parenOv: result = result[1:-1]
+		if parens and not parenOv: 
+			result = result[1:-1]
 		
+		icl = self.isConstantFormula(result)
+		icr = self.isConstantFormula(result)
+		if icl and icr: result = self.calculateConst(result)
+
 		return result
 
 
@@ -280,28 +294,41 @@ class Node:
 
 	def createNodeIfNotAtomic(self,formula):
 		
-		if self.isAtomicExpression(formula):
+		if self.isAtomicFormula(formula):
 			return formula
 			
 		node = self.createChild(formula)
 		return node.name
 		
 		
-	def isAtomicExpression(self,formula):
+	def isAtomicFormula(self,formula):
+		return self.isContainsOnly("_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",formula)
+
+
+	def isConstantFormula(self,formula):
+		# TODO: handle negatives
+		return self.isContainsOnly("0123456789.",formula)
+
+
+	def isContainsOnly(self,charsAllowed,formula):		
+		# TODO: handle quotation and apostrophe
 		# TODO: handle arrays
-		
+
 		formula = formula.replace(" ","")
 		
 		insideApostrophe = 0
 		insideQuotation = 0
 		for i in range(0,len(formula)):
 			c = formula[i]
-					
-			if not c in "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
-				return False
+			if not c in charsAllowed: return False
 
 		return True
-		
+
+
+	def calculateConst(self,text):
+
+		return "53"
+
 		
 	def applyIdentity(self):
 
