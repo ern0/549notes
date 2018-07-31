@@ -5,8 +5,8 @@ f=example.txt
 
 clear
 echo $f
-echo 
-cat $f
-echo 
+cat $f 
+echo
+echo --
 
 ./assemblyzator.py $f
