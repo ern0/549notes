@@ -40,6 +40,8 @@ class Node:
 
 
 	def __init__(self,parent = None,text = None):
+		
+		self.refCount = 0
 
 		self.children = []
 		self.parent = parent
@@ -64,9 +66,11 @@ class Node:
 
 		for child in self.nodeList:
 			if child.text == text: 
+				child.refCount += 1
 				return child
 			
 		child = Node(self,text)
+		child.refCount += 1
 		self.children.append(child)
 		self.nodeList.append(child)
 
@@ -90,6 +94,7 @@ class Node:
 		self.normalize()
 		self.splitStatements()
 		self.parse()
+		self.applyIdentity()
 		self.generateInstructions()
 
 
@@ -300,9 +305,28 @@ class Node:
 
 		return True
 		
+		
+	def applyIdentity(self):
+
+		for node in Node.nodeList:
+			print(node.name,node.refCount)
+
+
+		print("-- before:")
+		self.generateInstructions()
+		print(self.render())
+
+		print("-- after:")
+		self.generateInstructions()
+		print(self.render())
+
+		print("--")
+		
 
 	def generateInstructions(self):
 		
+		Node.instructionList = []
+
 		self.generateChildren()
 		self.generateNode()
 
@@ -401,7 +425,7 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		print( root.render() ,end="")
+		#print( root.render() ,end="")
 		if False:
 			print("--")
 			root.dump()
