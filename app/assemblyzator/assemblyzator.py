@@ -72,7 +72,6 @@ class Node:
 		child = Node(self,text)
 		child.refCount += 1
 		self.children.append(child)
-		self.nodeList.append(child)
 
 		return child
 
@@ -133,8 +132,6 @@ class Node:
 			if stat == "": continue
 
 			child = self.createChild(stat)
-			self.children.append(child)
-
 			child.parse()
 				
 

@@ -1,11 +1,12 @@
 #!/bin/bash
 
-f=*05*
+#f=*05*
 f=example.txt
 
 clear
 echo $f
-echo `cat $f`
+echo 
+cat $f
 echo 
 
 ./assemblyzator.py $f
