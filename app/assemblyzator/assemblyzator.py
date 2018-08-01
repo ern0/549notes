@@ -183,6 +183,8 @@ class Node:
 
 	def createChild(self,text):
 
+		text = self.cleanupFormula(text)
+
 		for child in self.nodeList:
 			if child.text == text: 
 				child.refCount += 1
@@ -327,6 +329,8 @@ class Node:
 		
 	def applyIdentity(self):
 
+		return ###############################
+
 		for node in Node.nodeList:
 			print(node.name,node.refCount)
 
@@ -442,8 +446,8 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		root.dump()
-		print("--")
+		#root.dump()
+		#print("--")
 		print( root.render() ,end="")
 
 	except KeyboardInterrupt:
