@@ -147,15 +147,17 @@ class Node:
 			self.name = self.text[0:p].strip()
 			self.text = self.text[(1 + p):].strip()
 
-		found = False
-		if self.parsePairOperator( ("^",) ): found = True
-		elif self.parsePairOperator( ("&",) ): found = True
-		elif self.parsePairOperator( ("|",) ): found = True
-		elif self.parsePairOperator( ("<",">") ): found = True
-		elif self.parsePairOperator( ("+","-") ): found = True
-		elif self.parsePairOperator( ("*","/","%") ): found = True
-		if not found: return
+		if self.findPairOperator():
+			self.parsePairNode()
+			return
 
+		if self.findArrayOperator():
+			self.parseArrayNode()
+			return
+			
+			
+	def parsePairNode(self):
+		
 		if self.isConstantFormula(self.leftOperand) and self.isConstantFormula(self.rightOperand):			
 			self.const = self.calculateConstFormula(
 				self.leftOperand
@@ -181,6 +183,10 @@ class Node:
 		self.text = self.leftOperand + self.operator + self.rightOperand
 
 
+	def parseArrayNode(self):
+		pass
+		
+
 	def createChild(self,text):
 
 		text = self.cleanupFormula(text)
@@ -197,7 +203,19 @@ class Node:
 		return child
 
 
-	def parsePairOperator(self,operatorList):
+	def findPairOperator(self):
+		
+		if self.findSpecifiedPairOperators( ("^",) ): return True
+		if self.findSpecifiedPairOperators( ("&",) ): return True
+		if self.findSpecifiedPairOperators( ("|",) ): return True
+		if self.findSpecifiedPairOperators( ("<",">") ): return True
+		if self.findSpecifiedPairOperators( ("+","-") ): return True
+		if self.findSpecifiedPairOperators( ("*","/","%") ): return True
+		
+		return False
+
+	
+	def findSpecifiedPairOperators(self,operatorList):
 
 		p = self.findSplitPoint(operatorList)
 		if p is None: return False
@@ -207,7 +225,11 @@ class Node:
 		self.rightOperand = self.text[(1 + p):].strip()
 
 		return True
+		
 
+	def findArrayOperator(self):
+		pass
+	
 
 	def parseChildren(self):
 		
@@ -219,6 +241,7 @@ class Node:
 		# TODO: handle quotation and aphostrophe
 
 		indent = 0
+		square = 0
 		for i in range(0,len(self.text)):
 			c = self.text[i]
 
@@ -229,8 +252,16 @@ class Node:
 			if c == ")":
 				indent -= 1
 				continue
+				
+			if c == "[":
+				square += 1
+				continue
+			
+			if c == "]":
+				square -= 1
+				continue
 
-			if indent > 0: 
+			if (indent > 0) or (square > 0): 
 				continue
 
 			if c in separatorList:
@@ -273,6 +304,7 @@ class Node:
 				
 		insideApostrophe = False
 		insideQuotation = False
+		squareDepth = 0
 		parenDepth = 0
 		parenOv = False
 		result = ""
@@ -289,13 +321,20 @@ class Node:
 				result += c
 				if c == "\"": insideQuotation = False				
 				continue
+
+			if c == "[": squareDepth += 1
+				
+			if squareDepth > 0:
+				result += c
+				if c == "]": squareDepth -= 1
+				continue
 				
 			if insideApostrophe or insideQuotation: 
 				result += c
 				continue
 
 			if c != " ": result += c
-						
+			
 			if c == "'": 
 				insideApostrophe = True
 				continue
@@ -303,7 +342,7 @@ class Node:
 			if c == "\"": 
 				insideQuotation = True
 				continue				
-			
+				
 			isFirstOrLast = False
 			if i == 0: isFirstOrLast = True
 			if i == len(text) - 1: isFirstOrLast = True
@@ -446,9 +485,10 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		#root.dump()
+		root.dump()
 		#print("--")
-		print( root.render() ,end="")
+		#print( root.render() ,end="")
+		#print(root.cleanupFormula("[2dfs]"))
 
 	except KeyboardInterrupt:
 		print(" - interrupted")

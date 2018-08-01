@@ -77,7 +77,7 @@ class AssemblyzatorTest(unittest.TestCase):
 	def test_parse_operator_simple(self):
 
 		self.staticNode.text = "a + 2"
-		r = self.staticNode.parsePairOperator( ("+",) )
+		r = self.staticNode.findSpecifiedPairOperators( ("+",) )
 
 		self.assertTrue(r)
 		self.assertEqual(self.staticNode.leftOperand,"a")
@@ -87,7 +87,7 @@ class AssemblyzatorTest(unittest.TestCase):
 	def test_parse_operator_left_to_right_a(self):
 
 		self.staticNode.text = "a + b - c"
-		r = self.staticNode.parsePairOperator( ("+","-") )
+		r = self.staticNode.findSpecifiedPairOperators( ("+","-") )
 
 		self.assertTrue(r)
 		self.assertEqual(self.staticNode.leftOperand,"a")
@@ -97,7 +97,7 @@ class AssemblyzatorTest(unittest.TestCase):
 	def test_parse_operator_left_to_right_b(self):
 
 		self.staticNode.text = "a + b - c"
-		r = self.staticNode.parsePairOperator( ("-","+") )
+		r = self.staticNode.findSpecifiedPairOperators( ("-","+") )
 
 		self.assertTrue(r)
 		self.assertEqual(self.staticNode.leftOperand,"a")
@@ -107,7 +107,7 @@ class AssemblyzatorTest(unittest.TestCase):
 	def test_parse_operator_not_found(self):
 
 		self.staticNode.text = "a + b - c"
-		r = self.staticNode.parsePairOperator( ("*","/") )
+		r = self.staticNode.findSpecifiedPairOperators( ("*","/") )
 
 		self.assertFalse(r)
 
