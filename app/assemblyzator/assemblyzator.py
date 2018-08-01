@@ -40,7 +40,7 @@ class Node:
 
 
 	def __init__(self,parent = None,text = None):
-		
+
 		self.refCount = 0
 
 		self.children = []
@@ -52,34 +52,25 @@ class Node:
 		else:
 			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
-
-		self.text = self.cleanupFormula(text)
 		
+		self.const = ""
 		self.leftOperand = ""
 		self.operator = ""
 		self.rightOperand = ""
+		self.text = text
 
 
-	def createChild(self,text):
+	def getRepresentation(self):
 
-		text = self.cleanupFormula(text)
-
-		for child in self.nodeList:
-			if child.text == text: 
-				child.refCount += 1
-				return child
-			
-		child = Node(self,text)
-		child.refCount += 1
-		self.children.append(child)
-
-		return child
+		if self.const != "": return self.const
+		return self.name
 
 
 	def processFile(self,fnam):
 		
-		self.load(fnam)
-		self.processRoot()
+		with open(fnam,"r") as file:
+			fileContent = file.read()
+		self.processString(fileContent)
 		
 	
 	def processString(self,text):
@@ -90,19 +81,14 @@ class Node:
 
 	def processRoot(self):
 		
-		self.normalize()
+		self.normalizeFullText()
 		self.splitStatements()
 		self.parse()
 		self.applyIdentity()
-		self.generateInstructions()
+		self.generateRootInstructions()
 
 
-	def load(self,fnam):
-		with open(fnam,"r") as file:
-			self.text = file.read()
-
-
-	def normalize(self):
+	def normalizeFullText(self):
 		
 		self.text = self.text.replace(";","\n")
 		raw = self.text.split("\n")
@@ -121,10 +107,21 @@ class Node:
 	def splitStatements(self):
 		
 		if self.text.count(";") < 2:
-			self.text = self.text.replace(";","")
-			self.parse()
-			return
+			self.parseSingleLine()
+		else:
+			self.parseMultiLine()
+
+
+	def parseSingleLine(self):
+
+		self.text = self.text.replace(";","")
+		if self.text == "":	return
 		
+		self.parse()
+
+
+	def parseMultiLine(self):
+
 		statements = self.text.split(";")
 		self.text = ""
 
@@ -133,40 +130,137 @@ class Node:
 
 			child = self.createChild(stat)
 			child.parse()
-				
+
 
 	def parse(self):
 		
 		self.parseNode()
 		self.parseChildren()
-		
-		
+
+
 	def parseNode(self):
 
-		while True:
+		self.text = self.cleanupFormula(self.text)
 
-			if self.parseAssignment(): break
-			
-			if self.parsePairOperator( ("|",) ): break
-			if self.parsePairOperator( ("^",) ): break
-			if self.parsePairOperator( ("&",) ): break
-			if self.parsePairOperator( ("<",">",) ): break
-			if self.parsePairOperator( ("+","-") ): break
-			if self.parsePairOperator( ("*","/","%") ): break
+		p = self.findSplitPoint( ("=",) )
+		if p is not None: 
+			self.name = self.text[0:p].strip()
+			self.text = self.text[(1 + p):].strip()
 
-			break
-			
-		self.text = (
-			self.cleanupFormula(self.leftOperand)
-			+ self.operator
-			+ self.cleanupFormula(self.rightOperand)
-		)
+		found = False
+		if self.parsePairOperator( ("^",) ): found = True
+		elif self.parsePairOperator( ("&",) ): found = True
+		elif self.parsePairOperator( ("|",) ): found = True
+		elif self.parsePairOperator( ("<",">") ): found = True
+		elif self.parsePairOperator( ("+","-") ): found = True
+		elif self.parsePairOperator( ("*","/","%") ): found = True
+		if not found: return
+
+		if self.isConstantFormula(self.leftOperand) and self.isConstantFormula(self.rightOperand):			
+			self.const = self.calculateConstFormula(
+				self.leftOperand
+				+ self.operator
+				+ self.rightOperand
+			)
+			if self.parent is not None:
+				if self.parent.leftOperand == self.name:
+					self.parent.leftOperand = self.const
+				if self.parent.rightOperand == self.name:
+					self.parent.rightOperand = self.const
+				self.parent.text = self.parent.leftOperand + self.parent.operator + self.parent.rightOperand
+			return
+
+		if not self.isAtomicFormula(self.leftOperand):
+			node = self.createChild(self.leftOperand)
+			self.leftOperand = node.getRepresentation()
+		
+		if not self.isAtomicFormula(self.rightOperand):
+			node = self.createChild(self.rightOperand)
+			self.rightOperand = node.getRepresentation()		
+		
+		self.text = self.leftOperand + self.operator + self.rightOperand
+
+
+	def createChild(self,text):
+
+		text = self.cleanupFormula(text)
+
+		for child in self.nodeList:
+			if child.text == text: 
+				child.refCount += 1
+				return child
+
+		child = Node(self,text)
+		child.refCount += 1
+		self.children.append(child)
+
+		return child
+
+
+	def parsePairOperator(self,operatorList):
+
+		p = self.findSplitPoint(operatorList)
+		if p is None: return False
+
+		self.leftOperand = self.text[0:p].strip()
+		self.operator = self.text[p]
+		self.rightOperand = self.text[(1 + p):].strip()
+
+		return True
 
 
 	def parseChildren(self):
 		
 		for child in self.children:
 			child.parse()
+
+
+	def findSplitPoint(self,separatorList):
+		# TODO: handle quotation and aphostrophe
+
+		indent = 0
+		for i in range(0,len(self.text)):
+			c = self.text[i]
+
+			if c == "(": 
+				indent += 1
+				continue
+
+			if c == ")":
+				indent -= 1
+				continue
+
+			if indent > 0: 
+				continue
+
+			if c in separatorList:
+				return i
+
+		return None
+
+
+	def isAtomicFormula(self,formula):
+		return self.isContainsOnly("_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",formula)
+
+
+	def isConstantFormula(self,formula):
+		# TODO: handle negatives
+		return self.isContainsOnly("0123456789.+-*/%^&|<>",formula)
+
+
+	def isContainsOnly(self,charsAllowed,formula):		
+		# TODO: handle quotation and apostrophe
+		# TODO: handle arrays
+
+		formula = formula.replace(" ","")
+		
+		insideApostrophe = 0
+		insideQuotation = 0
+		for i in range(0,len(formula)):
+			c = formula[i]
+			if not c in charsAllowed: return False
+
+		return True
 
 
 	def cleanupFormula(self,text):
@@ -228,86 +322,17 @@ class Node:
 		return result
 
 
-	def findSplitPoint(self,separatorList):
+	def calculateConstFormula(self,text):
+		# TODO: some error checking
+		return str( eval(text) )
 
-		indent = 0
-		for i in range(0,len(self.text)):
-			c = self.text[i]
-
-			if c == "(": 
-				indent += 1
-				continue
-
-			if c == ")":
-				indent -= 1
-				continue
-
-			if indent > 0: 
-				continue
-
-			if c in separatorList:
-				return i
-
-		return None
-
-
-	def parseAssignment(self):
-		
-		p = self.findSplitPoint( ("=",) )
-		if p is None: return False
-		
-		self.name = self.text[0:p].strip()
-		self.text = self.text[(1 + p):].strip()
-		
-		return True
-
-
-	def parsePairOperator(self,operatorList):
-
-		p = self.findSplitPoint(operatorList)
-		if p is None: return False
-
-		leftFormula = self.text[0:p].strip()
-		self.leftOperand = self.createNodeIfNotAtomic(leftFormula)
-
-		self.operator = self.text[p]
-
-		rightFormula = self.text[(1 + p):].strip()
-		self.rightOperand = self.createNodeIfNotAtomic(rightFormula)		
-
-		return True
-
-
-	def createNodeIfNotAtomic(self,formula):
-		
-		if self.isAtomicExpression(formula):
-			return formula
-			
-		node = self.createChild(formula)
-		return node.name
-		
-		
-	def isAtomicExpression(self,formula):
-		# TODO: handle arrays
-		
-		formula = formula.replace(" ","")
-		
-		insideApostrophe = 0
-		insideQuotation = 0
-		for i in range(0,len(formula)):
-			c = formula[i]
-					
-			if not c in "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
-				return False
-
-		return True
-		
 		
 	def applyIdentity(self):
 
+		return ###############################
+
 		for node in Node.nodeList:
 			print(node.name,node.refCount)
-
 
 		print("-- before:")
 		self.generateInstructions()
@@ -320,10 +345,14 @@ class Node:
 		print("--")
 		
 
+	def generateRootInstructions(self):
+
+		Node.instructionList = []
+		self.generateInstructions()
+
+
 	def generateInstructions(self):
 		
-		Node.instructionList = []
-
 		self.generateChildren()
 		self.generateNode()
 
@@ -334,24 +363,16 @@ class Node:
 			child.generateInstructions()
 
 
-	def createInstruction(self,name,left,op,right):
-
-		instruction = Instruction(name,left,op,right)
-		Node.instructionList.append(instruction)
-
-
 	def generateNode(self):
 
 		if self.text.strip() == "": return
 
-		if self.operator == "-": 
+		if self.const != "": return
+
+		if self.operator == "-" and self.rightOperand != "0": 
 			self.generateNeg()		
 			return
-			
-		a = self.text.split(self.operator)
-		self.leftOperand = a[0]
-		self.rightOperand = a[1]
-		
+
 		self.operator = self.operator.replace("<","<<")
 		self.operator = self.operator.replace(">",">>")
 		
@@ -363,24 +384,26 @@ class Node:
 		)
 
 
+	def createInstruction(self,name,left,op,right):
+
+		instruction = Instruction(name,left,op,right)
+		Node.instructionList.append(instruction)
+
+
 	def generateNeg(self):
 		
-		a = self.text.split("-")
-		left = a[0].strip()
-		right = a[1].strip()
-
 		self.createInstruction(
 			self.name,
 			"",
 			self.operator,
-			right
+			self.rightOperand
 		)
 
 		self.createInstruction(
 			self.name,
 			self.name,
 			"+",
-			left
+			self.leftOperand
 		)
 				
 
@@ -393,15 +416,13 @@ class Node:
 		return result
 		
 
+	def quote(self,text):
+		return "\"" + self.text.replace("\n","\", \"") + "\""
+
+
 	def dump(self):
 
 		print(self.name)
-		
-		print(" text: " 
-			+ "\"" 
-			+ self.text.replace("\n","\", \"") 
-			+ "\""
-		)
 
 		if self.parent is not None:
 			pnam = self.parent.name
@@ -409,9 +430,12 @@ class Node:
 			pnam = "n.a."
 		print(" parent: " + pnam)
 		
-		print(" left: " + self.leftOperand)
-		print(" operator: " + self.operator)
-		print(" right: " + self.rightOperand)
+		if self.const != "":
+			print(" const: " + self.const)
+		else:
+			print(" left: " + self.leftOperand)
+			print(" operator: " + self.operator)
+			print(" right: " + self.rightOperand)
 		
 		for child in self.children: child.dump()
 
@@ -422,10 +446,9 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		#print( root.render() ,end="")
-		if False:
-			print("--")
-			root.dump()
-	
+		#root.dump()
+		#print("--")
+		print( root.render() ,end="")
+
 	except KeyboardInterrupt:
 		print(" - interrupted")
