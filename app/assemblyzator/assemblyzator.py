@@ -53,16 +53,16 @@ class Node:
 			self.name = "var" + str(Node.nextId)
 		Node.nextId += 1
 		
-		self.const = ""
+		self.nodeType = "n.a."
+		self.text = text
 		self.leftOperand = ""
 		self.operator = ""
 		self.rightOperand = ""
-		self.text = text
 
 
 	def getRepresentation(self):
 
-		if self.const != "": return self.const
+		if self.nodeType == "const": return self.text
 		return self.name
 
 
@@ -141,14 +141,17 @@ class Node:
 	def parseNode(self):
 
 		self.text = self.cleanupFormula(self.text)
-
+		
 		p = self.findSplitPoint( ("=",) )
 		if p is not None: 
 			self.name = self.text[0:p].strip()
 			self.text = self.text[(1 + p):].strip()
 
 		if self.findPairOperator():
-			self.parsePairNode()
+			if self.isConstantFormula(self.leftOperand) and self.isConstantFormula(self.rightOperand):			
+				self.parseConstNode()
+			else:
+				self.parsePairNode()
 			return
 
 		if self.findArrayOperator():
@@ -158,19 +161,7 @@ class Node:
 			
 	def parsePairNode(self):
 		
-		if self.isConstantFormula(self.leftOperand) and self.isConstantFormula(self.rightOperand):			
-			self.const = self.calculateConstFormula(
-				self.leftOperand
-				+ self.operator
-				+ self.rightOperand
-			)
-			if self.parent is not None:
-				if self.parent.leftOperand == self.name:
-					self.parent.leftOperand = self.const
-				if self.parent.rightOperand == self.name:
-					self.parent.rightOperand = self.const
-				self.parent.text = self.parent.leftOperand + self.parent.operator + self.parent.rightOperand
-			return
+		self.nodeType = "pair"		
 
 		if not self.isAtomicFormula(self.leftOperand):
 			node = self.createChild(self.leftOperand)
@@ -183,8 +174,30 @@ class Node:
 		self.text = self.leftOperand + self.operator + self.rightOperand
 
 
+	def parseConstNode(self):
+
+		self.nodeType = "const"		
+
+		self.text = self.calculateConstFormula(
+			self.leftOperand
+			+ self.operator
+			+ self.rightOperand
+		)
+
+		if self.parent is not None:
+
+			if self.parent.leftOperand == self.name:
+				self.parent.leftOperand = self.text
+
+			if self.parent.rightOperand == self.name:
+				self.parent.rightOperand = self.text
+
+			self.parent.text = self.parent.leftOperand + self.parent.operator + self.parent.rightOperand
+
+
 	def parseArrayNode(self):
-		pass
+		
+		self.nodeType = "array"
 		
 
 	def createChild(self,text):
@@ -228,7 +241,12 @@ class Node:
 		
 
 	def findArrayOperator(self):
-		pass
+		# TODO: this is a hack only
+		
+		if self.text[0] == "\"": return True
+		if self.text[0] == "[": return True
+		
+		return False
 	
 
 	def parseChildren(self):
@@ -406,7 +424,7 @@ class Node:
 
 		if self.text.strip() == "": return
 
-		if self.const != "": return
+		if self.nodeType == "const": return
 
 		if self.operator == "-" and self.rightOperand != "0": 
 			self.generateNeg()		
@@ -461,7 +479,7 @@ class Node:
 
 	def dump(self):
 
-		print(self.name)
+		print(self.name + " (" + self.nodeType + ")")
 
 		if self.parent is not None:
 			pnam = self.parent.name
@@ -469,13 +487,17 @@ class Node:
 			pnam = "n.a."
 		print(" parent: " + pnam)
 		
-		if self.const != "":
-			print(" const: " + self.const)
-		else:
+		if self.nodeType == "pair":
 			print(" left: " + self.leftOperand)
 			print(" operator: " + self.operator)
 			print(" right: " + self.rightOperand)
 		
+		if self.nodeType == "const":
+			print(" const: " + self.text)
+			
+		if self.nodeType == "array":
+			print(" array: " + self.text)
+			
 		for child in self.children: child.dump()
 
 
