@@ -85,7 +85,7 @@ class Node:
 		self.splitStatements()
 		self.parse()
 		self.applyIdentity()
-		self.generateInstructions()
+		self.generateRootInstructions()
 
 
 	def normalizeFullText(self):
@@ -327,10 +327,8 @@ class Node:
 		
 	def applyIdentity(self):
 
-		return
 		for node in Node.nodeList:
 			print(node.name,node.refCount)
-
 
 		print("-- before:")
 		self.generateInstructions()
@@ -343,10 +341,14 @@ class Node:
 		print("--")
 		
 
+	def generateRootInstructions(self):
+
+		Node.instructionList = []
+		self.generateInstructions()
+
+
 	def generateInstructions(self):
 		
-		Node.instructionList = []
-
 		self.generateChildren()
 		self.generateNode()
 
@@ -355,12 +357,6 @@ class Node:
 
 		for child in self.children:
 			child.generateInstructions()
-
-
-	def createInstruction(self,name,left,op,right):
-
-		instruction = Instruction(name,left,op,right)
-		Node.instructionList.append(instruction)
 
 
 	def generateNode(self):
@@ -382,6 +378,12 @@ class Node:
 			self.operator,
 			self.rightOperand
 		)
+
+
+	def createInstruction(self,name,left,op,right):
+
+		instruction = Instruction(name,left,op,right)
+		Node.instructionList.append(instruction)
 
 
 	def generateNeg(self):
@@ -440,7 +442,9 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
+		root.dump()
+		print("--")
 		print( root.render() ,end="")
-	
+
 	except KeyboardInterrupt:
 		print(" - interrupted")
