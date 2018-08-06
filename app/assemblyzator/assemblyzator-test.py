@@ -16,6 +16,54 @@ class AssemblyzatorTest(unittest.TestCase):
 		self.staticNode = Node()
 	
 	
+	# split point
+	
+	def test_splitpoint_simple(self):	
+		self.staticNode.text = "1^2"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,1)
+
+	def test_splitpoint_leftmost(self):	
+		self.staticNode.text = "^abcd"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,0)
+
+	def test_splitpoint_rightmost(self):	
+		self.staticNode.text = "abcd^"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,4)
+
+	def test_splitpoint_pick_first(self):	
+		self.staticNode.text = "ab/cd/ef"
+		p = self.staticNode.findSplitPoint([ "/", ])
+		self.assertEqual(p,2)
+
+	def test_splitpoint_pick_separator(self):	
+		self.staticNode.text = "abc^d/ef"
+		p = self.staticNode.findSplitPoint([ "/","^" ])
+		self.assertEqual(p,3)
+
+	def test_splitpoint_parens(self):	
+		self.staticNode.text = "(a^b)^(c^d)"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,5)
+
+	def test_splitpoint_square(self):	
+		self.staticNode.text = "[a^b]^[c^d]"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,5)
+
+	def test_splitpoint_quotation(self):	
+		self.staticNode.text = "\"a^b\"^\"c^d\""
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,5)
+
+	def test_splitpoint_apostrophe(self):	
+		self.staticNode.text = "'a^b'^'c^d'"
+		p = self.staticNode.findSplitPoint([ "^", ])
+		self.assertEqual(p,5)
+
+	
 	# constant formula
 
 	def test_constant_formula_simple_pos(self):
@@ -121,7 +169,7 @@ class AssemblyzatorTest(unittest.TestCase):
 		self.assertEqual(self.staticNode.calculateConstFormula( "3*3-3*3" ), "0" )
 		
 
-	# const value
+	# const value merging
 
 	def test_const_value(self):
 		node = Node(None,"5 * 5")

@@ -256,12 +256,28 @@ class Node:
 
 
 	def findSplitPoint(self,separatorList):
-		# TODO: handle quotation and aphostrophe
 
 		indent = 0
 		square = 0
+		apostrophe = False
+		quotation = False
 		for i in range(0,len(self.text)):
 			c = self.text[i]
+
+			if quotation:
+				if c == "\"": quotation = False
+				continue
+
+			if apostrophe:
+				if c == "'": apostrophe = False
+				continue
+
+			if c == "\"": 
+				quotation = True
+				continue
+
+			if c == "'": 
+				apostrophe = True
 
 			if c == "(": 
 				indent += 1
