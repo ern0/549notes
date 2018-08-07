@@ -175,7 +175,7 @@ class Node:
 			return
 		
 		self.nodeType = "literally"
-		
+
 			
 	def parsePairNode(self):
 		
@@ -184,11 +184,17 @@ class Node:
 		if not self.isAtomicFormula(self.leftOperand):
 			node = self.createChild(self.leftOperand)
 			self.leftOperand = node.getRepresentation()
-		
+
 		if not self.isAtomicFormula(self.rightOperand):
 			node = self.createChild(self.rightOperand)
-			self.rightOperand = node.getRepresentation()		
+			self.rightOperand = node.getRepresentation()
 		
+		if self.isSimpleNumber(self.leftOperand):
+			self.leftOperand = str( eval(self.leftOperand) )
+		
+		if self.isSimpleNumber(self.rightOperand):
+			self.rightOperand = str( eval(self.rightOperand) )
+
 		self.text = self.leftOperand + self.operator + self.rightOperand
 
 
@@ -253,7 +259,7 @@ class Node:
 		self.leftOperand = ""
 		for c in a:			
 			if self.leftOperand != "": self.leftOperand += ","
-			self.leftOperand += str(int(c,0))
+			self.leftOperand += str( eval(c) )
 
 
 	def createChild(self,text):
@@ -361,6 +367,15 @@ class Node:
 		return None
 
 
+	def isSimpleNumber(self,formula):
+
+		if formula[0:2] == "0x":
+			return self.isContainsOnly("0123456789abcdef",formula[2:].lower())
+		else:
+			if formula[0] == "-": formula = formula[1:]
+			return self.isContainsOnly("01234567890.",formula)
+
+
 	def isAtomicFormula(self,formula):
 		return self.isContainsOnly("_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",formula)
 
@@ -452,7 +467,6 @@ class Node:
 
 
 	def calculateConstFormula(self,text):
-		# TODO: some error checking
 		return str( eval(text) )
 
 		
@@ -592,8 +606,8 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		root.dump()
-		print("--")
+		#root.dump()
+		#print("--")
 		print( root.render() ,end="")
 
 	except KeyboardInterrupt:

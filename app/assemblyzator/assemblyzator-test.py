@@ -68,7 +68,22 @@ class AssemblyzatorTest(unittest.TestCase):
 		p = self.staticNode.findSplitPoint([ "[", ])
 		self.assertEqual(p,7)
 
+
+	# is simple number
+
+	def test_is_simple_number_dec(self):
+		self.assertTrue(self.staticNode.isSimpleNumber("18"))
+
+	def test_is_simple_number_hex(self):
+		self.assertTrue(self.staticNode.isSimpleNumber("0x10"))
 	
+	def test_is_simple_number_real(self):
+		self.assertTrue(self.staticNode.isSimpleNumber("-2.4"))
+
+	def test_is_simple_number_fail(self):
+		self.assertFalse(self.staticNode.isSimpleNumber("3+2"))
+
+
 	# constant formula
 
 	def test_constant_formula_simple_pos(self):
