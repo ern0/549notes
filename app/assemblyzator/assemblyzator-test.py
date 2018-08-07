@@ -63,6 +63,11 @@ class AssemblyzatorTest(unittest.TestCase):
 		p = self.staticNode.findSplitPoint([ "^", ])
 		self.assertEqual(p,5)
 
+	def test_splitpoint_find_square(self):
+		self.staticNode.text = "[4,5,6][12]"
+		p = self.staticNode.findSplitPoint([ "[", ])
+		self.assertEqual(p,7)
+
 	
 	# constant formula
 
@@ -118,6 +123,14 @@ class AssemblyzatorTest(unittest.TestCase):
 	def test_formula_cleanup_cut_and_strip(self):		
 		f = self.staticNode.cleanupFormula(" (x * 55) ")
 		self.assertEqual(f,"x*55")
+
+	def test_formula_cleanup_convert_from_hex_lc(self):		
+		f = self.staticNode.cleanupFormula("0x0a")
+		self.assertEqual(f,"10")
+
+	def test_formula_cleanup_convert_from_hex_uc(self):		
+		f = self.staticNode.cleanupFormula("0x0F")
+		self.assertEqual(f,"15")
 
 
 	# parse operator
@@ -175,6 +188,13 @@ class AssemblyzatorTest(unittest.TestCase):
 		node = Node(None,"5 * 5")
 		node.parseNode()
 		self.assertEqual( node.getRepresentation(), "25" )
+
+
+	# find array operator
+
+	def test_find_array_quotation(self):
+		node = Node(None,"\"abcd\"[x]")
+		#tbd
 
 
 if __name__ == "__main__":

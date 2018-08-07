@@ -141,6 +141,8 @@ class Node:
 	def parseNode(self):
 
 		self.text = self.cleanupFormula(self.text)
+
+		print("***",self.text)
 		
 		p = self.findSplitPoint( ("=",) )
 		if p is not None: 
@@ -198,7 +200,44 @@ class Node:
 	def parseArrayNode(self):
 		
 		self.nodeType = "array"
+
+		p = self.findSplitPoint([ "[", ])
+		self.leftOperand = self.text[:p]
+		self.operator = "["
+		self.rightOperand = self.text[(1+p):-1]
+
+		if self.leftOperand[0] == '[':
+			self.parseArrayLeftSquare()
+		else:
+			self.parseArrayLeftQuotation()
+
+		node = self.createChild(self.leftOperand)
+		self.leftOperand = node.getRepresentation()
+
+		node = self.createChild(self.rightOperand)
+		self.rightOperand = node.getRepresentation()
+
+
+	def parseArrayLeftQuotation(self):
+
+		value = self.leftOperand
+
+		self.leftOperand = ""
+		for i in range(1,len(value) - 1):
+			c = value[i]
+			if self.leftOperand != "": self.leftOperand += ","
+			self.leftOperand += str(ord(c))
+
+
+	def parseArrayLeftSquare(self):
 		
+		a = self.leftOperand[1:-1].split(",")
+
+		self.leftOperand = ""
+		for c in a:			
+			if self.leftOperand != "": self.leftOperand += ","
+			self.leftOperand += str(int(c,0))
+
 
 	def createChild(self,text):
 
@@ -241,7 +280,6 @@ class Node:
 		
 
 	def findArrayOperator(self):
-		# TODO: this is a hack only
 		
 		if self.text[0] == "\"": return True
 		if self.text[0] == "[": return True
@@ -261,6 +299,7 @@ class Node:
 		square = 0
 		apostrophe = False
 		quotation = False
+		squareFind = "[" in separatorList
 		for i in range(0,len(self.text)):
 			c = self.text[i]
 
@@ -287,11 +326,11 @@ class Node:
 				indent -= 1
 				continue
 				
-			if c == "[":
+			if c == "[" and not squareFind:
 				square += 1
 				continue
 			
-			if c == "]":
+			if c == "]" and not squareFind:
 				square -= 1
 				continue
 
@@ -299,6 +338,7 @@ class Node:
 				continue
 
 			if c in separatorList:
+				if squareFind and i == 0: continue
 				return i
 
 		return None
@@ -309,20 +349,14 @@ class Node:
 
 
 	def isConstantFormula(self,formula):
-		# TODO: handle negatives
 		return self.isContainsOnly("0123456789.+-*/%^&|<>",formula)
 
 
 	def isContainsOnly(self,charsAllowed,formula):		
-		# TODO: handle quotation and apostrophe
-		# TODO: handle arrays
 
-		formula = formula.replace(" ","")
-		
-		insideApostrophe = 0
-		insideQuotation = 0
 		for i in range(0,len(formula)):
 			c = formula[i]
+			if formula[i] == ' ': continue
 			if not c in charsAllowed: return False
 
 		return True
@@ -385,12 +419,17 @@ class Node:
 				if c == ")": parenDepth -= 1
 				if parenDepth < 0: parenOv = True
 
+		cutParens = True
 		try:
-			if (result[0] != '('): return result
-			if (result[-1] != ')'): return result
-		except IndexError: return result
+			if (result[0] != '('): cutParens = False
+			if (result[-1] != ')'): cutParens = False
+		except IndexError: cutParens = False
 		
-		if not parenOv: result = result[1:-1]
+		if not parenOv and cutParens: result = result[1:-1]
+
+		if result[0:2] == "0x":
+			if self.isContainsOnly("0123456789abcdef",result[2:].lower()):
+				result = str(int(result,0))			
 		
 		return result
 
@@ -512,7 +551,8 @@ class Node:
 			print(" const: " + self.text)
 			
 		if self.nodeType == "array":
-			print(" array: " + self.text)
+			print(" list: " + self.leftOperand)
+			print(" index: " + self.rightOperand)
 			
 		for child in self.children: child.dump()
 
