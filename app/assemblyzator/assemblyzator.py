@@ -22,13 +22,26 @@ class Instruction:
 		result = self.name
 		result += " = "
 
-		if self.left == "":
-			result += self.op + self.right
+		if self.op == "[":
+				result += self.left 
+				result += "["
+				result += self.right
+				result += "]"
+
+		elif self.op == ",":
+			result += "{ "
+			result += self.left			
+			result += " }"
+			
 		else:
-			result += self.left 
-			result += " " + self.op + " "
-			result += self.right
-	
+			if self.left == "":
+				result += self.op 
+				result += self.right
+			else:
+				result += self.left 
+				result += " " + self.op + " "
+				result += self.right
+
 		return result
 
 
@@ -63,6 +76,7 @@ class Node:
 	def getRepresentation(self):
 
 		if self.nodeType == "const": return self.text
+		if self.nodeType == "literally": return self.text
 		return self.name
 
 
@@ -140,10 +154,10 @@ class Node:
 
 	def parseNode(self):
 
+		if self.nodeType == "data": return	
+
 		self.text = self.cleanupFormula(self.text)
 
-		print("***",self.text)
-		
 		p = self.findSplitPoint( ("=",) )
 		if p is not None: 
 			self.name = self.text[0:p].strip()
@@ -159,7 +173,9 @@ class Node:
 		if self.findArrayOperator():
 			self.parseArrayNode()
 			return
-			
+		
+		self.nodeType = "literally"
+		
 			
 	def parsePairNode(self):
 		
@@ -212,6 +228,7 @@ class Node:
 			self.parseArrayLeftQuotation()
 
 		node = self.createChild(self.leftOperand)
+		node.nodeType = "data"
 		self.leftOperand = node.getRepresentation()
 
 		node = self.createChild(self.rightOperand)
@@ -480,6 +497,16 @@ class Node:
 		if self.text.strip() == "": return
 
 		if self.nodeType == "const": return
+		if self.nodeType == "literally": return
+		
+		if self.nodeType == "data":
+			self.createInstruction(
+				self.name,
+				self.text,
+				",",
+				""
+			)
+			return
 
 		if self.operator == "-" and self.rightOperand != "0": 
 			self.generateNeg()		
@@ -551,8 +578,10 @@ class Node:
 			print(" const: " + self.text)
 			
 		if self.nodeType == "array":
-			print(" list: " + self.leftOperand)
+			print(" data: " + self.leftOperand)
 			print(" index: " + self.rightOperand)
+		
+		print(" text: " + self.text)
 			
 		for child in self.children: child.dump()
 
@@ -564,9 +593,8 @@ if __name__ == '__main__':
 		root = Node()
 		root.processFile( sys.argv[1] )
 		root.dump()
-		#print("--")
-		#print( root.render() ,end="")
-		#print(root.cleanupFormula("[2dfs]"))
+		print("--")
+		print( root.render() ,end="")
 
 	except KeyboardInterrupt:
 		print(" - interrupted")
