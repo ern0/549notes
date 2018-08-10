@@ -97,7 +97,6 @@ class Node:
 		
 		self.normalizeFullText()
 		self.splitStatements()
-		self.parse()
 		self.applyIdentity()
 		self.generateRootInstructions()
 
@@ -606,8 +605,8 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		#root.dump()
-		#print("--")
+		root.dump()
+		print("--")
 		print( root.render() ,end="")
 
 	except KeyboardInterrupt:
