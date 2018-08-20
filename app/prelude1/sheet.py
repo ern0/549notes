@@ -16,7 +16,22 @@ class Prelude1:
 		self.endRaw = self.convertTextToRaw(self.endText)
 		self.codaRaw = self.convertTextToRaw(self.codaText)
 
-		print(self.baseRaw)		
+		self.dump()		
+
+
+	def dump(self):
+
+		for i in range(0,len(self.baseText)):
+
+			if i > 0 and i % 5 == 0: print("")
+			if i > 0 and i % 20 == 0: print("")
+
+			v = self.baseText[i]
+			v += ":"
+			v += str(self.baseRaw[i])
+			v = v.rjust(7) + " "
+
+			print(v,end="")
 
 
 	def convertTextToRaw(self,textArray):
@@ -86,7 +101,7 @@ class Prelude1:
 			"c2","g2","ais2","c3","e3",
 			"f1","f2","a2","c3","e3",
 			"fis1","c2","a2","c3","e3",
-			"gis1","f2","h2","dis3",
+			"gis1","f2","h2","c3","d3",
 
 			"g1","f2","g2","h2","d3",
 			"g1","e2","g2","c3","e3",
