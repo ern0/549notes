@@ -9,13 +9,23 @@ class Prelude1:
 
 	def main(self):
 
-		self.fillRawData()
+
+		self.fillTextData()
+		lineCount = len(self.textData) / 55
+		print(lineCount)
+
+		self.convertTextToRaw()
 
 
 
-	def fillRawData(self):
+	def convertTextToRaw(self):
 
-		self.rawData = [
+		pass
+
+
+	def fillTextData(self):
+
+		self.textData = [
 
 			"c3","e3","g3","c4","e4",
 			"c3","d3","a3","d4","f4",
@@ -58,6 +68,17 @@ class Prelude1:
 			"g1","d2","g2","h3","f3",
 
 			"c1","c2","g2","ais2","e3",
+		]
+
+		self.textFinish = [
+
+			"c1","c2","f2","a2","c3","f3","c3","a2",
+			"c3","a2","f2","a2","f2","d2","f2","d2",
+			"c1","h1","g3","h3","d4","f4","d4","h3",
+			"d4","h3","g3","h3","d3","f3","e3","d3",
+
+			"c1","c2","e3","g3","c4"
+
 		]
 
 
