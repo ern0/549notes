@@ -77,6 +77,7 @@ class Node:
 
 		if self.nodeType == "const": return self.text
 		if self.nodeType == "literally": return self.text
+		if self.nodeType == "atomic": return self.text
 		return self.name
 
 
@@ -97,7 +98,6 @@ class Node:
 		
 		self.normalizeFullText()
 		self.splitStatements()
-		self.parse()
 		self.applyIdentity()
 		self.generateRootInstructions()
 
@@ -173,9 +173,24 @@ class Node:
 		if self.findArrayOperator():
 			self.parseArrayNode()
 			return
-		
+
+		if self.isAtomicFormula(self.text):
+			self.parseAtomicNode()
+			return
+			
 		self.nodeType = "literally"
 
+			
+	def parseAtomicNode(self):
+		
+		self.nodeType = "atomic"
+		
+		if self.parent.leftOperand == self.name:
+			self.parent.leftOperand = self.text
+
+		if self.parent.rightOperand == self.name:
+			self.parent.rightOperand = self.text
+		
 			
 	def parsePairNode(self):
 		
@@ -512,6 +527,7 @@ class Node:
 
 		if self.nodeType == "const": return
 		if self.nodeType == "literally": return
+		if self.nodeType == "atomic": return
 		
 		if self.nodeType == "data":
 			self.createInstruction(
@@ -606,8 +622,8 @@ if __name__ == '__main__':
 
 		root = Node()
 		root.processFile( sys.argv[1] )
-		#root.dump()
-		#print("--")
+		root.dump()
+		print("--")
 		print( root.render() ,end="")
 
 	except KeyboardInterrupt:
