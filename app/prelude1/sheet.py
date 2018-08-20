@@ -2,6 +2,7 @@
 
 import sys
 sys.dont_write_bytecode = True
+import os
 
 
 class Prelude1:
@@ -16,6 +17,8 @@ class Prelude1:
 		self.endRaw = self.convertTextToRaw(self.endText)
 		self.codaRaw = self.convertTextToRaw(self.codaText)
 
+		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseRaw,24)
+
 		self.dump()		
 
 
@@ -29,44 +32,13 @@ class Prelude1:
 			v = self.baseText[i]
 			v += ":"
 			v += str(self.baseRaw[i])
-			v = v.rjust(7) + " "
+			v = v.rjust(8)
 
-			print(v,end="")
+			d = self.deltaPrevLine[i]
+			if d > 0: d = "+" + str(d)
+			d = str(d).rjust(3)
 
-
-	def convertTextToRaw(self,textArray):
-
-		result = []
-		for text in textArray:
-
-			note = text[:-1]
-			octave = text[-1:]
-
-			value = (int(octave) - 1) * 12
-			value += self.note2value(note)
-
-			result.append(value)
-		
-		return result		
-
-
-	def note2value(self,note):
-
-		if note == "c": return 0
-		elif note == "cis": return 1
-		elif note == "d": return 2
-		elif note == "dis": return 3
-		elif note == "e": return 4
-		elif note == "f": return 5
-		elif note == "fis": return 6
-		elif note == "g": return 7
-		elif note == "gis": return 8
-		elif note == "a": return 9
-		elif note == "ais": return 10
-		elif note == "h": return 11
-
-		print("bad note: " + note)
-		quit()
+			print(v,d,end="")
 
 
 	def fillTextData(self):
@@ -132,7 +104,58 @@ class Prelude1:
 		]
 
 
-import os
+	def convertTextToRaw(self,textArray):
+
+		result = []
+		for text in textArray:
+
+			note = text[:-1]
+			octave = text[-1:]
+
+			value = (int(octave) - 1) * 12
+			value += self.note2value(note)
+
+			result.append(value)
+		
+		return result		
+
+
+	def note2value(self,note):
+
+		if note == "c": return 0
+		elif note == "cis": return 1
+		elif note == "d": return 2
+		elif note == "dis": return 3
+		elif note == "e": return 4
+		elif note == "f": return 5
+		elif note == "fis": return 6
+		elif note == "g": return 7
+		elif note == "gis": return 8
+		elif note == "a": return 9
+		elif note == "ais": return 10
+		elif note == "h": return 11
+
+		print("bad note: " + note)
+		quit()
+
+
+	def calcDeltaPrevLine(self,raw,base):
+
+		result = []
+
+		for i in range(0,len(raw)):
+			v = raw[i]
+
+			if i < 5:
+				delta = v - base
+			else:
+				delta = v - raw[i - 5]
+
+			result.append(delta)
+
+		return result
+
+
 if __name__ == '__main__':
 
 	try: 
