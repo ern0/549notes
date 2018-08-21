@@ -3,6 +3,8 @@
 import sys
 sys.dont_write_bytecode = True
 import os
+from collections import OrderedDict
+from operator import itemgetter  
 
 
 class Prelude1:
@@ -17,12 +19,55 @@ class Prelude1:
 		self.endRaw = self.convertTextToRaw(self.endText)
 		self.codaRaw = self.convertTextToRaw(self.codaText)
 
-		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseRaw,24)
+		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseRaw)
+		self.baseCount = self.countValues(self.baseRaw)
+		self.deltaCount = self.countValues(self.deltaPrevLine)
 
-		self.dump()		
+		self.dumpScore()		
+		self.dumpFrequency(self.baseCount,"raw base",False)
+		self.dumpFrequency(self.deltaCount,"delta base",True)
 
 
-	def dump(self):
+	def dumpFrequency(self,values,title,isDelta):
+
+		print(title + ":",len(values))
+
+		# sort by values
+		values = OrderedDict(
+			sorted(values.items(),
+			key = itemgetter(1),
+			reverse = True)
+		)
+
+		for i in values:
+			
+			v = values[i]
+			
+			if isDelta and i > 0: pl = "+"
+			else: pl = ""
+			
+			print(
+				str(pl + str(i)).rjust(4) + ":" + str(v).rjust(3)
+				,end="  "
+			)
+			
+			for bar in range(0,v):
+				print("#",end="")
+			
+			print()
+
+
+	def countValues(self,values):
+
+		result = {}
+		for value in values:
+			try: result[value] += 1
+			except: result[value] = 1
+
+		return result
+
+
+	def dumpScore(self):
 
 		for i in range(0,len(self.baseText)):
 
@@ -34,11 +79,16 @@ class Prelude1:
 			v += str(self.baseRaw[i])
 			v = v.rjust(8)
 
-			d = self.deltaPrevLine[i]
-			if d > 0: d = "+" + str(d)
+			if i < 5:
+				d = "--"
+			else:
+				d = self.deltaPrevLine[i - 5]
+				if d > 0: d = "+" + str(d)
 			d = str(d).rjust(3)
 
 			print(v,d,end="")
+
+		print("")
 
 
 	def fillTextData(self):
@@ -139,7 +189,7 @@ class Prelude1:
 		quit()
 
 
-	def calcDeltaPrevLine(self,raw,base):
+	def calcDeltaPrevLine(self,raw):
 
 		result = []
 
@@ -147,7 +197,7 @@ class Prelude1:
 			v = raw[i]
 
 			if i < 5:
-				delta = v - base
+				continue
 			else:
 				delta = v - raw[i - 5]
 
