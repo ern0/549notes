@@ -4,7 +4,7 @@ import sys
 sys.dont_write_bytecode = True
 import os
 from collections import OrderedDict
-from operator import itemgetter  
+from operator import itemgetter
 
 
 class Prelude1:
@@ -12,20 +12,43 @@ class Prelude1:
 
 	def main(self):
 
-
 		self.fillTextData()
 
 		self.baseRaw = self.convertTextToRaw(self.baseText)
 		self.endRaw = self.convertTextToRaw(self.endText)
 		self.codaRaw = self.convertTextToRaw(self.codaText)
 
-		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseRaw)
-		self.baseCount = self.countValues(self.baseRaw)
+		self.nullMapping = self.createNullMapping(200)
+		self.sortedMapping = self.createMapping()
+
+		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseCompressed)
+		self.baseCount = self.countValues(self.baseCompressed)
 		self.deltaCount = self.countValues(self.deltaPrevLine)
 
-		self.dumpScore()		
-		self.dumpFrequency(self.baseCount,"raw base",False)
-		self.dumpFrequency(self.deltaCount,"delta base",True)
+		self.dumpScore(self.nullMapping)
+		self.dumpFrequency(self.baseCount,"compressed base",False)
+		self.dumpFrequency(self.deltaCount,"compressed base",True)
+
+
+	def createNullMapping(self,count):
+
+		mapping = []
+		for i in range(0,count): mapping[i] = i
+
+		return mapping
+
+
+	def compress(self,values):
+
+		used = {}
+		for v in values:
+			try: used[v] += 1
+			except: used[v] = 1
+
+		used = sorted(used)
+
+		print(used)
+		os._exit(0)
 
 
 	def dumpFrequency(self,values,title,isDelta):
@@ -40,34 +63,24 @@ class Prelude1:
 		)
 
 		for i in values:
-			
+
 			v = values[i]
-			
+
 			if isDelta and i > 0: pl = "+"
 			else: pl = ""
-			
+
 			print(
 				str(pl + str(i)).rjust(4) + ":" + str(v).rjust(3)
 				,end="  "
 			)
-			
+
 			for bar in range(0,v):
 				print("#",end="")
-			
+
 			print()
 
 
-	def countValues(self,values):
-
-		result = {}
-		for value in values:
-			try: result[value] += 1
-			except: result[value] = 1
-
-		return result
-
-
-	def dumpScore(self):
+	def dumpScore(self,mapping):
 
 		for i in range(0,len(self.baseText)):
 
@@ -119,7 +132,7 @@ class Prelude1:
 			"d2","f2","a2","c3","f3",
 			"g1","d2","g2","h2","f3",
 			"c2","e2","g2","c3","e3",
-		
+
 			"c2","g2","ais2","c3","e3",
 			"f1","f2","a2","c3","e3",
 			"fis1","c2","a2","c3","e3",
@@ -133,19 +146,19 @@ class Prelude1:
 			"g1","dis2","a2","c3","fis3",
 			"g1","e2","g2","c3","g3",
 			"g1","d2","g2","c3","f3",
-			"g1","d2","g2","h3","f3",
+			"g1","d2","g2","h3","f3"
 
-			"c1","c2","g2","ais2","e3",
 		]
 
 		self.endText = [
 
+			"c1","c2","g2","ais2","e3","g2","ais2","g2",
 			"c1","c2","f2","a2","c3","f3","c3","a2",
 			"c3","a2","f2","a2","f2","d2","f2","d2",
 			"c1","h1","g3","h3","d4","f4","d4","h3",
 			"d4","h3","g3","h3","d3","f3","e3","d3",
 
-			"c1"
+			"c2"
 
 		]
 
@@ -166,8 +179,8 @@ class Prelude1:
 			value += self.note2value(note)
 
 			result.append(value)
-		
-		return result		
+
+		return result
 
 
 	def note2value(self,note):
@@ -206,9 +219,19 @@ class Prelude1:
 		return result
 
 
+	def countValues(self,values):
+
+		result = {}
+		for value in values:
+			try: result[value] += 1
+			except: result[value] = 1
+
+		return result
+
+
 if __name__ == '__main__':
 
-	try: 
+	try:
 
 		sheet = Prelude1()
 		sheet.main()
