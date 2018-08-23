@@ -14,6 +14,12 @@ class Prelude1:
 
 		(self.part1Text,self.part2Text,self.codaText) = self.fillTextData()
 		self.part1Score = self.convertTextToRaw(self.part1Text)
+		self.part2Score = self.convertTextToRaw(self.part2Text)
+		self.codaScore = self.convertTextToRaw(self.codaText)
+
+		print( self.part1Score )
+
+		quit()
 
 		self.endRaw = self.convertTextToRaw(self.endText)
 		self.codaRaw = self.convertTextToRaw(self.codaText)
