@@ -1,4 +1,5 @@
 #!/bin/bash
 clear
 
-./sheet.py
+./sheet.py sheet.inc
+cat sheet.inc

@@ -6,34 +6,10 @@ import os
 from collections import OrderedDict
 from operator import itemgetter
 
-
 class Prelude1:
 
 
-	def main(self):
-
-		(self.part1Text,self.part2Text,self.codaText) = self.fillTextData()
-		self.part1Score = self.convertTextToRaw(self.part1Text)
-		self.part2Score = self.convertTextToRaw(self.part2Text)
-		self.codaScore = self.convertTextToRaw(self.codaText)
-
-		print( self.part1Score )
-
-		quit()
-
-		self.endRaw = self.convertTextToRaw(self.endText)
-		self.codaRaw = self.convertTextToRaw(self.codaText)
-
-		self.nullMapping = self.createNullMapping(200)
-		self.sortedMapping = self.createMapping()
-
-		self.deltaPrevLine = self.calcDeltaPrevLine(self.baseCompressed)
-		self.baseCount = self.countValues(self.baseCompressed)
-		self.deltaCount = self.countValues(self.deltaPrevLine)
-
-		self.dumpScore(self.nullMapping)
-		self.dumpFrequency(self.baseCount,"compressed base",False)
-		self.dumpFrequency(self.deltaCount,"compressed base",True)
+########################################################################
 
 
 	def fillTextData(self):
@@ -90,8 +66,6 @@ class Prelude1:
 			"c1","h1","g3","h3","d4","f4","d4","h3",
 			"d4","h3","g3","h3","d3","f3","e3","d3",
 
-			"c2"
-
 		]
 
 		coda = [
@@ -101,6 +75,85 @@ class Prelude1:
 		return (part1,part2,coda)
 
 
+########################################################################
+
+
+	def __init__(self):
+		self.lines = []
+
+
+	def saveFile(self):
+
+		with open(sys.argv[1],"w+") as f:
+			for line in self.lines:
+				f.write(line + "\n")
+
+
+	def renderLine(self,line = ""):
+
+		self.lines.append(line)
+
+
+	def renderConst(self,name,value,comment):
+
+		self.renderLine(
+			"score_"
+			+ name
+			+ (7 - len(name)) * " "
+			+ " = "
+			+ str(value)
+			+ (5 - len(str(value))) * " "
+			+ " ; "
+			+ comment
+		)
+
+
+	def renderComment(self,*kwargs):
+
+		line = ""
+		for arg in kwargs:
+			if line != "": line += " "
+			line += str(arg)
+
+		self.renderLine("; " + line)
+
+
+	def convertTextToRaw(self,textArray):
+
+		result = []
+		for text in textArray:
+
+			note = text[:-1]
+			octave = text[-1:]
+
+			value = (int(octave) - 1) * 12
+			value += self.convertNoteToRaw(note)
+
+			result.append(value)
+
+		return result
+
+
+	def convertNoteToRaw(self,note):
+
+		if note == "c": return 0
+		elif note == "cis": return 1
+		elif note == "d": return 2
+		elif note == "dis": return 3
+		elif note == "e": return 4
+		elif note == "f": return 5
+		elif note == "fis": return 6
+		elif note == "g": return 7
+		elif note == "gis": return 8
+		elif note == "a": return 9
+		elif note == "ais": return 10
+		elif note == "h": return 11
+
+		print("bad note: " + note)
+		quit()
+
+
+########################################################################
 
 
 	def createNullMapping(self,count):
@@ -177,42 +230,6 @@ class Prelude1:
 		print("")
 
 
-
-	def convertTextToRaw(self,textArray):
-
-		result = []
-		for text in textArray:
-
-			note = text[:-1]
-			octave = text[-1:]
-
-			value = (int(octave) - 1) * 12
-			value += self.note2value(note)
-
-			result.append(value)
-
-		return result
-
-
-	def note2value(self,note):
-
-		if note == "c": return 0
-		elif note == "cis": return 1
-		elif note == "d": return 2
-		elif note == "dis": return 3
-		elif note == "e": return 4
-		elif note == "f": return 5
-		elif note == "fis": return 6
-		elif note == "g": return 7
-		elif note == "gis": return 8
-		elif note == "a": return 9
-		elif note == "ais": return 10
-		elif note == "h": return 11
-
-		print("bad note: " + note)
-		quit()
-
-
 	def calcDeltaPrevLine(self,raw):
 
 		result = []
@@ -230,7 +247,10 @@ class Prelude1:
 		return result
 
 
-	def countValues(self,values):
+########################################################################
+
+
+	def countOccurrences(self,values):
 
 		result = {}
 		for value in values:
@@ -238,6 +258,67 @@ class Prelude1:
 			except: result[value] = 1
 
 		return result
+
+
+	def renderHistogram(self,data,orderBy = "value"):
+
+		occurrences = self.countOccurrences(data)
+
+		if orderBy == "value":
+			ig = 0
+			rv = False
+		elif orderBy == "count":
+			ig = 1
+			rv = True
+		else:
+			quit()
+
+		occurrences = OrderedDict(
+			sorted(occurrences.items(),
+			key = itemgetter(ig),
+			reverse = rv)
+		)
+
+		for value in occurrences:
+			count = occurrences[value]
+			print(value,count)
+
+
+
+########################################################################
+
+
+	def renderConstants(self):
+
+		p1rs = len(self.part1ScoreRaw)
+		p1es = int(p1rs / 5) * 8
+		self.renderConst("p1rs",p1rs,"part1 number of real data notes")
+		self.renderConst("p1es",p1es,"part1 number of effective notes")
+
+		p2s = len(self.part2ScoreRaw)
+		self.renderConst("p2s",p2s,"part2 number of notes")
+
+
+	def main(self):
+
+		(self.part1Text,self.part2Text,self.codaText) = self.fillTextData()
+
+		self.part1ScoreRaw = self.convertTextToRaw(self.part1Text)
+		self.part2ScoreRaw = self.convertTextToRaw(self.part2Text)
+		self.codaScoreRaw = self.convertTextToRaw(self.codaText)
+
+		self.renderComment("*** generated file, do not edit ***")
+		self.renderLine()
+
+		self.renderConstants()
+		self.renderLine()
+
+		self.renderHistogram(self.part1ScoreRaw,orderBy = "value")
+		self.renderLine()
+
+		#...
+
+		self.saveFile()
 
 
 if __name__ == '__main__':
