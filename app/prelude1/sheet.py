@@ -8,13 +8,14 @@ from operator import itemgetter
 
 class Prelude1:
 
+	WIDTH = 60
 
 ########################################################################
 
 
 	def fillTextData(self):
 
-		part1 = [
+		self.part1Text = [
 
 			"c3","e3","g3","c4","e4",
 			"c3","d3","a3","d4","f4",
@@ -55,10 +56,10 @@ class Prelude1:
 			"g1","e2","g2","c3","g3",
 			"g1","d2","g2","c3","f3",
 			"g1","d2","g2","h3","f3"
-
+		
 		]
 
-		part2 = [
+		self.part2Text = [
 
 			"c1","c2","g2","ais2","e3","g2","ais2","g2",
 			"c1","c2","f2","a2","c3","f3","c3","a2",
@@ -68,11 +69,20 @@ class Prelude1:
 
 		]
 
-		coda = [
+		self.codaText = [
 			"c1","c2","e3","g3","c4"
 		]
 
-		return (part1,part2,coda)
+
+	def combineTextData(self):
+
+		self.comboText = []
+
+		for note in self.part1Text:
+			self.comboText.append(note)
+
+		for note in self.part2Text:
+			self.comboText.append(note)
 
 
 ########################################################################
@@ -118,6 +128,53 @@ class Prelude1:
 		self.renderLine("; " + line)
 
 
+	def renderCommentHeader(self,text,char = "-",emptyLine = True):
+
+		line = char * 4
+		line += " "
+		line += text
+		line += " "
+		line += (self.WIDTH - len(line)) * char
+
+		self.renderComment(line)
+		if emptyLine: self.renderComment()
+
+
+	def renderNotes(self,datas,isComment = True):
+
+		itemsInLine = 5
+		line = None
+
+		for i in range(0,self.comboLength):
+
+			if i % itemsInLine == 0 and line is not None:
+				self.renderLine(line)
+				line = None
+
+			if line is None:
+				if isComment: line = "; "
+				else: line = "    db "
+
+			line += self.renderNote(datas,i,isComment)
+
+			if i == self.part1Length: itemsInLine = 8
+
+		if line != "": self.renderLine(line)
+
+
+	def renderNote(self,datas,index,isComment):
+
+		item = ""
+
+		if isComment: 
+			noteText = self.comboText[index]
+			if len(noteText) < 4: noteText = " " + noteText + " "
+			item += noteText + " "
+
+		return str(index) + " "
+
+
+
 	def convertTextToRaw(self,textArray):
 
 		result = []
@@ -153,103 +210,6 @@ class Prelude1:
 		quit()
 
 
-########################################################################
-
-
-	def createNullMapping(self,count):
-
-		mapping = []
-		for i in range(0,count): mapping[i] = i
-
-		return mapping
-
-
-	def compress(self,values):
-
-		used = {}
-		for v in values:
-			try: used[v] += 1
-			except: used[v] = 1
-
-		used = sorted(used)
-
-		print(used)
-		os._exit(0)
-
-
-	def dumpFrequency(self,values,title,isDelta):
-
-		print(title + ":",len(values))
-
-		# sort by values
-		values = OrderedDict(
-			sorted(values.items(),
-			key = itemgetter(1),
-			reverse = True)
-		)
-
-		for i in values:
-
-			v = values[i]
-
-			if isDelta and i > 0: pl = "+"
-			else: pl = ""
-
-			print(
-				str(pl + str(i)).rjust(4) + ":" + str(v).rjust(3)
-				,end="  "
-			)
-
-			for bar in range(0,v):
-				print("#",end="")
-
-			print()
-
-
-	def dumpScore(self,mapping):
-
-		for i in range(0,len(self.baseText)):
-
-			if i > 0 and i % 5 == 0: print("")
-			if i > 0 and i % 20 == 0: print("")
-
-			v = self.baseText[i]
-			v += ":"
-			v += str(self.baseRaw[i])
-			v = v.rjust(8)
-
-			if i < 5:
-				d = "--"
-			else:
-				d = self.deltaPrevLine[i - 5]
-				if d > 0: d = "+" + str(d)
-			d = str(d).rjust(3)
-
-			print(v,d,end="")
-
-		print("")
-
-
-	def calcDeltaPrevLine(self,raw):
-
-		result = []
-
-		for i in range(0,len(raw)):
-			v = raw[i]
-
-			if i < 5:
-				continue
-			else:
-				delta = v - raw[i - 5]
-
-			result.append(delta)
-
-		return result
-
-
-########################################################################
-
-
 	def countOccurrences(self,values):
 
 		result = {}
@@ -281,8 +241,26 @@ class Prelude1:
 
 		for value in occurrences:
 			count = occurrences[value]
-			print(value,count)
 
+			line = str(value).rjust(2)
+			line += ":"
+			line += str(count).rjust(3)
+			line += "  "
+			line += "#" * count
+			self.renderComment(line)
+
+
+	def calcDiff(self,rawNotes,distance):
+
+		diffs = []
+
+		for i in range(0,len(rawNotes)):
+			if i < distance: continue
+
+			diff = rawNotes[i] - rawNotes[i - distance]
+			diffs.append(diff)
+
+		return diffs
 
 
 ########################################################################
@@ -290,35 +268,88 @@ class Prelude1:
 
 	def renderConstants(self):
 
-		p1rs = len(self.part1ScoreRaw)
-		p1es = int(p1rs / 5) * 8
-		self.renderConst("p1rs",p1rs,"part1 number of real data notes")
-		self.renderConst("p1es",p1es,"part1 number of effective notes")
+		self.renderComment("Transformed score data and analysis of")
+		self.renderComment(" J.S.Bach: Prelude in C major, BWV 846")
+		self.renderComment(" from the Prelude and Fugue in C major, BWV 846")
+		self.renderComment(" from Book I of The Well-Tempered Clavier")
+		self.renderComment("for PC-DOS 256-byte intro")
+		self.renderLine()
 
-		p2s = len(self.part2ScoreRaw)
-		self.renderConst("p2s",p2s,"part2 number of notes")
+		self.renderComment("part1 (p1): A B C D E [A B C] 5x32 notes")
+		self.renderComment("part2 (p2): A B C D E  F G H  8x5 notes")
+		self.renderComment("combo (c): part1+part2")
+		self.renderComment("coda: last 5 notes")
+		self.renderLine()
+
+		self.renderConst("p1_data",self.part1Length,"part1 number of data notes")
+		self.renderConst("p1_eff",self.part1EffectiveLength,"part1 number of effective notes")
+
+		self.renderConst("p2_data",self.part2Length,"part2 number of notes")
+
+		self.renderConst("c_data",self.comboLength,"combo number of data notes")
+		self.renderConst("c_eff",self.comboEffectiveLength,"combo number of effective notes")
 
 
-	def main(self):
+	def calcStuff(self):
 
-		(self.part1Text,self.part2Text,self.codaText) = self.fillTextData()
+		self.part1RawNotes = self.convertTextToRaw(self.part1Text)
+		self.part2RawNotes = self.convertTextToRaw(self.part2Text)
+		self.codaRawNotes = self.convertTextToRaw(self.codaText)
+		self.comboRawNotes = self.convertTextToRaw(self.comboText)
 
-		self.part1ScoreRaw = self.convertTextToRaw(self.part1Text)
-		self.part2ScoreRaw = self.convertTextToRaw(self.part2Text)
-		self.codaScoreRaw = self.convertTextToRaw(self.codaText)
+		self.part1Length = len(self.part1RawNotes)
+		self.part1EffectiveLength = int(self.part1Length / 5) * 8
+		self.part2Length = len(self.part2RawNotes)
+		self.comboLength = self.part1Length + self.part2Length		
+		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
-		self.renderComment("*** generated file, do not edit ***")
+		#...
+
+
+
+	def renderStuff(self):
+
+		self.renderCommentHeader("generated file, do not edit","*",False)
 		self.renderLine()
 
 		self.renderConstants()
 		self.renderLine()
 
-		self.renderHistogram(self.part1ScoreRaw,orderBy = "value")
+		self.renderComment(
+			"raw note set:"
+			,len( self.countOccurrences(self.comboRawNotes) )
+		) 
 		self.renderLine()
+
+		self.renderCommentHeader("combo raw note histogram")
+		self.renderHistogram(self.comboRawNotes,orderBy = "value")
+		self.renderLine()
+
+		self.renderCommentHeader("combo raw note histogram")
+		self.renderHistogram(self.comboRawNotes,orderBy = "count")
+		self.renderLine()
+
+		self.renderNotes(
+			(self.comboRawNotes,self.comboRawNotes),
+			isComment = True
+		)
 
 		#...
 
+
+
+	def main(self):
+
+		self.fillTextData()
+		self.combineTextData()
+
+		self.calcStuff()
+		self.renderStuff()
 		self.saveFile()
+
+
+########################################################################
+
 
 
 if __name__ == '__main__':
