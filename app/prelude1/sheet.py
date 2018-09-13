@@ -421,9 +421,7 @@ class Prelude1:
 		)
 
 
-	def renderDiffs(self):
-
-		diffs = (1,2,5,)
+	def renderDiffs(self,diffs):
 
 		for diff in diffs:
 
@@ -459,7 +457,7 @@ class Prelude1:
 
 		#self.renderConstants()
 		#self.renderBasics()
-		self.renderDiffs()
+		self.renderDiffs( (1,4,5,10) )
 
 		self.saveFile()
 
