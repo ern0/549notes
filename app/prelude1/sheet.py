@@ -251,19 +251,50 @@ class Prelude1:
 		quit()
 
 
+	def convertRawToNote(self,raw):
+
+		octave = int(raw / 12)
+		value = raw % 12
+		note = None
+
+		if value == 0: note = "c-"
+		elif value == 1: note = "c#"
+		elif value == 2: note = "d-"
+		elif value == 3: note = "d#"
+		elif value == 4: note = "e-"
+		elif value == 5: note = "f-"
+		elif value == 6: note = "f#"
+		elif value == 7: note = "g-"
+		elif value == 8: note = "g#"
+		elif value == 9: note = "a-"
+		elif value == 10: note = "a$"
+		elif value == 11: note = "h-"
+
+		if note is None: 
+			print("bad raw: " + raw)
+			quit()
+
+		return note + str(octave)
+
+
 	def countOccurrences(self,values):
 
 		result = {}
 		for value in values:
+			
+			if value is None: continue
+
 			try: result[value] += 1
 			except: result[value] = 1
 
 		return result
 
 
-	def renderHistogram(self,data,orderBy = "value",isNote = False):
+	def renderHistogram(self,header,data,orderBy = "value",isNote = False):
 
 		occurrences = self.countOccurrences(data)
+
+		self.renderHeader(header + " (" + str(len(occurrences)) + " values)")
 
 		if orderBy == "value":
 			ig = 0
@@ -285,7 +316,7 @@ class Prelude1:
 			line = ""
 
 			if isNote:
-				line += self.comboText[value]
+				line += self.convertRawToNote(value)
 				line += ":"
 				line += self.renderFormatted(value) 
 				line += " "
@@ -298,15 +329,20 @@ class Prelude1:
 			line += "#" * count
 			self.renderComment(line)
 
+		self.renderLine()
+
 
 	def calcDiff(self,rawNotes,distance):
 
 		diffs = []
 
 		for i in range(0,len(rawNotes)):
-			if i < distance: continue
 
-			diff = rawNotes[i] - rawNotes[i - distance]
+			if i < distance: 
+				diff = None
+			else:
+				diff = rawNotes[i] - rawNotes[i - distance]
+
 			diffs.append(diff)
 
 		return diffs
@@ -354,8 +390,7 @@ class Prelude1:
 		self.comboLength = self.part1Length + self.part2Length
 		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
-		#...
-
+		self.comboDiff1Notes = self.calcDiff(self.comboRawNotes,1)
 
 
 	def renderStuff(self):
@@ -366,30 +401,48 @@ class Prelude1:
 		self.renderConstants()
 		self.renderLine()
 
-		self.renderComment(
-			"number of different raw notes:"
-			,len( self.countOccurrences(self.comboRawNotes) )
+		self.renderHistogram(
+			"combo raw note histogram",
+			self.comboRawNotes,
+			orderBy = "value",
+			isNote = True
 		)
-		self.renderLine()
 
-		self.renderHeader("combo raw note histogram")
-		self.renderHistogram(self.comboRawNotes,orderBy = "value",isNote = True)
-		self.renderLine()
+		self.renderHistogram(
+			"combo raw note histogram",
+			self.comboRawNotes,
+			orderBy = "count",
+			isNote = True
+		)
 
-		self.renderHeader("combo raw note histogram")
-		self.renderHistogram(self.comboRawNotes,orderBy = "count",isNote = True)
-		self.renderLine()
-
-		self.comboRawNotes[0] = None
 		self.renderHeader("raw notes")
 		self.renderNotes(
-			(self.comboRawNotes,self.comboRawNotes),
+			(self.comboRawNotes,),
 			isSigned = (False,True),
-			isComment = True,
+			isComment = True
+		)
+		self.renderLine()
+
+		self.renderHeader("combo diff-1 notes")
+		self.renderNotes(
+			(self.comboRawNotes,self.comboDiff1Notes),
+			isSigned = (False,True),
+			isComment = True
+		)
+		self.renderLine()
+
+		self.renderHistogram(
+			"combo diff-1 note histogram",
+			self.comboDiff1Notes,orderBy = "value",
+			isNote = False
 		)
 
-		#...
-
+		self.renderHistogram(
+			"combo diff-1 note histogram",
+			self.comboDiff1Notes,
+			orderBy = "count",
+			isNote = False
+		)
 
 
 	def main(self):
