@@ -56,7 +56,7 @@ class Prelude1:
 			"g1","e2","g2","c3","g3",
 			"g1","d2","g2","c3","f3",
 			"g1","d2","g2","h3","f3"
-		
+
 		]
 
 		self.part2Text = [
@@ -144,14 +144,21 @@ class Prelude1:
 
 		itemsInLine = 5
 		line = None
+		lineCounter = 0
 
 		for i in range(0,self.comboLength):
 
 			if i % itemsInLine == 0 and line is not None:
+
+				if itemsInLine == 5 and isComment: line += " (...)"
 				self.renderLine(line)
 				line = None
 
+				lineCounter += 1
+				if lineCounter % 4 == 0 and lineCounter < 9 * 4: self.renderComment()
+
 			if line is None:
+
 				if isComment: line = "; "
 				else: line = "    db "
 
@@ -159,20 +166,18 @@ class Prelude1:
 
 			if i == self.part1Length: itemsInLine = 8
 
-		if line != "": self.renderLine(line)
 
 
 	def renderNote(self,datas,index,isComment):
 
 		item = ""
 
-		if isComment: 
+		if isComment:
 			noteText = self.comboText[index]
 			if len(noteText) < 4: noteText = " " + noteText + " "
 			item += noteText + " "
 
-		return str(index) + " "
-
+		return item
 
 
 	def convertTextToRaw(self,textArray):
@@ -300,7 +305,7 @@ class Prelude1:
 		self.part1Length = len(self.part1RawNotes)
 		self.part1EffectiveLength = int(self.part1Length / 5) * 8
 		self.part2Length = len(self.part2RawNotes)
-		self.comboLength = self.part1Length + self.part2Length		
+		self.comboLength = self.part1Length + self.part2Length
 		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
 		#...
@@ -318,7 +323,7 @@ class Prelude1:
 		self.renderComment(
 			"raw note set:"
 			,len( self.countOccurrences(self.comboRawNotes) )
-		) 
+		)
 		self.renderLine()
 
 		self.renderCommentHeader("combo raw note histogram")
@@ -329,6 +334,7 @@ class Prelude1:
 		self.renderHistogram(self.comboRawNotes,orderBy = "count")
 		self.renderLine()
 
+		self.renderHeader("raw notes")
 		self.renderNotes(
 			(self.comboRawNotes,self.comboRawNotes),
 			isComment = True
