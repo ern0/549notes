@@ -2,4 +2,4 @@
 clear
 
 ./sheet.py sheet.inc
-cat sheet.inc
+#cat sheet.inc

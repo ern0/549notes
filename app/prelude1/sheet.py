@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#!/usr/bin/env python3
 
 import sys
 sys.dont_write_bytecode = True
@@ -17,60 +18,60 @@ class Prelude1:
 
 		self.part1Text = [
 
-			"c3","e3","g3","c4","e4",
-			"c3","d3","a3","d4","f4",
-			"h2","d3","g3","d4","f4",
-			"c3","e3","g3","c4","e4",
+			"c-3","e-3","g-3","c-4","e-4",
+			"c-3","d-3","a-3","d-4","f-4",
+			"h-2","d-3","g-3","d-4","f-4",
+			"c-3","e-3","g-3","c-4","e-4",
 
-			"c3","e3","a3","e4","a4",
-			"c3","d3","fis3","a3","d4",
-			"h2","d3","g3","d4","g4",
-			"h2","c4","e3","g3","c4",
+			"c-3","e-3","a-3","e-4","a-4",
+			"c-3","d-3","f#3","a-3","d-4",
+			"h-2","d-3","g-3","d-4","g-4",
+			"h-2","c-4","e-3","g-3","c-4",
 
-			"a2","c3","e3","g3","c4",
-			"d2","a2","d3","fis3","c4",
-			"g2","h2","d3","g3","h3",
-			"g2","ais2","e3","g3","cis4",
+			"a-2","c-3","e-3","g-3","c-4",
+			"d-2","a-2","d-3","f#3","c-4",
+			"g-2","h-2","d-3","g-3","h-3",
+			"g-2","a#2","e-3","g-3","c#4",
 
-			"f2","a2","d3","a3","d4",
-			"f2","gis2","d3","f3","h3",
-			"e2","g2","c3","g3","c4",
-			"e2","f2","a2","c3","f3",
+			"f-2","a-2","d-3","a-3","d-4",
+			"f-2","g#2","d-3","f-3","h-3",
+			"e-2","g-2","c-3","g-3","c-4",
+			"e-2","f-2","a-2","c-3","f-3",
 
-			"d2","f2","a2","c3","f3",
-			"d2","f2","a2","c3","f3",
-			"g1","d2","g2","h2","f3",
-			"c2","e2","g2","c3","e3",
+			"d-2","f-2","a-2","c-3","f-3",
+			"d-2","f-2","a-2","c-3","f-3",
+			"g-1","d-2","g-2","h-2","f-3",
+			"c-2","e-2","g-2","c-3","e-3",
 
-			"c2","g2","ais2","c3","e3",
-			"f1","f2","a2","c3","e3",
-			"fis1","c2","a2","c3","e3",
-			"gis1","f2","h2","c3","d3",
+			"c-2","g-2","a#2","c-3","e-3",
+			"f-1","f-2","a-2","c-3","e-3",
+			"f#1","c-2","a-2","c-3","e-3",
+			"g#1","f-2","h-2","c-3","d-3",
 
-			"g1","f2","g2","h2","d3",
-			"g1","e2","g2","c3","e3",
-			"g1","d2","g2","c3","f3",
-			"g1","d2","g2","h3","f3",
+			"g-1","f-2","g-2","h-2","d-3",
+			"g-1","e-2","g-2","c-3","e-3",
+			"g-1","d-2","g-2","c-3","f-3",
+			"g-1","d-2","g-2","h-3","f-3",
 
-			"g1","dis2","a2","c3","fis3",
-			"g1","e2","g2","c3","g3",
-			"g1","d2","g2","c3","f3",
-			"g1","d2","g2","h3","f3"
+			"g-1","d#2","a-2","c-3","f#3",
+			"g-1","e-2","g-2","c-3","g-3",
+			"g-1","d-2","g-2","c-3","f-3",
+			"g-1","d-2","g-2","h-3","f-3"
 
 		]
 
 		self.part2Text = [
 
-			"c1","c2","g2","ais2","e3","g2","ais2","g2",
-			"c1","c2","f2","a2","c3","f3","c3","a2",
-			"c3","a2","f2","a2","f2","d2","f2","d2",
-			"c1","h1","g3","h3","d4","f4","d4","h3",
-			"d4","h3","g3","h3","d3","f3","e3","d3",
+			"c-1","c-2","g-2","a#2","e-3","g-2","a#2","g-2",
+			"c-1","c-2","f-2","a-2","c-3","f-3","c-3","a-2",
+			"c-3","a-2","f-2","a-2","f-2","d-2","f-2","d-2",
+			"c-1","h-1","g-3","h-3","d-4","f-4","d-4","h-3",
+			"d-4","h-3","g-3","h-3","d-3","f-3","e-3","d-3",
 
 		]
 
 		self.codaText = [
-			"c1","c2","e3","g3","c4"
+			"c-1","c-2","e-3","g-3","c-4"
 		]
 
 
@@ -128,7 +129,7 @@ class Prelude1:
 		self.renderLine("; " + line)
 
 
-	def renderCommentHeader(self,text,char = "-",emptyLine = True):
+	def renderHeader(self,text,char = "-",emptyLine = True):
 
 		line = char * 4
 		line += " "
@@ -140,7 +141,7 @@ class Prelude1:
 		if emptyLine: self.renderComment()
 
 
-	def renderNotes(self,datas,isComment = True):
+	def renderNotes(self,datas,isComment = True,isSigned = None):
 
 		itemsInLine = 5
 		line = None
@@ -155,29 +156,70 @@ class Prelude1:
 				line = None
 
 				lineCounter += 1
-				if lineCounter % 4 == 0 and lineCounter < 9 * 4: self.renderComment()
+				if lineCounter % 4 == 0 and lineCounter < 9 * 4:
+					if isComment: self.renderComment()
+					else: self.renderLine()
 
 			if line is None:
 
-				if isComment: line = "; "
-				else: line = "    db "
+				if isComment: line = ";"
+				else: line = "  db "
 
-			line += self.renderNote(datas,i,isComment)
+			if isComment:
+				if i % itemsInLine != 0: line += " "
+				line += " "
+
+			line += self.renderNote(datas,i,isComment,isSigned)
+
+			if not isComment:
+				if i % itemsInLine != itemsInLine - 1:
+					line += ","
 
 			if i == self.part1Length: itemsInLine = 8
 
 
+	def renderNote(self,datas,index,isComment,isSigned):
 
-	def renderNote(self,datas,index,isComment):
-
-		item = ""
+		note = ""
 
 		if isComment:
 			noteText = self.comboText[index]
-			if len(noteText) < 4: noteText = " " + noteText + " "
-			item += noteText + " "
+			note += noteText
 
-		return item
+		tupleIndex = 0
+		for data in datas:
+			value = data[index]
+
+			try: isNoteSigned = isSigned[tupleIndex]
+			except: isNoteSigned = False
+			print(isNoteSigned)
+
+			if isComment: note += ":"
+			note += self.renderFormatted(value,isComment,isNoteSigned)
+
+			if not isComment: break
+			tupleIndex += 1
+
+		return note
+
+
+	def renderFormatted(self,value,isComment,isSigned):
+
+		formatted = ""
+
+		if isSigned:
+			if value == 0: formatted = "="
+			elif value > 0: formatted = "+"
+			else:
+				formatted = "-"
+				value = -value
+
+		if isComment and value < 10: value = "0" + str(value)
+		else: value = str(value)
+
+		formatted += value
+
+		return formatted
 
 
 	def convertTextToRaw(self,textArray):
@@ -185,7 +227,7 @@ class Prelude1:
 		result = []
 		for text in textArray:
 
-			note = text[:-1]
+			note = text[0:2]
 			octave = text[-1:]
 
 			value = (int(octave) - 1) * 12
@@ -198,18 +240,18 @@ class Prelude1:
 
 	def convertNoteToRaw(self,note):
 
-		if note == "c": return 0
-		elif note == "cis": return 1
-		elif note == "d": return 2
-		elif note == "dis": return 3
-		elif note == "e": return 4
-		elif note == "f": return 5
-		elif note == "fis": return 6
-		elif note == "g": return 7
-		elif note == "gis": return 8
-		elif note == "a": return 9
-		elif note == "ais": return 10
-		elif note == "h": return 11
+		if note == "c-": return 0
+		elif note == "c#": return 1
+		elif note == "d-": return 2
+		elif note == "d#": return 3
+		elif note == "e-": return 4
+		elif note == "f-": return 5
+		elif note == "f#": return 6
+		elif note == "g-": return 7
+		elif note == "g#": return 8
+		elif note == "a-": return 9
+		elif note == "a#": return 10
+		elif note == "h-": return 11
 
 		print("bad note: " + note)
 		quit()
@@ -314,7 +356,7 @@ class Prelude1:
 
 	def renderStuff(self):
 
-		self.renderCommentHeader("generated file, do not edit","*",False)
+		self.renderHeader("generated file, do not edit","*",False)
 		self.renderLine()
 
 		self.renderConstants()
@@ -326,18 +368,19 @@ class Prelude1:
 		)
 		self.renderLine()
 
-		self.renderCommentHeader("combo raw note histogram")
+		self.renderHeader("combo raw note histogram")
 		self.renderHistogram(self.comboRawNotes,orderBy = "value")
 		self.renderLine()
 
-		self.renderCommentHeader("combo raw note histogram")
+		self.renderHeader("combo raw note histogram")
 		self.renderHistogram(self.comboRawNotes,orderBy = "count")
 		self.renderLine()
 
 		self.renderHeader("raw notes")
 		self.renderNotes(
 			(self.comboRawNotes,self.comboRawNotes),
-			isComment = True
+			isSigned = (True, False),
+			isComment = True,
 		)
 
 		#...
