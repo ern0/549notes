@@ -56,13 +56,14 @@ class Prelude1:
 			"g-1","d#2","a-2","c-3","f#3",
 			"g-1","e-2","g-2","c-3","g-3",
 			"g-1","d-2","g-2","c-3","f-3",
-			"g-1","d-2","g-2","h-3","f-3"
+			"g-1","d-2","g-2","h-3","f-3",
+
+			"c-1","c-2","g-2","a#2","e-3",
 
 		]
 
 		self.part2Text = [
 
-			"c-1","c-2","g-2","a#2","e-3","g-2","a#2","g-2",
 			"c-1","c-2","f-2","a-2","c-3","f-3","c-3","a-2",
 			"c-3","a-2","f-2","a-2","f-2","d-2","f-2","d-2",
 			"c-1","h-1","g-3","h-3","d-4","f-4","d-4","h-3",
@@ -145,23 +146,17 @@ class Prelude1:
 
 		itemsInLine = 5
 		line = None
-		lineCounter = 0
 
 		for i in range(0,self.comboLength):
 
-			if i % itemsInLine == 0 and line is not None:
+			if i == self.part1Length: itemsInLine = 8
 
+			if i % itemsInLine == 0 and line is not None:
 				if itemsInLine == 5 and isComment: line += " (...)"
 				self.renderLine(line)
 				line = None
 
-				lineCounter += 1
-				if lineCounter % 4 == 0 and lineCounter < 9 * 4:
-					if isComment: self.renderComment()
-					else: self.renderLine()
-
 			if line is None:
-
 				if isComment: line = ";"
 				else: line = "  db "
 
@@ -174,8 +169,6 @@ class Prelude1:
 			if not isComment:
 				if i % itemsInLine != itemsInLine - 1:
 					line += ","
-
-			if i == self.part1Length: itemsInLine = 8
 
 
 	def renderNote(self,datas,index,isComment,isSigned):
@@ -192,7 +185,6 @@ class Prelude1:
 
 			try: isNoteSigned = isSigned[tupleIndex]
 			except: isNoteSigned = False
-			print(isNoteSigned)
 
 			if isComment: note += ":"
 			note += self.renderFormatted(value,isComment,isNoteSigned)
@@ -322,8 +314,8 @@ class Prelude1:
 		self.renderComment("for PC-DOS 256-byte intro")
 		self.renderLine()
 
-		self.renderComment("part1 (p1): A B C D E [A B C] 5x32 notes")
-		self.renderComment("part2 (p2): A B C D E  F G H  8x5 notes")
+		self.renderComment("part1 (p1): A B C D E [A B C] 5x33 notes")
+		self.renderComment("part2 (p2): A B C D E  F G H  8x4 notes")
 		self.renderComment("combo (c): part1+part2")
 		self.renderComment("coda: last 5 notes")
 		self.renderLine()
@@ -350,6 +342,7 @@ class Prelude1:
 		self.comboLength = self.part1Length + self.part2Length
 		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
+		print(self.part1Length)
 		#...
 
 
@@ -378,8 +371,8 @@ class Prelude1:
 
 		self.renderHeader("raw notes")
 		self.renderNotes(
-			(self.comboRawNotes,self.comboRawNotes),
-			isSigned = (True, False),
+			(self.comboRawNotes,),
+			isSigned = (False,),
 			isComment = True,
 		)
 
