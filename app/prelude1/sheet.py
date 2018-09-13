@@ -152,7 +152,7 @@ class Prelude1:
 			if i == self.part1Length: itemsInLine = 8
 
 			if i % itemsInLine == 0 and line is not None:
-				if itemsInLine == 5 and isComment: line += " (...)"
+				if itemsInLine == 5 and isComment: line += "  (...)"
 				self.renderLine(line)
 				line = None
 
@@ -175,9 +175,7 @@ class Prelude1:
 
 		note = ""
 
-		if isComment:
-			noteText = self.comboText[index]
-			note += noteText
+		if isComment: note += self.comboText[index]
 
 		tupleIndex = 0
 		for data in datas:
@@ -195,7 +193,11 @@ class Prelude1:
 		return note
 
 
-	def renderFormatted(self,value,isComment,isSigned):
+	def renderFormatted(self,value,isComment = True,isSigned = False):
+
+		if value is None:
+			if isSigned: return "N/A"
+			else: return "**"
 
 		formatted = ""
 
@@ -259,7 +261,7 @@ class Prelude1:
 		return result
 
 
-	def renderHistogram(self,data,orderBy = "value"):
+	def renderHistogram(self,data,orderBy = "value",isNote = False):
 
 		occurrences = self.countOccurrences(data)
 
@@ -280,11 +282,19 @@ class Prelude1:
 
 		for value in occurrences:
 			count = occurrences[value]
+			line = ""
 
-			line = str(value).rjust(2)
-			line += ":"
+			if isNote:
+				line += self.comboText[value]
+				line += ":"
+				line += self.renderFormatted(value) 
+				line += " "
+			else:
+				line += self.renderFormatted(value,isSigned = True) 
+				line += ":"
+
 			line += str(count).rjust(3)
-			line += "  "
+			line += " "
 			line += "#" * count
 			self.renderComment(line)
 
@@ -314,9 +324,11 @@ class Prelude1:
 		self.renderComment("for PC-DOS 256-byte intro")
 		self.renderLine()
 
-		self.renderComment("part1 (p1): A B C D E [A B C] 5x33 notes")
-		self.renderComment("part2 (p2): A B C D E  F G H  8x4 notes")
-		self.renderComment("combo (c): part1+part2")
+		p1 = str( int(self.part1Length / 5) )
+		p2 = str( int(self.part2Length / 8) )
+		self.renderComment("part1: A B C D E [A B C] - " + p1 + " lines" )
+		self.renderComment("part2: A B C D E  F G H  -  " + p2 + " lines")
+		self.renderComment("combo: part1+part2")
 		self.renderComment("coda: last 5 notes")
 		self.renderLine()
 
@@ -342,7 +354,6 @@ class Prelude1:
 		self.comboLength = self.part1Length + self.part2Length
 		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
-		print(self.part1Length)
 		#...
 
 
@@ -356,23 +367,24 @@ class Prelude1:
 		self.renderLine()
 
 		self.renderComment(
-			"raw note set:"
+			"number of different raw notes:"
 			,len( self.countOccurrences(self.comboRawNotes) )
 		)
 		self.renderLine()
 
 		self.renderHeader("combo raw note histogram")
-		self.renderHistogram(self.comboRawNotes,orderBy = "value")
+		self.renderHistogram(self.comboRawNotes,orderBy = "value",isNote = True)
 		self.renderLine()
 
 		self.renderHeader("combo raw note histogram")
-		self.renderHistogram(self.comboRawNotes,orderBy = "count")
+		self.renderHistogram(self.comboRawNotes,orderBy = "count",isNote = True)
 		self.renderLine()
 
+		self.comboRawNotes[0] = None
 		self.renderHeader("raw notes")
 		self.renderNotes(
-			(self.comboRawNotes,),
-			isSigned = (False,),
+			(self.comboRawNotes,self.comboRawNotes),
+			isSigned = (False,True),
 			isComment = True,
 		)
 
