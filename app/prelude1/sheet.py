@@ -142,7 +142,9 @@ class Prelude1:
 		if emptyLine: self.renderComment()
 
 
-	def renderNotes(self,datas,isComment = True,isSigned = None):
+	def renderNotes(self,header,datas,isComment = True,isSigned = None):
+
+		self.renderHeader(header)
 
 		itemsInLine = 5
 		line = None
@@ -169,6 +171,8 @@ class Prelude1:
 			if not isComment:
 				if i % itemsInLine != itemsInLine - 1:
 					line += ","
+
+		self.renderLine()
 
 
 	def renderNote(self,datas,index,isComment,isSigned):
@@ -353,6 +357,9 @@ class Prelude1:
 
 	def renderConstants(self):
 
+		self.renderHeader("generated file, do not edit","*",False)
+		self.renderLine()
+
 		self.renderComment("Transformed score data and analysis of")
 		self.renderComment(" J.S.Bach: Prelude in C major, BWV 846")
 		self.renderComment(" from the Prelude and Fugue in C major, BWV 846")
@@ -370,14 +377,13 @@ class Prelude1:
 
 		self.renderConst("p1_data",self.part1Length,"part1 number of data notes")
 		self.renderConst("p1_eff",self.part1EffectiveLength,"part1 number of effective notes")
-
 		self.renderConst("p2_data",self.part2Length,"part2 number of notes")
-
 		self.renderConst("c_data",self.comboLength,"combo number of data notes")
 		self.renderConst("c_eff",self.comboEffectiveLength,"combo number of effective notes")
+		self.renderLine()
 
 
-	def calcStuff(self):
+	def calcBasics(self):
 
 		self.part1RawNotes = self.convertTextToRaw(self.part1Text)
 		self.part2RawNotes = self.convertTextToRaw(self.part2Text)
@@ -390,16 +396,8 @@ class Prelude1:
 		self.comboLength = self.part1Length + self.part2Length
 		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
 
-		self.comboDiff1Notes = self.calcDiff(self.comboRawNotes,1)
 
-
-	def renderStuff(self):
-
-		self.renderHeader("generated file, do not edit","*",False)
-		self.renderLine()
-
-		self.renderConstants()
-		self.renderLine()
+	def renderBasics(self):
 
 		self.renderHistogram(
 			"combo raw note histogram",
@@ -415,34 +413,41 @@ class Prelude1:
 			isNote = True
 		)
 
-		self.renderHeader("raw notes")
 		self.renderNotes(
+			"raw notes",
 			(self.comboRawNotes,),
 			isSigned = (False,True),
 			isComment = True
 		)
-		self.renderLine()
 
-		self.renderHeader("combo diff-1 notes")
-		self.renderNotes(
-			(self.comboRawNotes,self.comboDiff1Notes),
-			isSigned = (False,True),
-			isComment = True
-		)
-		self.renderLine()
 
-		self.renderHistogram(
-			"combo diff-1 note histogram",
-			self.comboDiff1Notes,orderBy = "value",
-			isNote = False
-		)
+	def renderDiffs(self):
 
-		self.renderHistogram(
-			"combo diff-1 note histogram",
-			self.comboDiff1Notes,
-			orderBy = "count",
-			isNote = False
-		)
+		diffs = (1,2,5,)
+
+		for diff in diffs:
+
+			self.comboDiffNotes = self.calcDiff(self.comboRawNotes,diff)
+
+			self.renderNotes(
+				"combo diff-" + str(diff) + " notes",
+				(self.comboRawNotes,self.comboDiffNotes),
+				isSigned = (False,True),
+				isComment = True
+			)
+
+			self.renderHistogram(
+				"combo diff-" + str(diff) + " note histogram",
+				self.comboDiffNotes,orderBy = "value",
+				isNote = False
+			)
+
+			self.renderHistogram(
+				"combo diff-" + str(diff) + " note histogram",
+				self.comboDiffNotes,
+				orderBy = "count",
+				isNote = False
+			)
 
 
 	def main(self):
@@ -450,8 +455,12 @@ class Prelude1:
 		self.fillTextData()
 		self.combineTextData()
 
-		self.calcStuff()
-		self.renderStuff()
+		self.calcBasics()
+
+		#self.renderConstants()
+		#self.renderBasics()
+		self.renderDiffs()
+
 		self.saveFile()
 
 
