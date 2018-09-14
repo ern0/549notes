@@ -8,11 +8,25 @@ from operator import itemgetter
 
 import data
 from note import Note
+from render import Render
 
 
-class Prelude1:
+class Sheet:
 
-	WIDTH = 60
+
+	def main(self):
+
+		self.createScore()
+		self.renderIntro()
+		self.render.renderScore("basic",("text","raw",))
+
+		#...
+
+		self.saveFile()
+
+
+	def __init__(self):
+		self.render = Render(self)
 
 
 	def createScore(self):
@@ -21,222 +35,65 @@ class Prelude1:
 
 		for noteText in data.part1Text:
 			note = Note(self)
-			note.setValue(noteText)
+			note.set("text",noteText)
 			self.notes.append(note)
 
 		self.splitPoint = len(self.notes)
 
 		for noteText in data.part2Text:
 			note = Note(self)
-			note.setValue(noteText)
+			note.set("text",noteText)
 			self.notes.append(note)
-
-
-	def main(self):
-
-		self.createScore()
-		for note in self.notes:
-			print(note.value)
-
-
-
-	def __init__(self):
-		self.lines = []
 
 
 	def saveFile(self):
 
 		with open(sys.argv[1],"w+") as f:
-			for line in self.lines:
+			for line in self.render.lines:
 				f.write(line + "\n")
 
 
-	def renderLine(self,line = ""):
+	def renderIntro(self):
 
-		self.lines.append(line)
+		self.render.renderHeader("generated file, do not edit","*",False)
+		self.render.renderLine()
 
+		self.render.renderComment("Transformed score data and analysis of")
+		self.render.renderComment(" J.S.Bach: Prelude in C major, BWV 846")
+		self.render.renderComment(" from the Prelude and Fugue in C major, BWV 846")
+		self.render.renderComment(" from Book I of The Well-Tempered Clavier")
+		self.render.renderComment("for PC-DOS 256-byte intro")
+		self.render.renderLine()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	def renderConst(self,name,value,comment):
-
-		self.renderLine(
-			"score_"
-			+ name
-			+ (7 - len(name)) * " "
-			+ " = "
-			+ str(value)
-			+ (5 - len(str(value))) * " "
-			+ " ; "
-			+ comment
+		self.render.renderComment(
+			"part1: A B C D E [A B C] - " + 
+			str( int(len(data.part1Text) / 5) )  + 
+			" lines" 
 		)
-
-
-	def renderComment(self,*kwargs):
-
-		line = ""
-		for arg in kwargs:
-			if line != "": line += " "
-			line += str(arg)
-
-		self.renderLine("; " + line)
-
-
-	def renderHeader(self,text,char = "-",emptyLine = True):
-
-		line = char * 4
-		line += " "
-		line += text
-		line += " "
-		line += (self.WIDTH - len(line)) * char
-
-		self.renderComment(line)
-		if emptyLine: self.renderComment()
-
-
-	def renderNotes(self,header,datas,isComment = True,noteTypes = None):
-
-		self.renderHeader(header)
-
-		itemsInLine = 5
-		line = None
-
-		for i in range(0,self.comboLength):
-
-			if i == self.part1Length: itemsInLine = 8
-
-			if i % itemsInLine == 0 and line is not None:
-				if itemsInLine == 5 and isComment: line += "  (...)"
-				self.renderLine(line)
-				line = None
-
-			if line is None:
-				if isComment: line = ";"
-				else: line = "  db "
-
-			if isComment:
-				if i % itemsInLine != 0: line += " "
-				line += " "
-
-			line += self.renderNote(datas,i,isComment,noteTypes)
-
-			if not isComment:
-				if i % itemsInLine != itemsInLine - 1:
-					line += ","
-
-		self.renderLine()
-
-
-	def renderNote(self,datas,index,isComment,noteTypes):
-
-		note = ""
-
-		if isComment: note += self.comboText[index]
-
-		tupleIndex = 0
-		for data in datas:
-			value = data[index]
-
-			try:
-				isNoteSigned = ( noteTypes[tupleIndex] == "signed" )
-				isNoteMapped = ( noteTypes[tupleIndex] == "mapped" )
-			except:
-				isNoteSigned = False
-				isNoteMapped = False
-
-			if isComment: note += ":"
-			note += self.renderFormatted(value,isComment,isNoteSigned,isNoteMapped)
-
-			if not isComment: break
-			tupleIndex += 1
-
-		return note
-
-
-	def renderFormatted(self,value,isComment = True,isSigned = False,isMapped = False):
-
-		if value is None:
-			if isSigned: return "N/A"
-			if isMapped: return "***"
-			else: return "**"
-
-		formatted = ""
-
-		if isSigned:
-			if value == 0: formatted = "="
-			elif value > 0: formatted = "+"
-			else:
-				formatted = "-"
-				value = -value
-
-		if isComment:
-			if value < 10: value = "0" + str(value)
-			if isMapped: value = "#" + str(value)
-		else:
-			value = str(value)
-
-		formatted += str(value)
-
-		return formatted
-
-
-	def convertTextToRaw(self,textArray):
-
-		result = []
-		for text in textArray:
-
-			note = text[0:2]
-			octave = text[-1:]
-
-			value = (int(octave) - 1) * 12
-			value += self.convertNoteToRaw(note)
-
-			result.append(value)
-
-		return result
+		self.render.renderComment(
+			"part2: A B C D E  F G H  -  " + 
+			str( int(len(data.part2Text) / 8) ) + 
+			" lines"
+		)
+		self.render.renderLine()
 
 
 
 
-	def convertRawToNote(self,raw):
 
-		octave = int(raw / 12)
-		value = raw % 12
-		note = None
 
-		if value == 0: note = "c-"
-		elif value == 1: note = "c#"
-		elif value == 2: note = "d-"
-		elif value == 3: note = "d#"
-		elif value == 4: note = "e-"
-		elif value == 5: note = "f-"
-		elif value == 6: note = "f#"
-		elif value == 7: note = "g-"
-		elif value == 8: note = "g#"
-		elif value == 9: note = "a-"
-		elif value == 10: note = "a$"
-		elif value == 11: note = "h-"
 
-		if note is None:
-			print("bad raw: " + raw)
-			quit()
 
-		return note + str(octave)
+
+
+
+
+
+
+
+
+
+
 
 
 	def countOccurrences(self,values):
@@ -334,48 +191,6 @@ class Prelude1:
 ########################################################################
 
 
-	def renderConstants(self):
-
-		self.renderHeader("generated file, do not edit","*",False)
-		self.renderLine()
-
-		self.renderComment("Transformed score data and analysis of")
-		self.renderComment(" J.S.Bach: Prelude in C major, BWV 846")
-		self.renderComment(" from the Prelude and Fugue in C major, BWV 846")
-		self.renderComment(" from Book I of The Well-Tempered Clavier")
-		self.renderComment("for PC-DOS 256-byte intro")
-		self.renderLine()
-
-		p1 = str( int(self.part1Length / 5) )
-		p2 = str( int(self.part2Length / 8) )
-		self.renderComment("part1: A B C D E [A B C] - " + p1 + " lines" )
-		self.renderComment("part2: A B C D E  F G H  -  " + p2 + " lines")
-		self.renderComment("combo: part1+part2")
-		self.renderComment("coda: last 5 notes")
-		self.renderLine()
-
-		self.renderConst("p1_data",self.part1Length,"part1 number of data notes")
-		self.renderConst("p1_eff",self.part1EffectiveLength,"part1 number of effective notes")
-		self.renderConst("p2_data",self.part2Length,"part2 number of notes")
-		self.renderConst("c_data",self.comboLength,"combo number of data notes")
-		self.renderConst("c_eff",self.comboEffectiveLength,"combo number of effective notes")
-		self.renderLine()
-
-
-	def calcBasics(self):
-
-		self.part1RawNotes = self.convertTextToRaw(self.part1Text)
-		self.part2RawNotes = self.convertTextToRaw(self.part2Text)
-		self.codaRawNotes = self.convertTextToRaw(self.codaText)
-		self.comboRawNotes = self.convertTextToRaw(self.comboText)
-
-		self.part1Length = len(self.part1RawNotes)
-		self.part1EffectiveLength = int(self.part1Length / 5) * 8
-		self.part2Length = len(self.part2RawNotes)
-		self.comboLength = self.part1Length + self.part2Length
-		self.comboEffectiveLength = self.part1EffectiveLength + self.part2Length
-
-
 	def renderBasics(self):
 
 		self.renderHistogram(
@@ -427,37 +242,13 @@ class Prelude1:
 			)
 
 
-	def old_main(self):
-
-		self.fillTextData()
-		self.combineTextData()
-
-		self.calcBasics()
-
-		#self.renderConstants()
-		self.renderBasics()
-		#self.renderDiffs( (1,4,5,10) )
-
-		(
-			self.comboMapIds,
-			self.mappingMapIdByRawNote,
-			self.mappingRawNotesByMapIs
-		) = self.calcMapping(self.comboRawNotes)
-
-		print(self.comboMapIds)
-
-		self.saveFile()
-
-
 ########################################################################
-
-
 
 if __name__ == '__main__':
 
 	try:
 
-		sheet = Prelude1()
+		sheet = Sheet()
 		sheet.main()
 
 	except KeyboardInterrupt:

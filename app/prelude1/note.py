@@ -9,13 +9,15 @@ class Note:
 
 	def __init__(self,sheet):
 		self.sheet = sheet
+		self.values = {}
 
 
-	def setValue(self,noteText):
+	def set(self,type,value):
 
-		self.text = noteText
-		self.value = self.convertTextToValue(self.text)
+		self.values[type] = value
 
+		if type == "text":
+			self.values["raw"] = self.convertTextToValue(value)
 
 
 	def convertTextToValue(self,text):
@@ -46,5 +48,19 @@ class Note:
 			print("invalid octave: " + str(text))
 			quit()
 
-
 		return octave + pitch
+
+
+	def render(self,type,isComment):
+		
+		value = self.values[type]
+		strValue = str(value)
+
+		if not isComment or type == "text": return strValue
+
+		if len(strValue) < 2: strValue = "0" + strValue 
+		if type == "raw" or type == "mapped": return strValue
+
+		if value > 0: return "+" + strValue
+		else: return "-" + strValue
+		return "=00"
