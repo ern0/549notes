@@ -6,8 +6,8 @@ sys.dont_write_bytecode = True
 
 class Render:
 
-	WIDTH = 60
-	
+	WIDTH = 78
+
 
 	def __init__(self,sheet):
 		self.sheet = sheet
@@ -51,18 +51,16 @@ class Render:
 				else: line = "  db "
 
 			if isComment:
-				if i % itemsInLine != 0: 
-					line += " "
+				if i % itemsInLine != 0: line += " "
 				line += " "
-				for typeIndex in range(0,len(typeTuple)):
-					type = typeTuple[typeIndex]
-					if typeIndex != 0: line += ":"
-					line += note.render(type,isComment)
+				line += note.render(typeTuple,isComment)
 
 			else:
 				if i % itemsInLine != itemsInLine - 1:
 					line += ","
 					line += note.render(typeTuple[0],isComment)
+
+		self.renderLine()
 
 
 	def renderConst(self,name,value,comment):
@@ -99,5 +97,3 @@ class Render:
 
 		self.renderComment(line)
 		if emptyLine: self.renderComment()
-
-

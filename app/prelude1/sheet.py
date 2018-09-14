@@ -18,7 +18,16 @@ class Sheet:
 
 		self.createScore()
 		self.renderIntro()
-		self.render.renderScore("basic",("text","raw",))
+
+		diffs = (1,5,10,)
+		diffs = (1,)
+		for diff in diffs:
+			diffId = "diff" + str(diff)
+			
+			self.calcSimpleDiff("raw",diffId,diff)
+			self.render.renderScore("raw and " + diffId,("text","raw",diffId,))
+			
+			#self.calcHistogram("raw")
 
 		#...
 
@@ -75,19 +84,26 @@ class Sheet:
 			str( int(len(data.part2Text) / 8) ) + 
 			" lines"
 		)
+		self.render.renderComment(
+			"coda: " +
+			str( int(len(data.codaText))) + 
+			"-notes chord"
+		)
 		self.render.renderLine()
 
 
+	def calcSimpleDiff(self,sourceType,targetType,distance):
 
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
 
+			if i < distance:
+				diff = None
+			else:
+				diff = note.get(sourceType)
+				diff -= self.notes[i - distance].get(sourceType)
 
-
-
-
-
-
-
-
+			note.set(targetType,diff)
 
 
 
@@ -151,20 +167,16 @@ class Sheet:
 		self.renderLine()
 
 
-	def calcDiff(self,rawNotes,distance):
 
-		diffs = []
 
-		for i in range(0,len(rawNotes)):
 
-			if i < distance:
-				diff = None
-			else:
-				diff = rawNotes[i] - rawNotes[i - distance]
 
-			diffs.append(diff)
 
-		return diffs
+
+
+
+
+
 
 
 	def calcMapping(self,rawNotes):

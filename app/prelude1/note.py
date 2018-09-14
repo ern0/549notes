@@ -20,6 +20,10 @@ class Note:
 			self.values["raw"] = self.convertTextToValue(value)
 
 
+	def get(self,type):
+		return self.values[type]
+
+
 	def convertTextToValue(self,text):
 
 		pitch = None
@@ -51,16 +55,37 @@ class Note:
 		return octave + pitch
 
 
-	def render(self,type,isComment):
+	def render(self,typeMixed,isComment):
 		
+		if type(typeMixed) is tuple: 
+			return self.renderTuple(typeMixed,isComment)
+		else:
+			return self.renderSingle(typeMixed,isComment)
+
+
+	def renderTuple(self,typeTuple,isComment):
+
+		line = ""
+		for typeIndex in range(0,len(typeTuple)):
+			type = typeTuple[typeIndex]
+			if typeIndex != 0: line += ":"
+			line += self.render(type,isComment)
+
+		return line
+
+
+	def renderSingle(self,type,isComment):
+
 		value = self.values[type]
-		strValue = str(value)
+		try: strAbsValue = str(abs(value))
+		except TypeError: strAbsValue = str(value)
 
-		if not isComment or type == "text": return strValue
+		if not isComment or type == "text": return strAbsValue
 
-		if len(strValue) < 2: strValue = "0" + strValue 
-		if type == "raw" or type == "mapped": return strValue
+		if len(strAbsValue) < 2: strAbsValue = "0" + strAbsValue 
+		if type == "raw" or type == "mapped": return strAbsValue
 
-		if value > 0: return "+" + strValue
-		else: return "-" + strValue
+		if value is None: return "N/A"
+		elif value > 0: return "+" + strAbsValue
+		elif value < 0: return "-" + strAbsValue
 		return "=00"
