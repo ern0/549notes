@@ -6,38 +6,88 @@ import os
 from collections import OrderedDict
 from operator import itemgetter
 
-import data
-from note import Note
-
 
 class Prelude1:
 
 	WIDTH = 60
 
-
-	def createScore(self):
-
-		self.notes = []
-
-		for noteText in data.part1Text:
-			note = Note(self)
-			note.setValue(noteText)
-			self.notes.append(note)
-
-		self.splitPoint = len(self.notes)
-
-		for noteText in data.part2Text:
-			note = Note(self)
-			note.setValue(noteText)
-			self.notes.append(note)
+########################################################################
 
 
-	def main(self):
+	def fillTextData(self):
 
-		self.createScore()
-		for note in self.notes:
-			print(note.value)
+		self.part1Text = [
 
+			"c-3","e-3","g-3","c-4","e-4",
+			"c-3","d-3","a-3","d-4","f-4",
+			"h-2","d-3","g-3","d-4","f-4",
+			"c-3","e-3","g-3","c-4","e-4",
+
+			"c-3","e-3","a-3","e-4","a-4",
+			"c-3","d-3","f#3","a-3","d-4",
+			"h-2","d-3","g-3","d-4","g-4",
+			"h-2","c-4","e-3","g-3","c-4",
+
+			"a-2","c-3","e-3","g-3","c-4",
+			"d-2","a-2","d-3","f#3","c-4",
+			"g-2","h-2","d-3","g-3","h-3",
+			"g-2","a#2","e-3","g-3","c#4",
+
+			"f-2","a-2","d-3","a-3","d-4",
+			"f-2","g#2","d-3","f-3","h-3",
+			"e-2","g-2","c-3","g-3","c-4",
+			"e-2","f-2","a-2","c-3","f-3",
+
+			"d-2","f-2","a-2","c-3","f-3",
+			"d-2","f-2","a-2","c-3","f-3",
+			"g-1","d-2","g-2","h-2","f-3",
+			"c-2","e-2","g-2","c-3","e-3",
+
+			"c-2","g-2","a#2","c-3","e-3",
+			"f-1","f-2","a-2","c-3","e-3",
+			"f#1","c-2","a-2","c-3","e-3",
+			"g#1","f-2","h-2","c-3","d-3",
+
+			"g-1","f-2","g-2","h-2","d-3",
+			"g-1","e-2","g-2","c-3","e-3",
+			"g-1","d-2","g-2","c-3","f-3",
+			"g-1","d-2","g-2","h-3","f-3",
+
+			"g-1","d#2","a-2","c-3","f#3",
+			"g-1","e-2","g-2","c-3","g-3",
+			"g-1","d-2","g-2","c-3","f-3",
+			"g-1","d-2","g-2","h-3","f-3",
+
+			"c-1","c-2","g-2","a#2","e-3",
+
+		]
+
+		self.part2Text = [
+
+			"c-1","c-2","f-2","a-2","c-3","f-3","c-3","a-2",
+			"c-3","a-2","f-2","a-2","f-2","d-2","f-2","d-2",
+			"c-1","h-1","g-3","h-3","d-4","f-4","d-4","h-3",
+			"d-4","h-3","g-3","h-3","d-3","f-3","e-3","d-3",
+
+		]
+
+		self.codaText = [
+			"c-1","c-2","e-3","g-3","c-4"
+		]
+
+
+	def combineTextData(self):
+
+		self.comboText = []
+
+		for note in self.part1Text:
+			self.comboText.append(note)
+
+		for note in self.part2Text:
+			self.comboText.append(note)
+
+
+########################################################################
 
 
 	def __init__(self):
@@ -54,23 +104,6 @@ class Prelude1:
 	def renderLine(self,line = ""):
 
 		self.lines.append(line)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	def renderConst(self,name,value,comment):
@@ -211,6 +244,23 @@ class Prelude1:
 		return result
 
 
+	def convertNoteToRaw(self,note):
+
+		if note == "c-": return 0
+		elif note == "c#": return 1
+		elif note == "d-": return 2
+		elif note == "d#": return 3
+		elif note == "e-": return 4
+		elif note == "f-": return 5
+		elif note == "f#": return 6
+		elif note == "g-": return 7
+		elif note == "g#": return 8
+		elif note == "a-": return 9
+		elif note == "a#": return 10
+		elif note == "h-": return 11
+
+		print("bad note: " + note)
+		quit()
 
 
 	def convertRawToNote(self,raw):
@@ -427,7 +477,7 @@ class Prelude1:
 			)
 
 
-	def old_main(self):
+	def main(self):
 
 		self.fillTextData()
 		self.combineTextData()
