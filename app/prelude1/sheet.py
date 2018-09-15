@@ -19,17 +19,23 @@ class Sheet:
 		self.createScore()
 		self.renderIntro()
 
+		self.render.renderScore("raw",("text","raw",))
+
+		self.renderHistogram("raw",orderBy = "value")
+		self.renderHistogram("raw",orderBy = "count")
+
 		diffs = (1,5,10,)
-		diffs = (1,)
 		for diff in diffs:
 			diffId = "diff" + str(diff)
 			
 			self.calcSimpleDiff("raw",diffId,diff)
 			self.render.renderScore("raw and " + diffId,("text","raw",diffId,))
 			
-			#self.calcHistogram("raw")
+			self.renderHistogram(diffId,orderBy = "value")
+			self.renderHistogram(diffId,orderBy = "count")
 
 		#...
+
 
 		self.saveFile()
 
@@ -106,70 +112,66 @@ class Sheet:
 			note.set(targetType,diff)
 
 
-
-
-
-
-
-
-	def countOccurrences(self,values):
+	def countOccurrences(self,noteType):
 
 		result = {}
-		for value in values:
 
+		for note in self.notes:
+
+			value = note.get(noteType)
 			if value is None: continue
 
-			try: result[value] += 1
-			except: result[value] = 1
+			if value not in result:
+				formatted = note.renderSingle(noteType,True)
+				if noteType == "raw": 
+					formatted = note.renderSingle("text",True) + ":" + formatted
+				result[value] = [0,formatted]
+
+			result[value][0] += 1
 
 		return result
 
 
-	def renderHistogram(self,header,data,orderBy = "value",noteType = "raw"):
+	def renderHistogram(self,noteType = "raw",orderBy = "value"):
 
-		occurrences = self.countOccurrences(data)
+		occurrences = self.countOccurrences(noteType)
 
-		self.renderHeader(header + " (" + str(len(occurrences)) + " values)")
-
-		if orderBy == "value":
-			ig = 0
-			rv = False
-		elif orderBy == "count":
-			ig = 1
-			rv = True
-		else:
-			quit()
-
-		occurrences = OrderedDict(
-			sorted(occurrences.items(),
-			key = itemgetter(ig),
-			reverse = rv)
+		self.render.renderHeader(
+			"Histogram of " +
+			noteType + 
+			" (" + 
+			str(len(occurrences)) + 
+			" values)"
 		)
 
+		if orderBy == "value":
+			occurrences = OrderedDict(sorted(
+				occurrences.items(),
+				key = itemgetter(0),
+				reverse = False
+			))
+		elif orderBy == "count":
+			occurrences = OrderedDict(sorted(
+				occurrences.items(),
+				key = lambda item: item[1],
+				reverse = True
+			))
+		else:
+			print("invalid histogram order: " + orderBy)
+			quit()
+
+
 		for value in occurrences:
-			count = occurrences[value]
-			line = ""
 
-			if isNote:
-				line += self.convertRawToNote(value)
-				line += ":"
-				line += self.renderFormatted(value)
-				line += " "
-			else:
-				line += self.renderFormatted(value,noteTyope)
-				line += ":"
-
+			(count,formatted) = occurrences[value]
+		
+			line = formatted
 			line += str(count).rjust(3)
 			line += " "
 			line += "#" * count
-			self.renderComment(line)
+			self.render.renderComment(line)
 
-		self.renderLine()
-
-
-
-
-
+		self.render.renderLine()
 
 
 
@@ -200,58 +202,6 @@ class Sheet:
 		return ( mapped,mapIdByRawNotes,rawNoteByMapIds )
 
 
-########################################################################
-
-
-	def renderBasics(self):
-
-		self.renderHistogram(
-			"combo raw note histogram",
-			self.comboRawNotes,
-			orderBy = "value",
-			noteType = "raw"
-		)
-
-		self.renderHistogram(
-			"combo raw note histogram",
-			self.comboRawNotes,
-			orderBy = "count",
-			noteType = "raw"
-		)
-
-		self.renderNotes(
-			"raw notes",
-			(self.comboRawNotes,),
-			("raw",),
-			isComment = True
-		)
-
-
-	def renderDiffs(self,diffs):
-
-		for diff in diffs:
-
-			self.comboDiffNotes = self.calcDiff(self.comboRawNotes,diff)
-
-			self.renderNotes(
-				"combo diff-" + str(diff) + " notes",
-				(self.comboRawNotes,self.comboDiffNotes),
-				noteTypes = ("text","signed",),
-				isComment = True
-			)
-
-			self.renderHistogram(
-				"combo diff-" + str(diff) + " note histogram",
-				self.comboDiffNotes,orderBy = "value",
-				isNote = False
-			)
-
-			self.renderHistogram(
-				"combo diff-" + str(diff) + " note histogram",
-				self.comboDiffNotes,
-				orderBy = "count",
-				isNote = False
-			)
 
 
 ########################################################################
