@@ -17,25 +17,26 @@ class Sheet:
 	def main(self):
 
 		self.createScore()
+		self.calcMapping()
 		self.renderIntro()
 
-		self.render.renderScore("raw",("text","raw",))
+		for rm in ("raw","mapped",):
 
-		self.renderHistogram("raw",orderBy = "value")
-		self.renderHistogram("raw",orderBy = "count")
+			self.render.renderScore(rm,("text",rm,))
 
-		diffs = (1,5,10,)
-		for diff in diffs:
-			diffId = "diff" + str(diff)
-			
-			self.calcSimpleDiff("raw",diffId,diff)
-			self.render.renderScore("raw and " + diffId,("text","raw",diffId,))
-			
-			self.renderHistogram(diffId,orderBy = "value")
-			self.renderHistogram(diffId,orderBy = "count")
+			self.renderHistogram(rm,orderBy = "value")
+			self.renderHistogram(rm,orderBy = "count")
+
+			for diff in (1,5,10,"mixed/1/5",):
+				diffId = rm + "-diff-" + str(diff)
+				
+				self.calcDiff(rm,diffId,diff)
+				self.render.renderScore(diffId,("text",rm,diffId,))
+				
+				self.renderHistogram(diffId,orderBy = "value")
+				self.renderHistogram(diffId,orderBy = "count")
 
 		#...
-
 
 		self.saveFile()
 
@@ -98,6 +99,20 @@ class Sheet:
 		self.render.renderLine()
 
 
+	def calcDiff(self,sourceType,targetType,distance):
+		
+		try: d = int(distance)
+		except: d = 0
+
+		if d > 0: 
+			self.calcSimpleDiff(sourceType,targetType,distance)
+		elif distance == "mixed/1/5": 
+			self.calcMixed1x5xDiff(sourceType,targetType)
+		else:
+			print("invalid diff type: " + distance)
+			quit()
+
+
 	def calcSimpleDiff(self,sourceType,targetType,distance):
 
 		for i in range(0,len(self.notes)):
@@ -106,6 +121,25 @@ class Sheet:
 			if i < distance:
 				diff = None
 			else:
+				diff = note.get(sourceType)
+				diff -= self.notes[i - distance].get(sourceType)
+
+			note.set(targetType,diff)
+
+
+	def calcMixed1x5xDiff(self,sourceType,targetType):
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+
+			if i == 0:
+				diff = None
+
+			else:
+
+				if i % 5 == 0: distance = 5
+				else: distance = 1
+
 				diff = note.get(sourceType)
 				diff -= self.notes[i - distance].get(sourceType)
 
@@ -174,34 +208,26 @@ class Sheet:
 		self.render.renderLine()
 
 
+	def calcMapping(self):
 
-
-
-
-
-
-
-	def calcMapping(self,rawNotes):
-
-		mapIdByRawNotes = {}
-		rawNoteByMapIds = {}
-		mapped = []
-
+		self.mapping = {}
 		mapId = 0
-		for rawNote in sorted(rawNotes):
-			if rawNote in mapIdByRawNotes: continue
 
-			rawNoteByMapIds[mapId] = rawNote
-			mapIdByRawNotes[rawNote] = mapId
+		for note in self.notes:
+
+			value = note.get("raw")
+			if value in self.mapping: continue
+
+			note.set("mapped",mapId)
 			mapId += 1
+			self.mapping[value] = note
 
-		for rawNote in rawNotes:
-			mapId = mapIdByRawNotes[rawNote]
-			mapped.append(mapId)
+		for note in self.notes:
 
-		return ( mapped,mapIdByRawNotes,rawNoteByMapIds )
-
-
+			rawId = note.get("raw")
+			mappedNote = self.mapping[rawId]
+			mapId = mappedNote.get("mapped")
+			note.set("mapped",mapId)
 
 
 ########################################################################
