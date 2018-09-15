@@ -2,4 +2,5 @@
 clear
 
 ./sheet.py sheet.inc
-#cat sheet.inc
+fasm player.asm player.com
+

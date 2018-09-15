@@ -1,0 +1,4 @@
+#!/bin/bash
+
+clear
+fasm minsky.asm minsky.com
