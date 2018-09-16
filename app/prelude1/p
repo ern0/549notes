@@ -2,5 +2,5 @@
 clear
 
 ./sheet.py sheet.inc
-fasm player.asm player.com
+#fasm player.asm player.com
 

@@ -20,6 +20,11 @@ class Sheet:
 		self.calcMapping()
 		self.renderIntro()
 
+		diffs = (1,5,10,"mixed/1/5",)
+		extras = (1,5,10,1,)
+
+		self.totals = {}
+
 		for rm in ("raw","mapped",):
 
 			self.render.renderScore(rm,("text",rm,))
@@ -27,7 +32,9 @@ class Sheet:
 			self.renderHistogram(rm,orderBy = "value")
 			self.renderHistogram(rm,orderBy = "count")
 
-			for diff in (1,5,10,"mixed/1/5",):
+			for i in range(0,len(diffs)):
+				diff = diffs[i]
+				extra = extras[i]
 				diffId = rm + "-diff-" + str(diff)
 				
 				self.calcDiff(rm,diffId,diff)
@@ -35,8 +42,16 @@ class Sheet:
 				
 				self.renderHistogram(diffId,orderBy = "value")
 				self.renderHistogram(diffId,orderBy = "count")
+				
+				for split in (2,3,4,5,):
+					self.renderEstimation(diffId,0,extra)
+					self.renderEstimation(diffId,1,extra)
+					self.renderEstimation(diffId,2,extra)
+					self.renderEstimation(diffId,3,extra)
+					self.renderEstimation(diffId,4,extra)
+					self.renderEstimation(diffId,5,extra)
 
-		#...
+		self.renderTotal()
 
 		self.saveFile()
 
@@ -168,6 +183,10 @@ class Sheet:
 
 	def renderHistogram(self,noteType = "raw",orderBy = "value"):
 
+		count = 0
+		for note in self.notes:
+			if note.get(noteType) is not None: count += 1
+
 		occurrences = self.countOccurrences(noteType)
 
 		self.render.renderHeader(
@@ -175,7 +194,11 @@ class Sheet:
 			noteType + 
 			" (" + 
 			str(len(occurrences)) + 
-			" values)"
+			" values, " +
+			str(count) + 
+			"/" + 
+			str(len(self.notes)) +
+			" notes)"
 		)
 
 		if orderBy == "value":
@@ -194,16 +217,25 @@ class Sheet:
 			print("invalid histogram order: " + orderBy)
 			quit()
 
-
+		cumulated = 0
+		numero = 1
 		for value in occurrences:
+			line = ""
 
 			(count,formatted) = occurrences[value]
+			cumulated += count
 		
-			line = formatted
+			if orderBy == "count":
+				line = str(numero).rjust(2)
+				line += ". "
+			line += formatted
 			line += str(count).rjust(3)
+			line += str(cumulated).rjust(4)
 			line += " "
 			line += "#" * count
 			self.render.renderComment(line)
+
+			numero += 1
 
 		self.render.renderLine()
 
@@ -230,7 +262,115 @@ class Sheet:
 			note.set("mapped",mapId)
 
 
-########################################################################
+	def renderEstimation(self,noteType,cBitLen,extra):
+
+		self.render.renderHeader(
+			"estimation for " + 
+			str(noteType) +
+			" split at " +
+			str(cBitLen) +
+			" (" + str(extra) + " extra)"
+		)
+
+		occurrences = self.countOccurrences(noteType)
+		occurrences = OrderedDict(sorted(
+			occurrences.items(),
+			key = lambda item: item[1],
+			reverse = True
+		))
+
+		tNoteNum = len(occurrences)
+		cNoteNum = 2 ** cBitLen - 1
+		uNoteNum = tNoteNum - cNoteNum
+
+		uBitLen = 0
+		if uNoteNum > 0: uBitLen = 1
+		if uNoteNum > 2: uBitLen = 2
+		if uNoteNum > 4: uBitLen = 3
+		if uNoteNum > 8: uBitLen = 4
+		if uNoteNum > 16: uBitLen = 5
+		if uNoteNum > 32: uBitLen = 6
+		if uNoteNum > 64: uBitLen = 7
+		if uNoteNum > 128: uBitLen = 8
+		if uNoteNum > 256: uBitLen = 9
+		uBitLen += cBitLen
+
+		self.render.renderComment(
+			"note bits: " + 
+			str(cBitLen).rjust(5) + ".c" +
+			str(uBitLen).rjust(5) + ".u"
+		)
+
+		self.render.renderComment(
+			"note num:  " + 
+			str(cNoteNum).rjust(5) + ".c" +
+			str(uNoteNum).rjust(5) + ".u" +
+			str(tNoteNum).rjust(5) + ".t"
+		)
+
+		index = 0
+		cNoteCount = 0
+		uNoteCount = 0
+		tNoteCount = 0
+		for value in occurrences:
+			(count,formatted) = occurrences[value]
+			
+			tNoteCount += count
+
+			if index < cNoteNum:
+				cNoteCount += count
+			else:
+				uNoteCount += count
+
+			index += 1
+
+		self.render.renderComment(
+			"note count: " + 
+			str(cNoteCount).rjust(4) + ".c" +
+			str(uNoteCount).rjust(5) + ".u" +
+			str(tNoteCount).rjust(5) + ".t"
+		)
+
+		cStorage = cNoteCount * cBitLen
+		uStorage = uNoteCount * uBitLen
+		tStorage = cStorage + uStorage
+
+		total = int(tStorage / 8 + extra)
+
+		self.render.renderComment(
+			"storage:    " + 
+			str(cStorage).rjust(4) + ".c" +
+			str(uStorage).rjust(5) + ".u" +
+			str(tStorage).rjust(5) + ".t +" +
+			str(extra * 8).rjust(3) +".x = " +
+			str(total).rjust(5) + 
+			" bytes"
+		)
+
+		self.render.renderLine()
+
+		self.totals[noteType + " @ " + str(cBitLen)] = total
+
+
+	def renderTotal(self):
+
+		self.render.renderHeader("total")
+
+		self.totals = OrderedDict(sorted(
+			self.totals.items(),
+			key = lambda item: item[1],
+			reverse = False
+		))
+
+		for sig in self.totals:
+			self.render.renderComment(
+				sig.rjust(27) + 
+				"  =" + 
+				str(self.totals[sig]).rjust(5)
+			)
+
+		self.render.renderLine()
+
 
 if __name__ == '__main__':
 
