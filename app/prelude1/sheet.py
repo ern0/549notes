@@ -267,9 +267,8 @@ class Sheet:
 		self.render.renderHeader(
 			"estimation for " + 
 			str(noteType) +
-			" split at " +
-			str(cBitLen) +
-			" (" + str(extra) + " extra)"
+			" @ " +
+			str(cBitLen)
 		)
 
 		occurrences = self.countOccurrences(noteType)
@@ -335,16 +334,26 @@ class Sheet:
 		uStorage = uNoteCount * uBitLen
 		tStorage = cStorage + uStorage
 
-		total = int(tStorage / 8 + extra)
-
 		self.render.renderComment(
 			"storage:    " + 
 			str(cStorage).rjust(4) + ".c" +
 			str(uStorage).rjust(5) + ".u" +
-			str(tStorage).rjust(5) + ".t +" +
-			str(extra * 8).rjust(3) +".x = " +
-			str(total).rjust(5) + 
-			" bytes"
+			str(tStorage).rjust(5) + ".t"
+		)
+
+		storage = int(tStorage / 8)
+		table = len(occurrences)
+		total = storage + extra + table
+
+		self.render.renderComment(
+			"total bytes (storage + leading + table): " +
+			str(storage).rjust(4) + 
+			" + " +
+			str(extra) +
+			" + " + 
+			str(table) +
+			" = " +
+			str(total)
 		)
 
 		self.render.renderLine()
