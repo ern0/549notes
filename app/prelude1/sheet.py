@@ -3,6 +3,7 @@
 import sys
 sys.dont_write_bytecode = True
 import os
+import math
 from collections import OrderedDict
 from operator import itemgetter
 
@@ -51,6 +52,9 @@ class Sheet:
 					self.renderEstimation(diffId,4,extra)
 					self.renderEstimation(diffId,5,extra)
 
+		self.renderStoreNotesAndTable()
+		self.renderStoreNotesWithoutTable()
+
 		self.renderTotal()
 
 		self.saveFile()
@@ -72,6 +76,11 @@ class Sheet:
 		self.splitPoint = len(self.notes)
 
 		for noteText in data.part2Text:
+			note = Note(self)
+			note.set("text",noteText)
+			self.notes.append(note)
+
+		for noteText in data.codaText:
 			note = Note(self)
 			note.set("text",noteText)
 			self.notes.append(note)
@@ -111,6 +120,20 @@ class Sheet:
 			str( int(len(data.codaText))) + 
 			"-notes chord"
 		)
+
+		self.render.renderComment()
+
+		eff = int( self.splitPoint / 5 * 8 ) * 2
+
+		self.render.renderComment(
+			"eff. notes: " +
+			str( eff ).rjust(3)
+		)
+		self.render.renderComment(
+			"data notes: " +
+			str( len(self.notes) ).rjust(3)
+		)
+
 		self.render.renderLine()
 
 
@@ -262,6 +285,26 @@ class Sheet:
 			note.set("mapped",mapId)
 
 
+	def renderTotal(self):
+
+		self.render.renderHeader("total")
+
+		self.totals = OrderedDict(sorted(
+			self.totals.items(),
+			key = lambda item: item[1],
+			reverse = False
+		))
+
+		for sig in self.totals:
+			self.render.renderComment(
+				sig.rjust(27) + 
+				"  =" + 
+				str(self.totals[sig]).rjust(5)
+			)
+
+		self.render.renderLine()
+
+
 	def renderEstimation(self,noteType,cBitLen,extra):
 
 		self.render.renderHeader(
@@ -282,16 +325,8 @@ class Sheet:
 		cNoteNum = 2 ** cBitLen - 1
 		uNoteNum = tNoteNum - cNoteNum
 
-		uBitLen = 0
-		if uNoteNum > 0: uBitLen = 1
-		if uNoteNum > 2: uBitLen = 2
-		if uNoteNum > 4: uBitLen = 3
-		if uNoteNum > 8: uBitLen = 4
-		if uNoteNum > 16: uBitLen = 5
-		if uNoteNum > 32: uBitLen = 6
-		if uNoteNum > 64: uBitLen = 7
-		if uNoteNum > 128: uBitLen = 8
-		if uNoteNum > 256: uBitLen = 9
+		if uNoteNum < 0: uBitLen = 0
+		else: uBitLen = math.ceil( math.log(uNoteNum,2) )
 		uBitLen += cBitLen
 
 		self.render.renderComment(
@@ -361,24 +396,90 @@ class Sheet:
 		self.totals[noteType + " @ " + str(cBitLen)] = total
 
 
-	def renderTotal(self):
+	def renderStoreNotesAndTable(self):
 
-		self.render.renderHeader("total")
+		self.render.renderHeader("estimation for 5-bit raw and table")
 
-		self.totals = OrderedDict(sorted(
-			self.totals.items(),
-			key = lambda item: item[1],
-			reverse = False
-		))
+		storage = int( len(self.notes) * 5 / 8)
 
-		for sig in self.totals:
-			self.render.renderComment(
-				sig.rjust(27) + 
-				"  =" + 
-				str(self.totals[sig]).rjust(5)
-			)
+		occurrences = self.countOccurrences("raw")
+		table = len(occurrences)
+
+		eff = int( self.splitPoint / 5 * 8 ) * 2
+
+		self.render.renderComment(
+			"data notes: " +
+			str( len(self.notes) ).rjust(3)
+		)
+		self.render.renderComment(
+			"storage: " +
+			str(storage).rjust(6) + 
+			" bytes"
+		)
+		self.render.renderComment(
+			"table: " +
+			str(table).rjust(8) + 
+			" bytes"
+		)
+		self.render.renderComment(
+			"total: " +
+			str(storage + table).rjust(8) + 
+			" bytes"
+		)
 
 		self.render.renderLine()
+
+		self.totals["store raw 5-bit + table"] = storage + table
+
+
+	def renderStoreNotesWithoutTable(self):
+
+		self.render.renderHeader("estimation for raw without table")
+
+		minValue = 999
+		maxValue = 0
+
+		for note in self.notes:
+
+			value = note.get("raw")
+
+			if value < minValue: minValue = value
+			if value > maxValue: maxValue = value
+
+		valueRange = maxValue - minValue
+		valueBits = math.ceil( math.log(valueRange,2) )
+
+		storage = math.ceil( len(self.notes) * valueBits / 8 )
+
+		self.render.renderComment(
+			"note min. value: " +
+			str( minValue ).rjust(3)
+		)
+		self.render.renderComment(
+			"note max. value: " +
+			str( maxValue ).rjust(3)
+		)
+		self.render.renderComment(
+			"value range: " +
+			str( valueRange ).rjust(7)
+		)
+		self.render.renderComment(
+			"value bits: " +
+			str( valueBits ).rjust(8)
+		)
+		self.render.renderComment(
+			"data notes: " +
+			str( len(self.notes) ).rjust(8)
+		)
+		self.render.renderComment(
+			"total: " +
+			str(storage).rjust(13) + 
+			" bytes"
+		)
+
+		self.render.renderLine()
+
+		self.totals["store raw " +str(valueBits) + "-bit w/o table"] = storage
 
 
 if __name__ == '__main__':
