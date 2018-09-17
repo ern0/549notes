@@ -52,8 +52,14 @@ class Sheet:
 					self.renderEstimation(diffId,4,extra)
 					self.renderEstimation(diffId,5,extra)
 
-		self.renderStoreNotesAndTable()
-		self.renderStoreNotesWithoutTable()
+		self.renderStoreRawWithTable()
+		self.renderStoreRawWithoutTable()
+
+		for i in range(0,len(diffs)):
+			diff = diffs[i]
+			extra = extras[i]
+			diffId = "raw-diff-" + str(diff)
+			self.renderDiffFix3BitSplit(diffId,extra)
 
 		self.renderTotal()
 
@@ -297,7 +303,7 @@ class Sheet:
 
 		for sig in self.totals:
 			self.render.renderComment(
-				sig.rjust(27) + 
+				sig.rjust(30) + 
 				"  =" + 
 				str(self.totals[sig]).rjust(5)
 			)
@@ -396,9 +402,9 @@ class Sheet:
 		self.totals[noteType + " @ " + str(cBitLen)] = total
 
 
-	def renderStoreNotesAndTable(self):
+	def renderStoreRawWithTable(self):
 
-		self.render.renderHeader("estimation for 5-bit raw and table")
+		self.render.renderHeader("estimation for 5-bit raw + table")
 
 		storage = int( len(self.notes) * 5 / 8)
 
@@ -432,15 +438,14 @@ class Sheet:
 		self.totals["store raw 5-bit + table"] = storage + table
 
 
-	def renderStoreNotesWithoutTable(self):
+	def renderStoreRawWithoutTable(self):
 
-		self.render.renderHeader("estimation for raw without table")
+		self.render.renderHeader("estimation for raw w/o table")
 
 		minValue = 999
 		maxValue = 0
 
 		for note in self.notes:
-
 			value = note.get("raw")
 
 			if value < minValue: minValue = value
@@ -480,6 +485,94 @@ class Sheet:
 		self.render.renderLine()
 
 		self.totals["store raw " +str(valueBits) + "-bit w/o table"] = storage
+
+
+	def renderDiffFix3BitSplit(self,noteType,extra):
+
+		self.render.renderHeader("estimation for " + noteType + " @ 3 const")
+
+		compressed = 0
+		uncompressed = 0
+
+		for note in self.notes:
+
+			value = note.get(noteType)
+			
+			if value is None: continue
+			elif value in (-3,-2,-1,0,1,2,3): compressed += 1
+			else: uncompressed += 1
+
+		self.render.renderComment(
+			"data notes: " +
+			str( compressed + uncompressed ).rjust(8)
+		)
+		self.render.renderComment(
+			"comp. notes: " +
+			str( compressed ).rjust(7)
+		)
+		self.render.renderComment(
+			"uncomp. notes: " +
+			str( uncompressed ).rjust(5)
+		)
+
+		occurrences = self.countOccurrences(noteType)
+		cBits = 3
+		cNum = 2 ** cBits - 1
+		uNum = len(occurrences) - cNum
+		
+		uBits = math.ceil( math.log(uNum,2) )
+		uBits += cBits
+
+		self.render.renderComment(
+			"comp. values: " +
+			str( cNum ).rjust(6)
+		)
+		self.render.renderComment(
+			"uncomp. values: " +
+			str( uNum ).rjust(4)
+		)
+		self.render.renderComment(
+			"total values: " +
+			str( cNum + uNum ).rjust(6)
+		)
+
+		self.render.renderComment(
+			"comp. bits: " +
+			str( cBits ).rjust(8)
+		)
+		self.render.renderComment(
+			"uncomp. bits: " +
+			str( uBits - cBits ).rjust(6) +
+			" + " +
+			str( cBits ) +
+			" = " +
+			str( uBits )
+		)
+
+		cStorage = math.ceil( compressed * cBits / 8 )
+		uStorage = math.ceil( uncompressed * uBits / 8 )
+		total = cStorage + uStorage + extra
+
+		self.render.renderComment(
+			"comp. storage: " +
+			str( cStorage ).rjust(5)
+		)
+		self.render.renderComment(
+			"uncomp. storage: " +
+			str( uStorage ).rjust(3)
+		)
+		self.render.renderComment(
+			"leading storage: " +
+			str( extra ).rjust(3)
+		)
+		self.render.renderComment(
+			"total storage: " +
+			str( total ).rjust(5)
+		)
+
+		self.render.renderLine()
+
+		self.totals[noteType + " @ 3 const"] = total
 
 
 if __name__ == '__main__':
