@@ -46,9 +46,8 @@ class Sheet:
 
 				for split in (1,2,3,4,5,6,):
 					self.renderEstimation(diffId,split,extra,False)
-
-				if rm == "raw":
-					self.renderEstimation(diffId,split,extra,True)
+					if rm == "raw":
+						self.renderEstimation(diffId,split,extra,True)
 
 		self.renderStoreRawWithTable()
 		self.renderStoreRawWithoutTable()
@@ -304,7 +303,7 @@ class Sheet:
 
 	def renderEstimation(self,noteType,cBitLen,extra,noCompTab):
 
-		if noCompTab: nct = " no-comp-tab"
+		if noCompTab: nct = " nctab"
 		else: nct = ""
 		self.render.renderHeader(
 			"estimation for " + 
@@ -321,19 +320,41 @@ class Sheet:
 			reverse = True
 		))
 
-		tNoteNum = len(occurrences)
-		cNoteNum = 2 ** cBitLen - 1
-		uNoteNum = tNoteNum - cNoteNum
+		cNoteNum = 0
+		uNoteNum = 0
+		tNoteNum = 0
+		cNoteCount = 0
+		uNoteCount = 0
+		tNoteCount = 0
+		cTabLo = - (2 ** (cBitLen - 1)) + 1
+		cTabHi = 2 ** (cBitLen - 1) - 1	
+		cTabSize = 2 ** (cBitLen) - 1
+		index = 0
+		for value in occurrences:
+			(count,formatted) = occurrences[value]
+			
+			tNoteNum += 1
+			tNoteCount += count
 
-		if uNoteNum < 0: uBitLen = 0
-		else: uBitLen = math.ceil( math.log(uNoteNum,2) )
-		uBitLen += cBitLen
+			if noCompTab:
+				if value < cTabLo or value > cTabHi:
+					uNoteNum += 1
+					uNoteCount += count
+				else:
+					cNoteNum += 1
+					cNoteCount += count
 
-		self.render.renderComment(
-			"note bits: " + 
-			str(cBitLen).rjust(5) + ".c" +
-			str(uBitLen).rjust(5) + ".u"
-		)
+			else:
+				if index < cTabSize:
+					cNoteNum += 1
+					cNoteCount += count
+				else:
+					uNoteNum += 1
+					uNoteCount += count
+
+			index += 1
+
+		# todo: nct table size
 
 		self.render.renderComment(
 			"note num:  " + 
@@ -342,27 +363,23 @@ class Sheet:
 			str(tNoteNum).rjust(5) + ".t"
 		)
 
-		index = 0
-		cNoteCount = 0
-		uNoteCount = 0
-		tNoteCount = 0
-		for value in occurrences:
-			(count,formatted) = occurrences[value]
-			
-			tNoteCount += count
-
-			if index < cNoteNum:
-				cNoteCount += count
-			else:
-				uNoteCount += count
-
-			index += 1
-
 		self.render.renderComment(
 			"note count: " + 
 			str(cNoteCount).rjust(4) + ".c" +
 			str(uNoteCount).rjust(5) + ".u" +
 			str(tNoteCount).rjust(5) + ".t"
+		)
+
+		if uNoteNum <= 0: 
+			uBitLen = 0
+		else: 
+			uBitLen = math.ceil( math.log(uNoteNum,2) )
+			uBitLen += cBitLen
+
+		self.render.renderComment(
+			"note bits: " + 
+			str(cBitLen).rjust(5) + ".c" +
+			str(uBitLen).rjust(5) + ".u"
 		)
 
 		cStorage = cNoteCount * cBitLen
@@ -488,7 +505,6 @@ class Sheet:
 if __name__ == '__main__':
 
 	try:
-
 		sheet = Sheet()
 		sheet.main()
 
