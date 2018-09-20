@@ -37,10 +37,10 @@ class Sheet:
 				diff = diffs[i]
 				extra = extras[i]
 				diffId = rm + "-diff-" + str(diff)
-				
+
 				self.calcDiff(rm,diffId,diff)
 				self.render.renderScore(diffId,("text",rm,diffId,))
-				
+
 				self.renderHistogram(diffId,orderBy = "value")
 				self.renderHistogram(diffId,orderBy = "count")
 
@@ -102,18 +102,18 @@ class Sheet:
 		self.render.renderLine()
 
 		self.render.renderComment(
-			"part1: A B C D E [A B C] - " + 
-			str( int(len(data.part1Text) / 5) )  + 
-			" lines" 
+			"part1: A B C D E [C D E] - " +
+			str( int(len(data.part1Text) / 5) )  +
+			" lines"
 		)
 		self.render.renderComment(
-			"part2: A B C D E  F G H  -  " + 
-			str( int(len(data.part2Text) / 8) ) + 
+			"part2: A B C D E  F G H  -  " +
+			str( int(len(data.part2Text) / 8) ) +
 			" lines"
 		)
 		self.render.renderComment(
 			"coda: " +
-			str( int(len(data.codaText))) + 
+			str( int(len(data.codaText))) +
 			"-notes chord"
 		)
 
@@ -134,13 +134,13 @@ class Sheet:
 
 
 	def calcDiff(self,sourceType,targetType,distance):
-		
+
 		try: d = int(distance)
 		except: d = 0
 
-		if d > 0: 
+		if d > 0:
 			self.calcSimpleDiff(sourceType,targetType,distance)
-		elif distance == "mixed/1/5": 
+		elif distance == "mixed/1/5":
 			self.calcMixed1x5xDiff(sourceType,targetType)
 		else:
 			print("invalid diff type: " + distance)
@@ -191,7 +191,7 @@ class Sheet:
 
 			if value not in result:
 				formatted = note.renderSingle(noteType,True)
-				if noteType == "raw": 
+				if noteType == "raw":
 					formatted = note.renderSingle("text",True) + ":" + formatted
 				result[value] = [0,formatted]
 
@@ -210,12 +210,12 @@ class Sheet:
 
 		self.render.renderHeader(
 			"Histogram of " +
-			noteType + 
-			" (" + 
-			str(len(occurrences)) + 
+			noteType +
+			" (" +
+			str(len(occurrences)) +
 			" values, " +
-			str(count) + 
-			"/" + 
+			str(count) +
+			"/" +
 			str(len(self.notes)) +
 			" notes)"
 		)
@@ -243,7 +243,7 @@ class Sheet:
 
 			(count,formatted) = occurrences[value]
 			cumulated += count
-		
+
 			if orderBy == "count":
 				line = str(numero).rjust(2)
 				line += ". "
@@ -293,8 +293,8 @@ class Sheet:
 
 		for sig in self.totals:
 			self.render.renderComment(
-				sig.rjust(40) + 
-				"  =" + 
+				sig.rjust(40) +
+				"  =" +
 				str(self.totals[sig]).rjust(5)
 			)
 
@@ -306,7 +306,7 @@ class Sheet:
 		if noCompTab: nct = " nctab"
 		else: nct = ""
 		self.render.renderHeader(
-			"estimation for " + 
+			"estimation for " +
 			str(noteType) +
 			" @ " +
 			str(cBitLen) +
@@ -327,12 +327,12 @@ class Sheet:
 		uNoteCount = 0
 		tNoteCount = 0
 		cTabLo = - (2 ** (cBitLen - 1)) + 1
-		cTabHi = 2 ** (cBitLen - 1) - 1	
+		cTabHi = 2 ** (cBitLen - 1) - 1
 		cTabSize = 2 ** (cBitLen) - 1
 		index = 0
 		for value in occurrences:
 			(count,formatted) = occurrences[value]
-			
+
 			tNoteNum += 1
 			tNoteCount += count
 
@@ -357,27 +357,27 @@ class Sheet:
 		# todo: nct table size
 
 		self.render.renderComment(
-			"note num:  " + 
+			"note num:  " +
 			str(cNoteNum).rjust(5) + ".c" +
 			str(uNoteNum).rjust(5) + ".u" +
 			str(tNoteNum).rjust(5) + ".t"
 		)
 
 		self.render.renderComment(
-			"note count: " + 
+			"note count: " +
 			str(cNoteCount).rjust(4) + ".c" +
 			str(uNoteCount).rjust(5) + ".u" +
 			str(tNoteCount).rjust(5) + ".t"
 		)
 
-		if uNoteNum <= 0: 
+		if uNoteNum <= 0:
 			uBitLen = 0
-		else: 
+		else:
 			uBitLen = math.ceil( math.log(uNoteNum,2) )
 			uBitLen += cBitLen
 
 		self.render.renderComment(
-			"note bits: " + 
+			"note bits: " +
 			str(cBitLen).rjust(5) + ".c" +
 			str(uBitLen).rjust(5) + ".u"
 		)
@@ -387,7 +387,7 @@ class Sheet:
 		tStorage = cStorage + uStorage
 
 		self.render.renderComment(
-			"storage:    " + 
+			"storage:    " +
 			str(int(cStorage/8)).rjust(4) + ".c" +
 			str(int(uStorage/8)).rjust(5) + ".u" +
 			str(int(tStorage/8)).rjust(5) + ".t"
@@ -399,7 +399,7 @@ class Sheet:
 		tTable = cTable + uTable
 
 		self.render.renderComment(
-			"table:      " + 
+			"table:      " +
 			str(int(cTable)).rjust(4) + ".c" +
 			str(int(uTable)).rjust(5) + ".u" +
 			str(int(tTable)).rjust(5) + ".t"
@@ -434,17 +434,17 @@ class Sheet:
 		)
 		self.render.renderComment(
 			"storage: " +
-			str(storage).rjust(6) + 
+			str(storage).rjust(6) +
 			" bytes"
 		)
 		self.render.renderComment(
 			"table: " +
-			str(table).rjust(8) + 
+			str(table).rjust(8) +
 			" bytes"
 		)
 		self.render.renderComment(
 			"total: " +
-			str(storage + table).rjust(8) + 
+			str(storage + table).rjust(8) +
 			" bytes"
 		)
 
@@ -493,7 +493,7 @@ class Sheet:
 		)
 		self.render.renderComment(
 			"total: " +
-			str(storage).rjust(13) + 
+			str(storage).rjust(13) +
 			" bytes"
 		)
 
