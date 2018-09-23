@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
 
-./sheet.py sheet.inc
+./sheet.py sheet.inc fin
 #fasm player.asm player.com
 

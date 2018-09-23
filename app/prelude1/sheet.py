@@ -20,11 +20,17 @@ class Sheet:
 		self.createScore()
 		self.calcMapping()
 		self.renderIntro()
+		if len(sys.argv) < 3: 
+			self.renderAnalysis()
+		else:
+			self.renderData()
+		self.saveFile()
 
-		diffs = (1,5,10,"mixed/1/5",)
-		extras = (1,5,10,1,)
 
-		self.totals = {}
+	def renderAnalysis(self):
+
+		diffs = (1,2,3,4,5,6,7,8,9,10,"mixed/1/5",)
+		extras = (1,2,3,4,5,6,7,8,9,10,1,)
 
 		for rm in ("raw","mapped",):
 
@@ -53,11 +59,11 @@ class Sheet:
 		self.renderStoreRawWithoutTable()
 
 		self.renderTotal()
-		self.saveFile()
 
 
 	def __init__(self):
 		self.render = Render(self)
+		self.totals = {}
 
 
 	def createScore(self):
@@ -500,6 +506,106 @@ class Sheet:
 		self.render.renderLine()
 
 		self.totals["store raw " +str(valueBits) + "-bit w/o table"] = storage
+
+
+	def renderData(self):
+
+		self.SPECIAL = 7
+
+		diffId = "raw-diff-5"
+		self.renderDataStat(diffId)
+		self.render.renderHeader("data")
+		self.renderDataTable(diffId)
+		self.renderDataScore(diffId)
+
+
+	def renderDataStat(self,diffId):
+
+		self.calcDiff("raw",diffId,5)
+		self.render.renderScore(diffId,("text","raw",diffId,))
+		self.renderHistogram(diffId,orderBy = "count")
+		self.renderEstimation(diffId,3,5,False)
+
+
+	def renderDataTable(self,diffId):
+
+		occurrences = self.countOccurrences(diffId)
+
+		occurrences = OrderedDict(sorted(
+			occurrences.items(),
+			key = lambda item: item[1],
+			reverse = True
+		))
+
+		self.table = list(occurrences.keys())
+
+		self.render.renderComment("table for 3-bit index")
+		self.render.renderComment("")
+		self.render.renderLine("tab3:")
+		line = ""
+		self.tab3 = {}
+		index = 0
+
+		for i in range(0,7):
+			diff = self.table[i]
+
+			self.tab3[diff] = index
+			index += 1
+
+			if line == "": line += "\tdb "
+			else: line += ","
+			line += str(diff)
+
+		self.render.renderLine(line)
+		self.render.renderLine()
+
+		self.render.renderComment("table for 5-bit index")
+		self.render.renderComment("")
+		self.render.renderLine("tab5:")
+		line = ""
+		self.tab5 = {}
+		index = 0
+
+		for i in range(7,len(self.table)):
+			diff = self.table[i]
+
+			self.tab5[diff] = index
+			index += 1
+
+			if (i - 7) % 8 == 0: 
+				if line != "": self.render.renderLine(line)
+				line = "\tdb "
+			else: line += ","
+			line += str(diff)
+
+		self.render.renderLine(line)
+		self.render.renderLine()
+
+
+	def renderDataScore(self,noteType):
+
+		self.latch = 0
+		self.shifted = 0
+		###
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+			diff = note.get(noteType)
+			if diff is None: continue
+
+			if diff in self.tab3:
+				index = self.tab3[diff]
+				self.renderDataBits(3,index)
+			else:
+				index = self.tab5[diff]
+				self.renderDataBits(3,self.SPECIAL)
+				self.renderDataBits(5,index)
+
+
+	def renderDataBits(self,length,value):
+
+		print(bits,value)
+		###
 
 
 if __name__ == '__main__':
