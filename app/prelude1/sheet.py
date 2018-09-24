@@ -20,7 +20,7 @@ class Sheet:
 		self.createScore()
 		self.calcMapping()
 		self.renderIntro()
-		if len(sys.argv) < 3: 
+		if len(sys.argv) < 3:
 			self.renderAnalysis()
 		else:
 			self.renderData()
@@ -572,7 +572,7 @@ class Sheet:
 			self.tab5[diff] = index
 			index += 1
 
-			if (i - 7) % 8 == 0: 
+			if (i - 7) % 8 == 0:
 				if line != "": self.render.renderLine(line)
 				line = "\tdb "
 			else: line += ","
@@ -584,9 +584,9 @@ class Sheet:
 
 	def renderDataScore(self,noteType):
 
-		self.latch = 0
-		self.shifted = 0
-		###
+		self.latchByte = 0
+		self.shiftCounter = 0
+		self.dataResult = []
 
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
@@ -602,10 +602,27 @@ class Sheet:
 				self.renderDataBits(5,index)
 
 
-	def renderDataBits(self,length,value):
+	def renderDataBits(self,result,length,value):
 
-		print(bits,value)
-		###
+		for i in range(0,length):
+
+			value <<= 1
+			if value & 0x100: bit = 1
+			else: bit = 0
+			value = value & 0xff
+
+			self.latchByte <<= 1
+			self.latchByte |= bit
+
+			self.shiftCounter += 1
+			if self.shiftCounter < 8: continue
+			self.renderDataByte()
+###########
+			self.shiftCounter = 0
+
+		if result != "": result += ","
+		result += str(self.latchByte)
+		self.latchByte = 0
 
 
 if __name__ == '__main__':
