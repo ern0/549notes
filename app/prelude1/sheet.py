@@ -582,11 +582,16 @@ class Sheet:
 		self.render.renderLine()
 
 
-	def renderDataScore(self,noteType):
+	def resetDataResult(self):
 
 		self.latchByte = 0
 		self.shiftCounter = 0
 		self.dataResult = []
+
+
+	def renderDataScore(self,noteType):
+
+		self.resetDataResult()
 
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
@@ -601,8 +606,10 @@ class Sheet:
 				self.renderDataBits(3,self.SPECIAL)
 				self.renderDataBits(5,index)
 
+		print(self.dataResult)
 
-	def renderDataBits(self,result,length,value):
+
+	def renderDataBits(self,length,value):
 
 		for i in range(0,length):
 
@@ -616,20 +623,25 @@ class Sheet:
 
 			self.shiftCounter += 1
 			if self.shiftCounter < 8: continue
-			self.renderDataByte()
-###########
 			self.shiftCounter = 0
+			self.dataResult.append(self.latchByte)
 
-		if result != "": result += ","
-		result += str(self.latchByte)
-		self.latchByte = 0
+			self.latchByte = 0
+
+
+	def test(self):
+		sheet.resetDataResult()
+		sheet.renderDataBits(4,0xff)
+		sheet.renderDataBits(4,0xff)
+		print( self.dataResult )
 
 
 if __name__ == '__main__':
 
 	try:
 		sheet = Sheet()
-		sheet.main()
+		#sheet.main()
+		sheet.test()
 
 	except KeyboardInterrupt:
 		print(" - interrupted")
