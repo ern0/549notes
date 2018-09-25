@@ -512,11 +512,16 @@ class Sheet:
 
 		self.SPECIAL = 7
 
-		diffId = "raw-diff-5"
-		self.renderDataStat(diffId)
+		noteType = "raw-diff-5"
+		self.resetDataResult()
+
+		self.renderDataStat(noteType)
 		self.render.renderHeader("data")
-		self.renderDataTable(diffId)
-		self.renderDataScore(diffId)
+		self.render.renderLine()
+		
+		self.renderFirstBytes(noteType)
+		self.renderDataTable(noteType)
+		self.renderDataNotes(noteType)
 
 
 	def renderDataStat(self,diffId):
@@ -539,9 +544,8 @@ class Sheet:
 
 		self.table = list(occurrences.keys())
 
-		self.render.renderComment("table for 3-bit index")
-		self.render.renderComment("")
-		self.render.renderLine("tab3:")
+		self.render.renderLine("tab3: ; table for 3-bit index")
+		self.render.renderLine()
 		line = ""
 		self.tab3 = {}
 		index = 0
@@ -559,9 +563,8 @@ class Sheet:
 		self.render.renderLine(line)
 		self.render.renderLine()
 
-		self.render.renderComment("table for 5-bit index")
-		self.render.renderComment("")
-		self.render.renderLine("tab5:")
+		self.render.renderLine("tab5: ; table for 5-bit index")
+		self.render.renderLine()
 		line = ""
 		self.tab5 = {}
 		index = 0
@@ -582,16 +585,35 @@ class Sheet:
 		self.render.renderLine()
 
 
+	def renderFirstBytes(self,noteType):
+
+		line = ""
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+			diff = note.get(noteType)
+			if diff is not None: continue
+
+			if line != "": line += ","
+			line += str(note.get("raw"))
+	
+		self.render.renderLine("data_start: ; starting raw bytes")
+		self.render.renderLine("\tdb " + line)
+		self.render.renderLine()
+
+
 	def resetDataResult(self):
 
 		self.latchByte = 0
 		self.shiftCounter = 0
-		self.dataResult = []
+		self.dataLine = ""
+		self.itemCounter = 0
 
 
-	def renderDataScore(self,noteType):
+	def renderDataNotes(self,noteType):
 
-		self.resetDataResult()
+		self.render.renderLine("data_notes: ; compressed note data")
+		self.render.renderLine()
 
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
@@ -606,10 +628,13 @@ class Sheet:
 				self.renderDataBits(3,self.SPECIAL)
 				self.renderDataBits(5,index)
 
-		print(self.dataResult)
+		self.renderPaddingBits()
+		self.renderDataLine()
 
 
 	def renderDataBits(self,length,value):
+
+		if length != 0: value <<= 8 - length
 
 		for i in range(0,length):
 
@@ -624,24 +649,46 @@ class Sheet:
 			self.shiftCounter += 1
 			if self.shiftCounter < 8: continue
 			self.shiftCounter = 0
-			self.dataResult.append(self.latchByte)
 
+			self.renderDataItem()
 			self.latchByte = 0
 
 
+	def renderPaddingBits(self):
+
+		if self.shiftCounter == 0: return
+		self.renderDataBits(8 - self.shiftCounter,0x55)
+
+
+	def renderDataItem(self):
+
+		if self.itemCounter == 0: self.dataLine = "\tdb "
+		if self.itemCounter > 0: self.dataLine += ","
+		self.dataLine += "$" 
+		self.dataLine += hex(self.latchByte).replace("x","")[-2:]
+		self.itemCounter += 1
+
+		if self.itemCounter != 8: return
+		self.renderDataLine()
+		self.itemCounter = 0
+
+
+	def renderDataLine(self):
+
+		if self.itemCounter == 0: return
+		self.render.renderLine(self.dataLine)
+
+
 	def test(self):
-		sheet.resetDataResult()
-		sheet.renderDataBits(4,0xff)
-		sheet.renderDataBits(4,0xff)
-		print( self.dataResult )
+		pass
 
 
 if __name__ == '__main__':
 
 	try:
 		sheet = Sheet()
-		#sheet.main()
-		sheet.test()
+		sheet.main()
+		#sheet.test()
 
 	except KeyboardInterrupt:
 		print(" - interrupted")

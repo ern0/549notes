@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
 
-./sheet.py sheet.inc fin
-#fasm player.asm player.com
+score/sheet.py score.inc fin
+fasm prelude1.asm prelude1.com
 

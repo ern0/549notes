@@ -62,3 +62,4 @@ wait_tick:
 
 	ret
 
+include "score.inc"
