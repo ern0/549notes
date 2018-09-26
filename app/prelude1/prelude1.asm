@@ -1,5 +1,9 @@
 	org 	100H
 
+	mov 	al,3fH
+	mov 	dx,331H
+	out 	dx,al
+
 	mov	ah,2cH
 	mov	cx,5
 
