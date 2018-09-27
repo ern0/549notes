@@ -1,12 +1,16 @@
+;------------------------------------------------------
 ; dump.asm - dump for notes and diffs
 
 
+;------------------------------------------------------
 init_newline:
+
 	mov	byte [char_counter],0
 	ret
 
-
+;------------------------------------------------------
 check_newline:
+
 	inc	byte [char_counter]
 	cmp	byte [char_counter],8
 	je	@newline
@@ -20,17 +24,24 @@ check_newline:
 	mov	al,10
 	jmp	print_char
 
-
+;------------------------------------------------------
 print_diff:
+
 	call	print_sign
+	; fall print_note
+
+;------------------------------------------------------
+print_note:
+
 	call	print_dec
 	mov	al,' '
 	call	print_char
 
 	jmp	check_newline
-
 	
+;------------------------------------------------------
 print_sign:
+
 	pusha
 
 	or	al,al
@@ -54,8 +65,9 @@ print_sign:
 	popa
 	ret
 
-
+;------------------------------------------------------
 print_dec:
+
 	pusha
 
 	cbw
@@ -69,8 +81,9 @@ print_dec:
 	popa
 	ret
 
-
+;------------------------------------------------------
 print_num:
+
 	pusha
 
 	or	al,al
@@ -85,8 +98,9 @@ print_num:
 	popa
 	ret
 
-
+;------------------------------------------------------
 print_char:
+
 	push	ax
 	push	dx
 
@@ -98,10 +112,9 @@ print_char:
 	pop	ax
 	ret
 
-
+;------------------------------------------------------
 nums:
 	db	"0123456789"
-
 
 char_counter:
 	db	0

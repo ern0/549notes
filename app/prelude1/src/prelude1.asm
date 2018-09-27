@@ -7,7 +7,7 @@
 	call	read_bits
 
 	mov	al,23
-	call	print_diff
+	call	print_note
 	mov	al,0
 	call	print_diff
 	mov	al,-54
