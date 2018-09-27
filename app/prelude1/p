@@ -2,4 +2,4 @@
 clear
 
 score/sheet.py src/score.inc fin
-watch fasm src/prelude1.asm prelude1.com
+watch -n1 "fasm src/prelude1.asm prelude1.com ; echo -- ; git status --short"

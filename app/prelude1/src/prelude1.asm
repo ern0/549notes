@@ -5,9 +5,10 @@
 	lea	bp,[data_notes]
 	mov	cx,3
 	call	read_bits
+	call	print_note
 
 	mov	al,23
-	call	print_note
+	call	print_diff
 	mov	al,0
 	call	print_diff
 	mov	al,-54
