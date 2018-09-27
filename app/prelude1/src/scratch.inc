@@ -1,5 +1,3 @@
-	org 	100H
-
 	mov 	al,3fH
 	mov 	dx,331H
 	out 	dx,al
@@ -16,7 +14,7 @@ next_note:
 	pop	cx
 	pop	ax
 
-	add	ah,3
+	add	ah,2
 	loop	next_note
 
 	mov	ax,4c00H
@@ -65,5 +63,3 @@ wait_tick:
 	loop	wait_some
 
 	ret
-
-include "score.inc"

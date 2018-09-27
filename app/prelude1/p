@@ -1,6 +1,5 @@
 #!/bin/bash
 clear
 
-score/sheet.py score.inc fin
-fasm prelude1.asm prelude1.com
-
+score/sheet.py src/score.inc fin
+fasm src/prelude1.asm prelude1.com
