@@ -19,6 +19,7 @@ check_newline:
 @newline:
 	call	init_newline
 
+print_newline:
 	mov	al,13
 	call	print_char
 	mov	al,10
