@@ -23,6 +23,8 @@ print_newline:
 	mov	al,13
 	call	print_char
 	mov	al,10
+	call	print_char
+	mov	al,' '
 	jmp	print_char
 
 ;-----------------------------------------------------------------------

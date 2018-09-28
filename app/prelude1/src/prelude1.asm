@@ -8,10 +8,19 @@
 ;  from Book I of The Well-Tempered Clavier
 ; on the MIDI interface
 ;
-; Assembler: TASM
+; Target: 80186/80286, assembler: TASM
 ;
 ;-----------------------------------------------------------------------
 	org 	100H
+;-----------------------------------------------------------------------
+; Register allocation:
+;
+; 	BP - bit read data pointer
+; 	CH - bit read latch counter
+;	CL - bit read loop (3 or 5)
+; 	AH - bit read latch value
+;	AL - bit read result
+;	BX - table3 or table5 for xlat
 ;-----------------------------------------------------------------------
 
 	mov	ax,13H
@@ -23,25 +32,27 @@
 	xor	ch,ch
 
 	call	print_newline
-	mov	si,10
+	mov	si,5
 
-@next:
-	lea	bx,[tab3]
+@next_note:
+	lea	bx,[tab3 - 1]
 	mov	cl,3
 	call	read_bits
-	cmp	al,7
-	jne	@data
+	or	al,al
+	jne	@bits_read
 
 	lea	bx,[tab5]
 	mov	cl,5
 	call	read_bits
-@data:
-	call	print_note
+@bits_read:
+	;call	print_note;;;
 	xlatb
 	call	print_diff
 
 	dec	si
-	jnz	@next
+	jne	@next_note
+
+	call	print_newline
 
 	mov	ax,4c00H
 	int	21H
@@ -55,11 +66,6 @@
 ; $30,$50,$0f,$8f
 
 
-;-----------------------------------------------------------------------
-; BP: data pointer
-; CH: latch counter
-; AH: latch value
-;-----------------------------------------------------------------------
 read_bits:
 
 	xor	al,al

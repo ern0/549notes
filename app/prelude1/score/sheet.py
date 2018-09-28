@@ -62,6 +62,7 @@ class Sheet:
 
 
 	def __init__(self):
+
 		self.render = Render(self)
 		self.totals = {}
 
@@ -510,15 +511,13 @@ class Sheet:
 
 	def renderData(self):
 
-		self.SPECIAL = 7
-
 		noteType = "raw-diff-5"
 		self.resetDataResult()
 
 		self.renderDataStat(noteType)
 		self.render.renderHeader("data")
 		self.render.renderLine()
-		
+
 		self.renderFirstBytes(noteType)
 		self.renderDataTable(noteType)
 		self.renderDataNotes(noteType)
@@ -542,19 +541,17 @@ class Sheet:
 			reverse = True
 		))
 
-		self.table = list(occurrences.keys())
+		self.topDiffs = list(occurrences.keys())
 
-		self.render.renderLine("tab3: ; table for 3-bit index")
+		self.render.renderLine("tab3: ; table for 3-bit index (special item 0 is missing)")
 		self.render.renderLine()
 		line = ""
 		self.tab3 = {}
-		index = 0
 
-		for i in range(0,7):
-			diff = self.table[i]
+		for index in range(0,7):
 
-			self.tab3[diff] = index
-			index += 1
+			diff = self.topDiffs[index]
+			self.tab3[diff] = index + 1  # slot 0 is used for special purpose
 
 			if line == "": line += "\tdb "
 			else: line += ","
@@ -567,15 +564,13 @@ class Sheet:
 		self.render.renderLine()
 		line = ""
 		self.tab5 = {}
-		index = 0
 
-		for i in range(7,len(self.table)):
-			diff = self.table[i]
+		for index in range(7,len(self.topDiffs)):
 
+			diff = self.topDiffs[index]
 			self.tab5[diff] = index
-			index += 1
 
-			if (i - 7) % 8 == 0:
+			if (index - 7) % 8 == 0:
 				if line != "": self.render.renderLine(line)
 				line = "\tdb "
 			else: line += ","
@@ -596,7 +591,7 @@ class Sheet:
 
 			if line != "": line += ","
 			line += str(note.get("raw"))
-	
+
 		self.render.renderLine("data_start: ; starting raw bytes")
 		self.render.renderLine("\tdb " + line)
 		self.render.renderLine()
@@ -625,7 +620,7 @@ class Sheet:
 				self.renderDataBits(3,index)
 			else:
 				index = self.tab5[diff]
-				self.renderDataBits(3,self.SPECIAL)
+				self.renderDataBits(3,0) # 0 is a special value: read next 5 bit
 				self.renderDataBits(5,index)
 
 		self.renderPaddingBits()
@@ -664,7 +659,7 @@ class Sheet:
 
 		if self.itemCounter == 0: self.dataLine = "\tdb "
 		if self.itemCounter > 0: self.dataLine += ","
-		self.dataLine += "$" 
+		self.dataLine += "$"
 		self.dataLine += hex(self.latchByte).replace("x","")[-2:]
 		self.itemCounter += 1
 
