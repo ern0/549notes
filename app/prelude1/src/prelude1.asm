@@ -1,4 +1,4 @@
-;-----------------------------------------------------------------------
+;#######################################################################
 ; Prelude1 - PC-DOS 256-byte intro by ern0
 ; Created 2018.09.28, released: N/A
 ;
@@ -8,7 +8,7 @@
 ;  from Book I of The Well-Tempered Clavier
 ; on the MIDI interface
 ;
-; Target: 80186/80286, assembler: TASM
+; Target: 80386 real mode, assembler: TASM
 ;
 ;-----------------------------------------------------------------------
 ; Data decoding example (only some bytes from the start)
@@ -56,19 +56,23 @@
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8...
 ; % 0*0 0 0 0 1/0 0 | 0*0 0 0 0 1/0 0 | 1/0 0 0/0 1 0 1 | 0/...
 ;      *1:+05   [5-bit]   *1:+05   1:=0  [5-bit]  *10:+10 ...
-
+;
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-; 	BP - bit read data pointer
-; 	CH - bit read latch counter
-;	CL - bit read loop (3 or 5)
-; 	AH - bit read latch value
-;	AL - bit read result
+;	SI - note counter
+; 	BP - load data pointer
+; 	CH - latch counter
+;	CL - word length loop (3 or 5)
+; 	AH - latch value
+;	AL - result word (on LSBs)
 ;	BX - table3 or table5 for xlat
-;-----------------------------------------------------------------------
+;#######################################################################
 	org 	100H
 
+	mov 	al,3fH
+	mov 	dx,331H
+	out 	dx,al
 	mov	ax,13H
 	int	10H
 
@@ -78,54 +82,123 @@
 	xor	ch,ch
 
 	call	print_newline
-	mov	si,20
+	xor	si,si
 
 @next_note:
+	
+	call	load_note
+	
+	mov	cl,al
+	call	play_note
+
+	mov	al,6
+	call	delay
+
+	inc	si
+	cmp	si,202 - 5
+	jne	@next_note
+
+	int	20H
+
+;#######################################################################
+load_note:
+
 	lea	bx,[tab3 - 1]
 	mov	cl,3
+;-----------------------------------------------------------------------
+@read_word_cl:		; read CL-bit (3 or 5) word
+	xor	al,al
+@next_bit:
+	or	ch,ch
+	jnz	@shift_from_latch
 
-@read_again:	
-	call	read_bits
-	or	al,al
-	jnz	@bits_read
+	mov	ah,[bp]	; load byte to latch
+	inc	bp
+	mov	ch,8
+
+@shift_from_latch:
+	dec	ch
+	sal	ax,1		; CF << AH MSB and shift left AL by 1
+	adc	al,0		; AL LSB << CF (AL is already shifted)
+
+	dec	cl
+	jne	@next_bit
+
+	or	al,al		; check for %000 special value
+	jnz	@read_word_done
 
 	add	bl,(tab5 - tab3) ; lea bx,[tab5 - 1]
 	mov	cl,5
-	jmp	@read_again
+	jmp	@read_word_cl
 
-@bits_read:
+;-----------------------------------------------------------------------
+@read_word_done:
+
 	xlatb
-	call	print_diff
 
-	dec	si
-	jne	@next_note
+;-----------------------------------------------------------------------
 
-	mov	ax,4c00H
-	int	21H
+	lea	di,[data_start]
+	add	al,[di]
 
-read_bits:
+	mov	edx,[di + 1]
+	mov	[di],edx
 
-	xor	al,al
-@xbit:
-	call	read_one_bit
-	dec	cl
-	jne	@xbit
+	mov	[di + 4],al
+
 	ret
 
-read_one_bit:
+;#######################################################################
+play_note:
+	pusha
 
-	or	ch,ch
-	jnz	@shift
+	mov	ah,90H		; Note On, Channel 1 
+	call	play_byte
 
-	mov	ah,[bp]
-	inc     bp
-	mov	ch,8
+	mov	ah,cl		; Pitch
+	call	play_byte
 
-@shift:
-	dec	ch
-	sal	ax,1		; CF << AH MSB and prepare AL by SHL
-	adc	al,0		; AL LSB << CF (AL is already shifted)
+	mov	ah,7fH		; Velocity
+	call	play_byte
 
+	popa
+	ret
+;-----------------------------------------------------------------------
+play_byte:
+
+	mov	dx,331H
+	in	al,dx
+	test	al,40H
+	jnz	play_byte
+
+	dec	dx
+	mov	al,ah
+	out	dx,al
+
+	ret
+;#######################################################################
+delay:
+	pusha
+
+	xor	ch,ch
+	mov	cl,al
+
+wait_some:
+	push	cx
+
+	mov	ah,2cH
+	int	21H
+	mov	bl,dl
+
+wait_tick:
+	mov	ah,2cH
+	int	21H
+	cmp	bl,dl
+	je	wait_tick
+	pop	cx
+	loop	wait_some
+
+	popa
 	ret
 ;-----------------------------------------------------------------------
 include "score.inc"

@@ -48,6 +48,7 @@ class Note:
 
 		try:
 			octave = int(text[2]) * 12
+			octave += 24
 		except:
 			print("invalid octave: " + str(text))
 			quit()
