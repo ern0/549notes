@@ -83,13 +83,16 @@
 @next_note:
 	lea	bx,[tab3 - 1]
 	mov	cl,3
+
+@read_again:	
 	call	read_bits
 	or	al,al
-	jne	@bits_read
+	jnz	@bits_read
 
-	lea	bx,[tab5 - 1]
+	add	bl,(tab5 - tab3) ; lea bx,[tab5 - 1]
 	mov	cl,5
-	call	read_bits
+	jmp	@read_again
+
 @bits_read:
 	xlatb
 	call	print_diff
