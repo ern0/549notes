@@ -620,8 +620,10 @@ class Sheet:
 				self.renderDataBits(3,index)
 			else:
 				index = self.tab5[diff]
-				self.renderDataBits(3,0) # 0 is a special value: read next 5 bit
-				self.renderDataBits(5,index)
+				# 0 is a special value: read next 5 bit
+				self.renderDataBits(3,0)
+				# add 1 to index: avoid 0 value
+				self.renderDataBits(5,index + 1)
 
 		self.renderPaddingBits()
 		self.renderDataLine()

@@ -26,8 +26,11 @@
 ;       (5-bit index values are marked with "*")
 ;     - separator: ":"
 ;     - diff: lookup value from tab3/tab5 using index value
-;       note that tab3's first element is missing (index is never 0)
-;       so first element of tab3 (at offset 0) belongs to index=1
+;       - note that tab3's first element is missing (index is never 0)
+;         so first element of tab3 (at offset 0) belongs to index=1
+;       - note that tab5's first element is never used (index is never 0)
+;         in order to re-enter bit reader routine with CL=5
+
 ;
 ;   $2A               $4A               $CA
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 |
@@ -39,20 +42,20 @@
 ; % 0 0 1/0 0 1/1 0 | 1/1 0 0/0 0 1/0 | 1 0/0 1 1/0 0 1/|
 ;   1:=0  1:=0   5:+1   4:+2  1:=0   2:-2   3:-1  1:=0
 ;
-;   $30               $0C               $00
+;   $30               $10               $04
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 |
-; % 0 0 1/1 0 0/0 0 | 0*0 0 0 1 1/0 0 | 0*0 0 0 0 0/0 0 |(1)/
-;   1:=0  4:+2  [5-bit]  *3:+04   [5-bit]  *0:+05      1:0
+; % 0 0 1/1 0 0/0 0 | 0*0 0 1 0 0/0 0 | 0*0 0 0 0 1/0 0 |(1)/
+;   1:=0  4:+2  [5-bit]  *4:+04   [5-bit]  *1:+05      1:0
 ;
 ;   $AF               $B3               $34
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 |
 ; % 1/0 1 0/1 1 1/1 | 1 0/1 1 0/0 1 1/| 0 0 1/1 0 1/0 0 |(0)*
 ;     2:-2  7:-3   6:-7   6:-7  3:-1    1:=0  5:+1  [5-bit]
 ;
-;   $00               $00               $84               $FD
+;   $04               $04               $85               $7D
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8...
-; % 0*0 0 0 0 0/0 0 | 0*0 0 0 0 0/0 0 | 1/0 0 0/0 1 0 0 | 1/...
-;      *0:+05   [5-bit]   *0:+05   1:=0  [5-bit]  9:+10 ...
+; % 0*0 0 0 0 1/0 0 | 0*0 0 0 0 1/0 0 | 1/0 0 0/0 1 0 1 | 0/...
+;      *1:+05   [5-bit]   *1:+05   1:=0  [5-bit]  *10:+10 ...
 
 ;-----------------------------------------------------------------------
 ; Register allocation:
@@ -84,7 +87,7 @@
 	or	al,al
 	jne	@bits_read
 
-	lea	bx,[tab5]
+	lea	bx,[tab5 - 1]
 	mov	cl,5
 	call	read_bits
 @bits_read:
