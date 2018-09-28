@@ -1,6 +1,6 @@
 ;-----------------------------------------------------------------------
 ; Prelude1 - PC-DOS 256-byte intro by ern0
-; Created 2018.09.28, released: n.a.
+; Created 2018.09.28, released: N/A
 ;
 ; This program plays
 ;  J.S.Bach: Prelude in C major, BWV 846
@@ -11,7 +11,7 @@
 ; Target: 80186/80286, assembler: TASM
 ;
 ;-----------------------------------------------------------------------
-; Data decoding example (some bytes from the start):
+; Data decoding example (only some bytes from the start)
 ;
 ;   line 1: encoded data bytes ($2A, $4A...)
 ;   line 2: ruler for converting hexadecimal values to binary
@@ -33,7 +33,7 @@
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 |
 ; % 0 0 1/0 1 0/1 0 | 0/1 0 0/1 0 1/0 | 1 1/0 0 1/0 1 0/|
 ;   1:=0  2:-2   4:+2   4:+2  5:+1   3:-1   1:=0  2:-2
-
+;
 ;   $26               $C2               $99
 ;   8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 | 8 4 2 1 8 4 2 1 |
 ; % 0 0 1/0 0 1/1 0 | 1/1 0 0/0 0 1/0 | 1 0/0 1 1/0 0 1/|
@@ -93,8 +93,6 @@
 
 	dec	si
 	jne	@next_note
-
-	call	print_newline
 
 	mov	ax,4c00H
 	int	21H

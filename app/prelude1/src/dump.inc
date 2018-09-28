@@ -18,6 +18,8 @@ check_newline:
 
 @newline:
 	call	init_newline
+	call	print_newline
+	; fall print_newline
 
 print_newline:
 	mov	al,13
