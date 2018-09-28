@@ -568,7 +568,7 @@ class Sheet:
 		for index in range(7,len(self.topDiffs)):
 
 			diff = self.topDiffs[index]
-			self.tab5[diff] = index
+			self.tab5[diff] = index - 7 # index 7 is the new index 0
 
 			if (index - 7) % 8 == 0:
 				if line != "": self.render.renderLine(line)
