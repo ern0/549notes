@@ -63,3 +63,36 @@ wait_tick:
 	loop	wait_some
 
 	ret
+
+;--------------------------------
+
+
+	mov	al,23
+	call	print_diff
+	mov	al,0
+	call	print_diff
+	mov	al,-54
+	call	print_diff
+
+	mov	ax,4c00H
+	int	21H
+
+;--------------------------------
+
+	mov	cl,2
+	call	read_bits
+	call	print_note
+
+	mov	cl,4
+	call	read_bits
+	call	print_note
+
+	call	print_newline
+
+	mov	ax,4c00H
+	int	21H
+
+test_data:
+	db	00011100B, 10001111B
+	;	11122333...3
+

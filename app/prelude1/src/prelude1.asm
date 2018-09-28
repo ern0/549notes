@@ -6,43 +6,36 @@
 
 	call	init_newline
 
-	lea	bp,[test_data]
+	lea	bp,[data_notes]
 	xor	ch,ch
 
 	call	print_newline
+	mov	cx,8
 
+@next:
+	push	cx
+
+	lea	bx,[tab3]
 	mov	cl,3
 	call	read_bits
-	call	print_note
+	cmp	al,7
+	jne	@data
 
-	mov	cl,2
+	lea	bx,[tab5]
+	mov	cl,5
 	call	read_bits
+@data:
 	call	print_note
 
-	mov	cl,4
-	call	read_bits
-	call	print_note
-
-	call	print_newline
+	pop	cx
+	loop	@next
 
 	mov	ax,4c00H
 	int	21H
 
-test_data:
-	db	00011100B, 10001111B
-	;	11122333...3
-
-	mov	al,23
-	call	print_diff
-	mov	al,0
-	call	print_diff
-	mov	al,-54
-	call	print_diff
-
-	mov	ax,4c00H
-	int	21H
 
 ;------------------------------------------------------
+; BP: data pointer
 ; CH: latch counter
 ; AH: latch value
 ;------------------------------------------------------
