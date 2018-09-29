@@ -1,4 +1,7 @@
 #!/bin/bash
 clear
 
+score/sheet.py analysis.txt x
+exit
+
 watch -n1 "git status --short ; echo -- ; score/sheet.py src/score.inc fin ; fasm src/prelude1.asm prelude1.com"

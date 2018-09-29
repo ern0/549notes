@@ -543,7 +543,7 @@ class Sheet:
 
 		self.topDiffs = list(occurrences.keys())
 
-		self.render.renderLine("tab3: ; table for 3-bit index (special item 0 is missing)")
+		self.render.renderLine("tab3: ; table for 3-bit index (item 0 is missing)")
 		self.render.renderLine()
 		line = ""
 		self.tab3 = {}
@@ -560,7 +560,7 @@ class Sheet:
 		self.render.renderLine(line)
 		self.render.renderLine()
 
-		self.render.renderLine("tab5: ; table for 5-bit index")
+		self.render.renderLine("tab5: ; table for 5-bit index (item 0 is missing)")
 		self.render.renderLine()
 		line = ""
 		self.tab5 = {}
@@ -613,7 +613,8 @@ class Sheet:
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
 			diff = note.get(noteType)
-			if diff is None: continue
+			
+			if diff is None: diff = 0
 
 			if diff in self.tab3:
 				index = self.tab3[diff]
