@@ -32,6 +32,10 @@ class Sheet:
 
 	def renderAnalysis(self):
 
+		#self.calcDiff("raw","raw-diff-5",5)
+		#self.renderEstimation("raw-diff-5",3,5,False,True)
+		#return
+
 		diffs = (1,2,3,4,5,6,7,8,9,10,"mixed/1/5",)
 		extras = (1,2,3,4,5,6,7,8,9,10,1,)
 
@@ -54,9 +58,11 @@ class Sheet:
 				self.renderHistogram(diffId,orderBy = "count")
 
 				for split in (1,2,3,4,5,6,):
-					self.renderEstimation(diffId,split,extra,False)
+					self.renderEstimation(diffId,split,extra,False,False)
 					if rm == "raw":
-						self.renderEstimation(diffId,split,extra,True)
+						self.renderEstimation(diffId,split,extra,True,False)
+						self.renderEstimation(diffId,split,extra,False,True)
+						self.renderEstimation(diffId,split,extra,True,True)
 
 		self.renderStoreRawWithTable()
 		self.renderStoreRawWithoutTable()
@@ -197,7 +203,8 @@ class Sheet:
 		for note in self.notes:
 
 			value = note.get(noteType)
-			if value is None: continue
+
+			if value is None: value = 0
 
 			if value not in result:
 				formatted = note.renderSingle(noteType,True)
@@ -311,16 +318,17 @@ class Sheet:
 		self.render.renderLine()
 
 
-	def renderEstimation(self,noteType,cBitLen,extra,noCompTab):
+	def renderEstimation(self,noteType,cBitLen,extra,noCompTab,noUcTab):
 
-		if noCompTab: nct = " nctab"
-		else: nct = ""
+		notab = ""
+		if noCompTab: notab += " nctab"
+		if noUcTab: notab += " nutab" 
 		self.render.renderHeader(
 			"estimation for " +
 			str(noteType) +
 			" @ " +
 			str(cBitLen) +
-			nct
+			notab
 		)
 
 		occurrences = self.countOccurrences(noteType)
@@ -339,6 +347,8 @@ class Sheet:
 		cTabLo = - (2 ** (cBitLen - 1)) + 1
 		cTabHi = 2 ** (cBitLen - 1) - 1
 		cTabSize = 2 ** (cBitLen) - 1
+		uLoValue = 0
+		uHiValue = 0
 		index = 0
 		for value in occurrences:
 			(count,formatted) = occurrences[value]
@@ -347,24 +357,22 @@ class Sheet:
 			tNoteCount += count
 
 			if noCompTab:
-				if value < cTabLo or value > cTabHi:
-					uNoteNum += 1
-					uNoteCount += count
-				else:
-					cNoteNum += 1
-					cNoteCount += count
-
+				if value < cTabLo or value > cTabHi: u = True
+				else: u = False
 			else:
-				if index < cTabSize:
-					cNoteNum += 1
-					cNoteCount += count
-				else:
-					uNoteNum += 1
-					uNoteCount += count
+				if index < cTabSize: u = False
+				else: u = True
+
+			if u:
+				uNoteNum += 1
+				uNoteCount += count
+				if uLoValue > value: uLoValue = value
+				if uHiValue < value: uHiValue = value
+			else:
+				cNoteNum += 1
+				cNoteCount += count
 
 			index += 1
-
-		# todo: nct table size
 
 		self.render.renderComment(
 			"note num:  " +
@@ -383,7 +391,10 @@ class Sheet:
 		if uNoteNum <= 0:
 			uBitLen = 0
 		else:
-			uBitLen = math.ceil( math.log(uNoteNum,2) )
+			if noUcTab:
+				uBitLen = math.ceil( math.log(uHiValue - uLoValue,2) )
+			else:
+				uBitLen = math.ceil( math.log(uNoteNum,2) )
 			uBitLen += cBitLen
 
 		self.render.renderComment(
@@ -405,7 +416,8 @@ class Sheet:
 
 		if noCompTab:	cTable = 0
 		else: cTable = cNoteNum
-		uTable = uNoteNum
+		if noUcTab: uTable = 0
+		else: uTable = uNoteNum
 		tTable = cTable + uTable
 
 		self.render.renderComment(
@@ -424,7 +436,7 @@ class Sheet:
 
 		self.render.renderLine()
 
-		self.totals[noteType + " @ " + str(cBitLen) + nct] = total
+		self.totals[noteType + " @ " + str(cBitLen) + notab] = total
 
 
 	def renderStoreRawWithTable(self):
@@ -533,7 +545,7 @@ class Sheet:
 		self.calcDiff("raw",diffId,5)
 		self.render.renderScore(diffId,("text","raw",diffId,))
 		self.renderHistogram(diffId,orderBy = "count")
-		self.renderEstimation(diffId,3,5,False)
+		self.renderEstimation(diffId,3,5,False,False)
 
 
 	def renderData1Table(self,diffId):
