@@ -12,7 +12,7 @@ init_newline:
 check_newline:
 
 	inc	byte [char_counter]
-	cmp	byte [char_counter],5  ; according to score.inc
+	cmp	byte [char_counter],5  ; match score dump
 	je	@newline
 	ret
 

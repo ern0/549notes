@@ -23,7 +23,10 @@ class Sheet:
 		if len(sys.argv) < 3:
 			self.renderAnalysis()
 		else:
-			self.renderData()
+			if str(sys.argv[2]) == "1":
+				self.renderData1()
+			else:
+				self.renderData2()
 		self.saveFile()
 
 
@@ -509,21 +512,23 @@ class Sheet:
 		self.totals["store raw " +str(valueBits) + "-bit w/o table"] = storage
 
 
-	def renderData(self):
+# ---- data, method 1 -----------------------------------------------------------------
+
+	def renderData1(self):
 
 		noteType = "raw-diff-5"
 		self.resetDataResult()
 
-		self.renderDataStat(noteType)
+		self.renderData1Stat(noteType)
 		self.render.renderHeader("data")
 		self.render.renderLine()
 
 		self.renderFirstBytes(noteType)
-		self.renderDataTable(noteType)
-		self.renderDataNotes(noteType)
+		self.renderData1Table(noteType)
+		self.renderData1Notes(noteType)
 
 
-	def renderDataStat(self,diffId):
+	def renderData1Stat(self,diffId):
 
 		self.calcDiff("raw",diffId,5)
 		self.render.renderScore(diffId,("text","raw",diffId,))
@@ -531,7 +536,7 @@ class Sheet:
 		self.renderEstimation(diffId,3,5,False)
 
 
-	def renderDataTable(self,diffId):
+	def renderData1Table(self,diffId):
 
 		occurrences = self.countOccurrences(diffId)
 
@@ -580,6 +585,39 @@ class Sheet:
 		self.render.renderLine()
 
 
+	def renderData1Notes(self,noteType):
+
+		self.render.renderLine("data_notes: ; compressed note data")
+		self.render.renderLine()
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+			diff = note.get(noteType)
+
+			if diff is None: diff = 0
+
+			if diff in self.tab3:
+				index = self.tab3[diff]
+				self.renderDataBits(3,index)
+			else:
+				index = self.tab5[diff]
+				# 0 is a special value: read next 5 bit
+				self.renderDataBits(3,0)
+				# add 1 to index: avoid 0 value
+				self.renderDataBits(5,index + 1)
+
+		self.renderPaddingBits()
+		self.renderDataLine()
+
+# ---- data, method 2 -----------------------------------------------------------------
+
+	def renderData2(self):
+
+		self.render.renderHeader("data")
+		self.render.renderLine()
+
+# ---- data, common -------------------------------------------------------------------
+
 	def renderFirstBytes(self,noteType):
 
 		line = ""
@@ -603,31 +641,6 @@ class Sheet:
 		self.shiftCounter = 0
 		self.dataLine = ""
 		self.itemCounter = 0
-
-
-	def renderDataNotes(self,noteType):
-
-		self.render.renderLine("data_notes: ; compressed note data")
-		self.render.renderLine()
-
-		for i in range(0,len(self.notes)):
-			note = self.notes[i]
-			diff = note.get(noteType)
-			
-			if diff is None: diff = 0
-
-			if diff in self.tab3:
-				index = self.tab3[diff]
-				self.renderDataBits(3,index)
-			else:
-				index = self.tab5[diff]
-				# 0 is a special value: read next 5 bit
-				self.renderDataBits(3,0)
-				# add 1 to index: avoid 0 value
-				self.renderDataBits(5,index + 1)
-
-		self.renderPaddingBits()
-		self.renderDataLine()
 
 
 	def renderDataBits(self,length,value):
@@ -676,10 +689,7 @@ class Sheet:
 		if self.itemCounter == 0: return
 		self.render.renderLine(self.dataLine)
 
-
-	def test(self):
-		pass
-
+# -------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
