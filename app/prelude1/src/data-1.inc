@@ -83,14 +83,14 @@
 ; 26. +12  1 201 #
 ; 27. +10  1 202 #
 
-; ---- estimation for raw-diff-5 @ 3 nctab -------------------------------------
+; ---- estimation for raw-diff-5 @ 3 -------------------------------------------
 ; 
 ; note num:      7.c   20.u   27.t
-; note count:  158.c   44.u  202.t
+; note count:  164.c   38.u  202.t
 ; note bits:     3.c    8.u
-; storage:      59.c   44.u  103.t
-; table:         0.c   20.u   20.t
-; total bytes (storage + leading + table): 129
+; storage:      61.c   38.u   99.t
+; table:         7.c   20.u   27.t
+; total bytes (storage + leading + table): 132
 
 ; ---- data --------------------------------------------------------------------
 ; 

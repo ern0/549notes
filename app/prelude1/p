@@ -1,12 +1,13 @@
 #!/bin/bash
 clear
 
-score/sheet.py analysis.txt
-exit
-
-score/sheet.py src/data-1.inc 1
-fasm src/main-1.asm main-1.com
-score/sheet.py src/data-2.inc 2
-fasm src/main-2.asm main-2.com
-
-#watch -n1 "git status --short ; echo -- ; score/sheet.py src/score.inc fin ; fasm src/prelude1.asm prelude1.com"
+watch -n1 " \
+	score/sheet.py analysis.txt ;\
+	score/sheet.py src/data-1.inc 1 ;\
+	fasm src/main-1.asm main-1.com ;\
+	score/sheet.py src/data-2.inc 2 ;\
+	fasm src/main-2.asm main-2.com ;\
+	echo -- ;\
+	fasm src/data-1.inc ;\
+	fasm src/data-2.inc ;\
+"
