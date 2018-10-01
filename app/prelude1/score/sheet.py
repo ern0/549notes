@@ -19,9 +19,9 @@ class Sheet:
 
 		self.createScore()
 		self.calcMapping()
-		self.renderIntro()
 		if len(sys.argv) < 3:
 			self.renderAnalysis()
+			self.renderIntro(None)
 		else:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()
@@ -105,17 +105,18 @@ class Sheet:
 				f.write(line + "\n")
 
 
-	def renderIntro(self):
+	def renderIntro(self,signature):
 
 		self.render.renderHeader("generated file, do not edit","*",False)
-		self.render.renderLine()
+		if signature is not None: self.render.renderComment("compression method: " + signature)
+		self.render.renderComment()
 
 		self.render.renderComment("Transformed score data and analysis of")
 		self.render.renderComment(" J.S.Bach: Prelude in C major, BWV 846")
 		self.render.renderComment(" from the Prelude and Fugue in C major, BWV 846")
 		self.render.renderComment(" from Book I of The Well-Tempered Clavier")
 		self.render.renderComment("for PC-DOS 256-byte intro")
-		self.render.renderLine()
+		self.render.renderComment()
 
 		self.render.renderComment(
 			"part1: A B C D E [C D E] - " +
@@ -529,6 +530,8 @@ class Sheet:
 	def renderData1(self):
 
 		noteType = "raw-diff-5"
+
+		self.renderIntro(noteType)
 		self.resetDataResult()
 
 		self.renderData1Stat(noteType)
@@ -624,6 +627,8 @@ class Sheet:
 # ---- data, method 2 -----------------------------------------------------------------
 
 	def renderData2(self):
+
+		self.renderIntro("who knows")
 
 		self.render.renderHeader("data")
 		self.render.renderLine()
