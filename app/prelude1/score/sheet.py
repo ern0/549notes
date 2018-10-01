@@ -595,7 +595,7 @@ class Sheet:
 
 	def renderData1Notes(self,noteType):
 
-		self.render.renderLine("data_notes: ; compressed note data")
+		self.render.renderLine("data_notes: ; bit packed note data")
 		self.render.renderLine()
 
 		for i in range(0,len(self.notes)):
@@ -651,7 +651,7 @@ class Sheet:
 		self.render.renderLine("\tDATA_USUB = " + str(uSub))
 		self.render.renderLine()
 
-		self.render.renderLine("data_notes: ; compressed note data")
+		self.render.renderLine("data_notes: ; bit packed note data")
 		self.render.renderLine()
 
 		for i in range(0,len(self.notes)):
@@ -675,9 +675,9 @@ class Sheet:
 		line = ""
 
 		for i in range(0,len(self.notes)):
+			if i == count: break
+
 			note = self.notes[i]
-			diff = note.get(noteType)
-			if i < count: continue
 
 			if line != "": line += ","
 			line += str(note.get("raw"))

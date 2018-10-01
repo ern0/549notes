@@ -41,9 +41,9 @@
 	call	load_note
 	
 	mov	cl,al
-	call	print_note
+	call	play_note
 
-	mov	al,1
+	mov	al,6
 	call	delay
 
 	inc	byte [counter]
