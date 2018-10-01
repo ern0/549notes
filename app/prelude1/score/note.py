@@ -10,9 +10,14 @@ class Note:
 	def __init__(self,sheet):
 		self.sheet = sheet
 		self.values = {}
+		self.leading = False
 
 
 	def set(self,type,value):
+
+		if value is None:
+			self.leading = True
+			value = 0
 
 		self.values[type] = value
 
@@ -61,7 +66,7 @@ class Note:
 		if type(typeMixed) is tuple: 
 			return self.renderTuple(typeMixed,isComment)
 		else:
-			return self.renderSingle(typeMixed,isComment)
+			return self.renderSingle(typeMixed,isComment,False)
 
 
 	def renderTuple(self,typeTuple,isComment):
@@ -75,7 +80,7 @@ class Note:
 		return line
 
 
-	def renderSingle(self,type,isComment):
+	def renderSingle(self,type,isComment,isHistogram):
 
 		value = self.values[type]
 		try: strAbsValue = str(abs(value))
@@ -86,7 +91,7 @@ class Note:
 		if len(strAbsValue) < 2: strAbsValue = "0" + strAbsValue 
 		if type == "raw" or type == "mapped": return strAbsValue
 
-		if value is None: return "N/A"
 		elif value > 0: return "+" + strAbsValue
 		elif value < 0: return "-" + strAbsValue
+		if self.leading and not isHistogram: return "/00"
 		return "=00"

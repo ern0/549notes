@@ -205,12 +205,10 @@ class Sheet:
 
 			value = note.get(noteType)
 
-			if value is None: value = 0
-
 			if value not in result:
-				formatted = note.renderSingle(noteType,True)
+				formatted = note.renderSingle(noteType,True,True)
 				if noteType == "raw":
-					formatted = note.renderSingle("text",True) + ":" + formatted
+					formatted = note.renderSingle("text",True,True) + ":" + formatted
 				result[value] = [0,formatted]
 
 			result[value][0] += 1
@@ -221,8 +219,7 @@ class Sheet:
 	def renderHistogram(self,noteType = "raw",orderBy = "value"):
 
 		count = 0
-		for note in self.notes:
-			if note.get(noteType) is not None: count += 1
+		for note in self.notes: count += 1
 
 		occurrences = self.countOccurrences(noteType)
 
@@ -542,7 +539,7 @@ class Sheet:
 		self.render.renderHeader("data")
 		self.render.renderLine()
 		self.resetDataBits()
-		self.renderFirstBytes(noteType)
+		self.renderFirstBytes(noteType,5)
 		self.renderData1Table(noteType)
 		self.renderData1Notes(noteType)
 
@@ -605,8 +602,6 @@ class Sheet:
 			note = self.notes[i]
 			diff = note.get(noteType)
 
-			if diff is None: diff = 0
-
 			if diff in self.tab3:
 				index = self.tab3[diff]
 				self.renderDataBits(3,index)
@@ -637,13 +632,13 @@ class Sheet:
 		self.render.renderHeader("data")
 		self.render.renderLine()
 		self.resetDataBits()
-		self.renderFirstBytes(noteType)
+		self.renderFirstBytes(noteType,5)
 		self.renderData2Notes(noteType)
 
 
 	def renderData2Notes(self,noteType):
-		return
 
+		return
 		self.render.renderLine("data_notes: ; compressed note data")
 		self.render.renderLine()
 
@@ -651,8 +646,7 @@ class Sheet:
 			note = self.notes[i]
 			diff = note.get(diffId)
 
-			if diff is None: diff = 0
-
+			#if diff in (-)
 			if diff in self.tab3:
 				index = self.tab3[diff]
 				self.renderDataBits(3,diff)
@@ -669,14 +663,14 @@ class Sheet:
 
 # ---- data, common -------------------------------------------------------------------
 
-	def renderFirstBytes(self,noteType):
+	def renderFirstBytes(self,noteType,count):
 
 		line = ""
 
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
 			diff = note.get(noteType)
-			if diff is not None: continue
+			if i < count: continue
 
 			if line != "": line += ","
 			line += str(note.get("raw"))
