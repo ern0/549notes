@@ -20,8 +20,8 @@ class Sheet:
 		self.createScore()
 		self.calcMapping()
 		if len(sys.argv) < 3:
-			self.renderAnalysis()
 			self.renderIntro(None)
+			self.renderAnalysis()
 		else:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()

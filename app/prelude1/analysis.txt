@@ -1,3 +1,18 @@
+; **** generated file, do not edit *********************************************
+; 
+; Transformed score data and analysis of
+;  J.S.Bach: Prelude in C major, BWV 846
+;  from the Prelude and Fugue in C major, BWV 846
+;  from Book I of The Well-Tempered Clavier
+; for PC-DOS 256-byte intro
+; 
+; part1: A B C D E [C D E] - 32 lines
+; part2: A B C D E  F G H  -  4 lines
+; coda: 5-notes chord
+; 
+; eff. notes: 512
+; data notes: 197
+
 ; ---- raw ---------------------------------------------------------------------
 ; 
 ; c-3:60  e-3:64  g-3:67  c-4:72  e-4:76  (...)
@@ -6222,19 +6237,4 @@
 ;               raw-diff-7 @ 3 nctab nutab  =  245
 ;               raw-diff-8 @ 4 nctab nutab  =  249
 ;                     raw-diff-7 @ 3 nctab  =  258
-
-; **** generated file, do not edit *********************************************
-; 
-; Transformed score data and analysis of
-;  J.S.Bach: Prelude in C major, BWV 846
-;  from the Prelude and Fugue in C major, BWV 846
-;  from Book I of The Well-Tempered Clavier
-; for PC-DOS 256-byte intro
-; 
-; part1: A B C D E [C D E] - 32 lines
-; part2: A B C D E  F G H  -  4 lines
-; coda: 5-notes chord
-; 
-; eff. notes: 512
-; data notes: 197
 
