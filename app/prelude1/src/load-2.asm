@@ -2,6 +2,7 @@
 load_note:
 
 	mov	cl,3
+	mov	bl,DATA_CSUB
 ;-----------------------------------------------------------------------
 @read_word_cl:		; read CL-bit (3 or 5) word
 	xor	al,al
@@ -25,10 +26,12 @@ load_note:
 	jnz	@read_word_done
 
 	mov	cl,7
+	mov	bl,DATA_USUB
 	jmp	@read_word_cl
 
 ;-----------------------------------------------------------------------
 @read_word_done:
+	sub	al,bl
 
 	lea	di,[data_start]
 	add	al,[di]

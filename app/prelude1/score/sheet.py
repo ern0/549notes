@@ -638,24 +638,31 @@ class Sheet:
 
 	def renderData2Notes(self,noteType):
 
-		return
+		cSub = 4  # log2(3) - 1
+		uSub = 0
+		for note in self.notes:
+			value = note.get(noteType)
+			if value > uSub: uSub = value
+		uSub += 1 # avoid zero
+
+		self.render.renderLine("; value to substract from compressed data")
+		self.render.renderLine("\tDATA_CSUB = 4")
+		self.render.renderLine("; value to substract from uncompressed data")
+		self.render.renderLine("\tDATA_USUB = " + str(uSub))
+		self.render.renderLine()
+
 		self.render.renderLine("data_notes: ; compressed note data")
 		self.render.renderLine()
 
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
-			diff = note.get(diffId)
+			diff = note.get(noteType)
 
-			#if diff in (-)
-			if diff in self.tab3:
-				index = self.tab3[diff]
-				self.renderDataBits(3,diff)
+			if diff in (-3,-2,-1,0,1,2,3):
+				self.renderDataBits(3,diff + cSub)
 			else:
-				index = self.tab5[diff]
-				# 0 is a special value: read next 5 bit
 				self.renderDataBits(3,0)
-				# add 1 to index: avoid 0 value
-				self.renderDataBits(5,index + 1)
+				self.renderDataBits(7,diff + uSub)
 
 		self.renderPaddingBits()
 		self.renderDataLine()
