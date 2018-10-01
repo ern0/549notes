@@ -14,7 +14,6 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;	SI - note counter
 ; 	BP - load data pointer
 ; 	CH - latch counter
 ;	CL - word length loop (3 or 5)
@@ -36,23 +35,25 @@
 	xor	ch,ch
 
 	call	print_newline
-	xor	si,si
 
 @next_note:
 	
 	call	load_note
 	
 	mov	cl,al
-	call	play_note
+	call	print_note
 
-	mov	al,6
+	mov	al,1
 	call	delay
 
-	inc	si
-	cmp	si,202 - 5
+	inc	byte [counter]
+	cmp	byte [counter],20
 	jne	@next_note
 
 	int	20H
+
+counter:
+	db 0
 ;#######################################################################
 include "dump.asm"	
 ;#######################################################################

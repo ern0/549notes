@@ -37,11 +37,12 @@ load_note:
 
 	lea	di,[data_start]
 	add	al,[di]
+	lea	si,[di + 1]
 
-	mov	edx,[di + 1]
-	mov	[di],edx
-
-	mov	[di + 4],al
+	movsw
+	movsw
+	stosb
 
 	ret
+
 

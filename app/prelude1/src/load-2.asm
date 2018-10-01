@@ -1,17 +1,6 @@
-
+;#######################################################################
 load_note:
 
-	mov	al,34
-	ret
-
-data_notes:
-tab3:
-tab5:
-data_start:
-;#######################################################################
-
-
-	lea	bx,[tab3 - 1]
 	mov	cl,3
 ;-----------------------------------------------------------------------
 @read_word_cl:		; read CL-bit (3 or 5) word
@@ -35,24 +24,19 @@ data_start:
 	or	al,al		; check for %000 special value
 	jnz	@read_word_done
 
-	add	bl,(tab5 - tab3) ; lea bx,[tab5 - 1]
-	mov	cl,5
+	mov	cl,7
 	jmp	@read_word_cl
 
 ;-----------------------------------------------------------------------
 @read_word_done:
 
-	xlatb
-
-;-----------------------------------------------------------------------
-
 	lea	di,[data_start]
 	add	al,[di]
+	lea	si,[di + 1]
 
-	mov	edx,[di + 1]
-	mov	[di],edx
-
-	mov	[di + 4],al
+	movsw
+	movsw
+	stosb
 
 	ret
 

@@ -529,26 +529,22 @@ class Sheet:
 
 	def renderData1(self):
 
-		noteType = "raw-diff-5 @ 3"
+		noteType = "raw-diff-5"
+		diffId = noteType + " @ 3"
 
-		self.renderIntro(noteType)
-		self.resetDataResult()
+		self.calcDiff("raw",noteType,5)
 
-		self.renderData1Stat(noteType)
+		self.renderIntro(diffId)
+		self.render.renderScore(noteType,("text","raw",noteType,))
+		self.renderHistogram(noteType,orderBy = "count")
+		self.renderEstimation(noteType,3,5,False,False)
+
 		self.render.renderHeader("data")
 		self.render.renderLine()
-
+		self.resetDataBits()
 		self.renderFirstBytes(noteType)
 		self.renderData1Table(noteType)
 		self.renderData1Notes(noteType)
-
-
-	def renderData1Stat(self,diffId):
-
-		self.calcDiff("raw",diffId,5)
-		self.render.renderScore(diffId,("text","raw",diffId,))
-		self.renderHistogram(diffId,orderBy = "count")
-		self.renderEstimation(diffId,3,5,False,False)
 
 
 	def renderData1Table(self,diffId):
@@ -628,10 +624,48 @@ class Sheet:
 
 	def renderData2(self):
 
-		self.renderIntro("who knows")
+		noteType = "raw-diff-5"
+		diffId = noteType + " @ 3 nctab nutab"
+
+		self.calcDiff("raw",noteType,5)
+
+		self.renderIntro(diffId)
+		self.render.renderScore(noteType,("text","raw",noteType,))
+		self.renderHistogram(noteType,orderBy = "count")
+		self.renderEstimation(noteType,3,5,True,True)
 
 		self.render.renderHeader("data")
 		self.render.renderLine()
+		self.resetDataBits()
+		self.renderFirstBytes(noteType)
+		self.renderData2Notes(noteType)
+
+
+	def renderData2Notes(self,noteType):
+		return
+
+		self.render.renderLine("data_notes: ; compressed note data")
+		self.render.renderLine()
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+			diff = note.get(diffId)
+
+			if diff is None: diff = 0
+
+			if diff in self.tab3:
+				index = self.tab3[diff]
+				self.renderDataBits(3,diff)
+			else:
+				index = self.tab5[diff]
+				# 0 is a special value: read next 5 bit
+				self.renderDataBits(3,0)
+				# add 1 to index: avoid 0 value
+				self.renderDataBits(5,index + 1)
+
+		self.renderPaddingBits()
+		self.renderDataLine()
+
 
 # ---- data, common -------------------------------------------------------------------
 
@@ -652,7 +686,7 @@ class Sheet:
 		self.render.renderLine()
 
 
-	def resetDataResult(self):
+	def resetDataBits(self):
 
 		self.latchByte = 0
 		self.shiftCounter = 0
