@@ -529,7 +529,7 @@ class Sheet:
 
 	def renderData1(self):
 
-		noteType = "raw-diff-5"
+		noteType = "raw-diff-5 @ 3"
 
 		self.renderIntro(noteType)
 		self.resetDataResult()
