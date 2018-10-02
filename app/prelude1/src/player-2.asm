@@ -28,8 +28,6 @@
 	mov 	al,3fH
 	mov 	dx,331H
 	out 	dx,al
-	mov	ax,13H
-	int	10H
 
 	call	init_newline
 
@@ -60,9 +58,10 @@ counter:
 	db 0
 ;-----------------------------------------------------------------------
 load_note:
+int3
 	xor	al,al
-	mov	cl,$20	 	; %00100000: 3 shift-left from zero
 	mov	bl,DATA_CSUB
+	mov	cl,$20	 	; %xx100000: 3 SHL from zero
 
 @next_bit:
 	or	cl,cl
@@ -72,8 +71,8 @@ load_note:
 	inc	bp
 
 @shift_latch:
-	sal	cx,1
 	sal	al,1
+	sal	cx,1
 	adc	al,0
 
 	or	cl,cl
@@ -82,8 +81,8 @@ load_note:
 	or	al,al		; check for %000 special value
 	jnz	@shift_done
 
-	mov	cl,$03		; %00000010: 7 shift-left from zero
-	mov	bl,DATA_USUB
+	mov	bl,DATA_USUB	; 42, it's also a good value for CL
+	mov	cl,bl		; %xxxxxx10: 7 SHL from zero
 	jmp	@next_bit
 
 @shift_done:

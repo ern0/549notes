@@ -19,8 +19,6 @@
 	mov 	al,3fH
 	mov 	dx,331H
 	out 	dx,al
-	;mov	ax,13H
-	;int	10H
 
 	call	init_newline
 
@@ -33,8 +31,7 @@
 	call	load_note
 
 	call	print_note
-
-	;jmp	@nplay
+	jmp	@nplay
 
 	mov	cl,al
 	call	play_note
