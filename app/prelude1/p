@@ -4,9 +4,9 @@ clear
 #watch -n1 " \
 	score/sheet.py analysis.txt ;\
 	score/sheet.py src/data-1.inc 1 ;\
-	fasm src/main-1.asm main-1.com ;\
+	fasm src/player-1.asm player-1.com ;\
 	score/sheet.py src/data-2.inc 2 ;\
-	fasm src/main-2.asm main-2.com ;\
+	fasm src/player-2.asm player-2.com ;\
 	echo -- ;\
 	fasm src/data-1.inc ;\
 	fasm src/data-2.inc ;\
