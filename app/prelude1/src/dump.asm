@@ -22,13 +22,19 @@ check_newline:
 	; fall print_newline
 
 print_newline:
+	push	ax
+
 	mov	al,13
 	call	print_char
+
 	mov	al,10
 	call	print_char
-	mov	al,' '
-	jmp	print_char
 
+	mov	al,' '
+	call	print_char
+
+	pop	ax
+	ret
 ;-----------------------------------------------------------------------
 print_diff:
 
