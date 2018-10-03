@@ -63,23 +63,9 @@ load_note:
 
 ;word_read:
 	or	al,al		; check for %000 special value
-	jz	@load_long_note
+	jnz	@adjust_word
 
-;adjust_word:
-	sub	al,bl
-
-;rotate_notes:
-	lea	di,[data_start]
-	add	al,[di]
-	lea	si,[di + 1]
-
-	movsw
-	movsw
-	stosb
-
-	ret
-
-@load_long_note:
+;load_uncompressed:
 	mov	bl,DATA_USUB	; 42, also a good value for bit counter
 	mov	ah,bl		; %xxxx'xx10: 7 SHL from zero
 	jmp	@next_bit
@@ -100,6 +86,19 @@ load_note:
 
 	jmp	@next_bit
 
+@adjust_word:
+	sub	al,bl
+
+;rotate_notes:
+	lea	di,[data_start]
+	add	al,[di]
+	lea	si,[di + 1]
+
+	movsw
+	movsw
+	stosb
+
+	ret
 ;-----------------------------------------------------------------------
 play_byte:
 	mov	dx,331H
