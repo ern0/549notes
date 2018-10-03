@@ -16,7 +16,7 @@
 ;   	  CH - global, latch value
 ;         DX - (free)
 ;         SI - local, 5-byte rotation
-;         DI - local, 5-byte rotation
+;         DI - global, 5-byte rotation, used in 5+3 repeat
 ;	  BP - global, load data pointer
 ;	  ES - (free)
 ;
@@ -27,33 +27,39 @@
 	mov 	dx,331H
 	out 	dx,al
 
-	call	init_newline
-
 	lea	bp,[data_notes]
 	xor	cl,cl
 
-	call	print_newline
-
-@next_note:
-
-	call	load_note
-	call	print_note
- jmp @nplay
-	call	play_note
-
-@nplay:
-	inc	byte [counter]
-	cmp	byte [counter],10
-	jne	@next_note
+@next_line:
+	call	eight_of_eight
+	dec	byte [line]
+	jne	@next_line
 
 	int	20H
 
-counter:
-	db 0
+line:
+	db 32
 delay:
 	dw 5
-;#######################################################################
-load_note:
+;-----------------------------------------------------------------------
+eight_of_eight:
+
+	mov	dx,5
+@five_of_eight:
+	call	load_play_note
+	dec	dx
+	jnz	@five_of_eight
+
+	mov	bx,-3
+@three_of_eight:
+	mov	al,[di + bx]		; DI is from rotate_notes
+	call	play_note
+	inc	bx
+	jnz	@three_of_eight
+
+	ret
+;-----------------------------------------------------------------------
+load_play_note:
 	mov	bl,DATA_CSUB
 	mov	ax,$2000 	; AL:=0, AH:=%xx10'0000: 3 SHL from zero
 
@@ -75,7 +81,7 @@ load_note:
 	jnz	@shift_latch
 
 ;load_latch:
-	inc	cx		; 1-byte CL:=1 instr, %xxxx'xxx1: 8 SHL from zero
+	inc	cx		; INC CX for CL:=1, %xxxx'xxx1: 8 SHL from zero
 	mov	ch,[bp]
 	inc	bp
 
@@ -98,21 +104,10 @@ load_note:
 	movsw
 	stosb
 
-	ret
+	; fall play_note
 ;-----------------------------------------------------------------------
-play_byte:
-	mov	dx,331H
-	in	al,dx
-	test	al,40H
-	jnz	play_byte
-
-	dec	dx
-	mov	al,bl
-	out	dx,al
-
-	ret
-;-----------------------------------------------------------------------
-play_note: ; parm: AL, local: AL, BL, DX
+play_note:
+	call	print_note ;;;;;;;;;;;;;
 
 	pusha
 
@@ -126,10 +121,9 @@ play_note: ; parm: AL, local: AL, BL, DX
 	mov	bl,7fH		; Velocity
 	call	play_byte
 
-	; fall delay
-
+	; fall wait
 ;-----------------------------------------------------------------------
-;delay:
+;wait:
 	mov	si,[delay]
 
 @wait_some:
@@ -145,6 +139,18 @@ play_note: ; parm: AL, local: AL, BL, DX
 	jne	@wait_some
 
 	popa
+	ret
+;-----------------------------------------------------------------------
+play_byte:
+	mov	dx,331H
+	in	al,dx
+	test	al,40H
+	jnz	play_byte
+
+	dec	dx
+	mov	al,bl
+	out	dx,al
+
 	ret
 ;-----------------------------------------------------------------------
 include "dump.asm"

@@ -55,14 +55,22 @@ print_note:
 
 	pusha
 
+	test	byte [print_first],-1
+	jnz	@print_note_digits
+
+	mov	byte [print_first],-1
+	call	init_newline
+	call	print_newline
+
+@print_note_digits:
 	call	print_dec
 	mov	al,' '
 	call	print_char
 
+	call	check_newline
+
 	popa
-
-	jmp	check_newline
-
+	ret
 ;-----------------------------------------------------------------------
 print_sign:
 
@@ -141,4 +149,7 @@ nums:
 	db	"0123456789"
 
 char_counter:
+	db	0
+
+print_first:
 	db	0
