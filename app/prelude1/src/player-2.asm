@@ -7,18 +7,17 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;       Common:
-;	  AL - param, result: loaded word on LSBs
-; 	  AH - param, word length loop counter (SHL until zero)
-;         BL - local, play_note
-;         BH - local, data sub correction
-;	  CL - global, latch counter (SHL until zero)
-;   	  CH - global, latch value
-;         DX - (free)
-;         SI - local, 5-byte rotation
-;         DI - global, 5-byte rotation, used in 5+3 repeat
-;	  BP - global, load data pointer
-;	  ES - (free)
+;	AL - param, result: loaded word on LSBs
+;	AH - param, word length loop counter (SHL until zero)
+;	BL - local, play_note
+;	BH - local, data sub correction
+;	CL - global, latch counter (SHL until zero)
+;	CH - global, latch value
+;	DX - (free)
+;	SI - local, 5-byte rotation
+;	DI - global, 5-byte rotation, used in 5+3 repeat
+;	BP - global, load data pointer
+;	ES - (free)
 ;
 ;-----------------------------------------------------------------------
 	org 	100H
@@ -107,7 +106,7 @@ load_play_note:
 	; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
-	call	print_note ;;;;;;;;;;;;;
+	;call	print_note ;;;;;;;;;;;;;
 
 	pusha
 
@@ -153,5 +152,5 @@ play_byte:
 
 	ret
 ;-----------------------------------------------------------------------
-include "dump.asm"
+;include "dump.asm"
 include "data-2.inc"
