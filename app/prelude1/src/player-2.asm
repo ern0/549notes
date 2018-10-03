@@ -8,9 +8,11 @@
 ; Register allocation:
 ;
 ;       Common:
-;	  AL - param, result diff word (on LSBs)
-; 	  AH - param, word length loop counter
-;	  CL - global, latch counter
+;	  AL - param, result: loaded word on LSBs
+; 	  AH - param, word length loop counter (SHL until zero)
+;         BL - (free)
+;         BH - local, data sub correction
+;	  CL - global, latch counter (SHL until zero)
 ;   	  CH - global, latch value
 ;         DX - (free)
 ;         SI - local, 5-byte rotation
@@ -18,10 +20,6 @@
 ;	  BP - global, load data pointer
 ;	  ES - (free)
 ;
-;       Method 1:
-;	  BX - local, xlat table
-;       Method 2:
-;         BH - local, data sub correction
 ;-----------------------------------------------------------------------
 	org 	100H
 
@@ -32,7 +30,7 @@
 	call	init_newline
 
 	lea	bp,[data_notes]
-	xor	ch,ch
+	xor	cl,cl
 
 	call	print_newline
 
@@ -56,39 +54,23 @@
 
 counter:
 	db 0
-;-----------------------------------------------------------------------
+;#######################################################################
 load_note:
-int3
-	xor	al,al
 	mov	bl,DATA_CSUB
-	mov	cl,$20	 	; %xx100000: 3 SHL from zero
+	mov	ax,$2000 	; AL:=0, AH:=%xx10'0000: 3 SHL from zero
 
 @next_bit:
-	or	cl,cl
-	jnz	@shift_latch
+	or	ah,ah
+	jnz	@read_bit
 
-	mov	ch,[bp]
-	inc	bp
-
-@shift_latch:
-	sal	al,1
-	sal	cx,1
-	adc	al,0
-
-	or	cl,cl
-	jnz	@shift_latch
-
+;word_read:
 	or	al,al		; check for %000 special value
-	jnz	@shift_done
+	jz	@load_long_note
 
-	mov	bl,DATA_USUB	; 42, it's also a good value for CL
-	mov	cl,bl		; %xxxxxx10: 7 SHL from zero
-	jmp	@next_bit
+;adjust_word:
+	sub	al,bl
 
-@shift_done:
-	add	al,bl
-
-@rotate:
+;rotate:
 	lea	di,[data_start]
 	add	al,[di]
 	lea	si,[di + 1]
@@ -98,6 +80,28 @@ int3
 	stosb
 
 	ret
+
+@load_long_note:
+	mov	bl,DATA_USUB	; 42, also a good value for bit counter
+	mov	ah,bl		; %xxxx'xx10: 7 SHL from zero
+	jmp	@next_bit
+
+@read_bit:
+	or	cl,cl
+	jnz	@shift_latch
+
+;load_latch:
+	inc	cx		; 1-byte CL:=1 instr, %xxxx'xxx1: 8 SHL from zero
+	mov	ch,[bp]
+	inc	bp
+
+@shift_latch:
+	sal	ax,1
+	sal	cx,1
+	adc	al,0
+
+	jmp	@next_bit
+
 ;-----------------------------------------------------------------------
 play_note: ; parm: AH, local: AL, BH, DX
 
