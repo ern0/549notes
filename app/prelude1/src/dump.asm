@@ -12,7 +12,16 @@ init_newline:
 check_newline:
 
 	inc	byte [char_counter]
-	cmp	byte [char_counter],5  ; match score dump
+	cmp	byte [char_counter],5
+	jne	@cnl
+
+	mov	al,'-'
+	call	print_char
+	mov	al,' '
+	call	print_char
+
+@cnl:
+	cmp	byte [char_counter],8
 	je	@newline
 	ret
 

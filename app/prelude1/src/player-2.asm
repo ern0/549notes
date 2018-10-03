@@ -38,7 +38,7 @@
 
 	call	load_note
 	call	print_note
- ;jmp @nplay
+ jmp @nplay
 	call	play_note
 
 @nplay:
