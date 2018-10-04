@@ -30,9 +30,52 @@
 	xor	cl,cl
 
 @next_line:
+	
+	pusha
+	push	cx
+	lea	si,[data_start]
+	lea	di,[snapshot_start]
+	mov	cx,5
+	rep	movsb
+	pop	cx
+
 	call	eight_of_eight
+
+	lea	si,[snapshot_start]
+	lea	di,[data_start]
+	mov	cx,5
+	rep	movsb
+	popa
+
+	call	eight_of_eight
+
+	cmp	byte [line],2
+	jne	@not1
+	mov	byte [delay],5
+@not1:
 	dec	byte [line]
 	jne	@next_line
+
+	mov	byte [delay],6
+	mov	byte [line],16
+@next_simple:
+	call	load_play_note
+	dec	byte [line]
+	jne	@next_simple
+
+	mov	byte [delay],7
+	mov	byte [line],16
+@next_last:
+	call	load_play_note
+	dec	byte [line]
+	jne	@next_last
+
+	mov	byte [delay],1
+	mov	byte [line],5
+@next_finish:
+	call	load_play_note
+	dec	byte [line]
+	jne	@next_finish
 
 	int	20H
 
@@ -40,6 +83,8 @@ line:
 	db 32
 delay:
 	dw 5
+snapshot_start:
+	db 0,0,0,0,0
 ;-----------------------------------------------------------------------
 eight_of_eight:
 
@@ -106,8 +151,10 @@ load_play_note:
 	; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
 	;call	print_note ;;;;;;;;;;;;;
 
+@ply:
 	pusha
 
 	push	ax
