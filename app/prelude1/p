@@ -1,4 +1,4 @@
 #!/bin/bash
 clear
 
-fasm src/player-2.asm player-2.com
+fasm src/player-3.asm player-3.com

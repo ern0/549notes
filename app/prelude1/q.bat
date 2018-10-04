@@ -1,2 +1,2 @@
-@insight player-2.com
+@insight player-3.com
 @cls
