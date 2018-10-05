@@ -33,7 +33,9 @@ class Render:
 		notes = self.sheet.notes
 		splitPoint = self.sheet.splitPoint
 
-		itemsInLine = 5
+		if self.sheet.pure8: itemsInLine = 8
+		else: itemsInLine = 5
+
 		line = None
 
 		for i in range (0,len(notes)):
@@ -42,7 +44,8 @@ class Render:
 			if i == splitPoint: itemsInLine = 8
 
 			if i % itemsInLine == 0 and line is not None:
-				if itemsInLine == 5 and isComment: line += "  (...)"
+				if not self.sheet.pure8:
+					if itemsInLine == 5 and isComment: line += "  (...)"
 				self.renderLine(line)
 				line = None
 

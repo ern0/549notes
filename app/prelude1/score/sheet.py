@@ -17,6 +17,8 @@ class Sheet:
 
 	def main(self):
 
+		self.pure8 = True
+
 		self.createScore()
 		self.calcMapping()
 		if len(sys.argv) < 3:
@@ -80,10 +82,29 @@ class Sheet:
 
 		self.notes = []
 
-		for noteText in data.part1Text:
-			note = Note(self)
-			note.set("text",noteText)
-			self.notes.append(note)
+		if self.pure8:
+
+			for i in range(0,len(data.part1Text)):
+				noteText = data.part1Text[i]
+
+				note = Note(self)
+				note.set("text",noteText)
+				self.notes.append(note)
+
+				if i % 5 == 4:
+					c = data.part1Text[i - 2]
+					d = data.part1Text[i - 1]
+					e = data.part1Text[i]
+					for cde in (c,d,e):
+						note = Note(self)
+						note.set("text",cde)
+						self.notes.append(note)
+
+		else:
+			for noteText in data.part1Text:
+				note = Note(self)
+				note.set("text",noteText)
+				self.notes.append(note)
 
 		self.splitPoint = len(self.notes)
 
@@ -118,8 +139,10 @@ class Sheet:
 		self.render.renderComment("for PC-DOS 256-byte intro")
 		self.render.renderComment()
 
+		if self.pure8: cde = " C D E "
+		else: cde = "[C D E]"
 		self.render.renderComment(
-			"part1: A B C D E [C D E] - " +
+			"part1: A B C D E " + cde + " - " +
 			str( int(len(data.part1Text) / 5) )  +
 			" lines"
 		)
@@ -136,7 +159,10 @@ class Sheet:
 
 		self.render.renderComment()
 
-		eff = int( self.splitPoint / 5 * 8 ) * 2
+		if self.pure8: eff = self.splitPoint * 2
+		else: eff = int( self.splitPoint / 5 * 8 ) * 2
+		eff += len(data.part2Text)
+		eff += len(data.codaText)
 
 		self.render.renderComment(
 			"eff. notes: " +

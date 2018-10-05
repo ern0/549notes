@@ -1,4 +1,5 @@
 #!/bin/bash
 clear
 
-fasm src/player-3.asm player-3.com
+score/sheet.py analysis-8p0.txt
+#fasm src/player-3.asm player-3.com
