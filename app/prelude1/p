@@ -1,6 +1,5 @@
 #!/bin/bash
 clear
 
-score/sheet.py analysis-8p0.txt
 score/sheet.py src/data-2.inc final
 fasm src/player-2.asm player-2.com
