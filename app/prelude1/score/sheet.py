@@ -17,7 +17,7 @@ class Sheet:
 
 	def main(self):
 
-		self.pure8 = True
+		self.pure8 = False
 
 		self.createScore()
 		self.calcMapping()

@@ -1,2 +1,2 @@
 @cls
-@player-3.com
+@player-2.com

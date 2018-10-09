@@ -11,7 +11,7 @@
 ; part2: A B C D E  F G H  -  4 lines
 ; coda: 5-notes chord
 ; 
-; eff. notes: 512
+; eff. notes: 549
 ; data notes: 197
 
 ; ---- raw-diff-5 --------------------------------------------------------------
