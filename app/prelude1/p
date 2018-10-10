@@ -1,5 +1,5 @@
 #!/bin/bash
 clear
 
-score/sheet.py src/data-2.inc final
-fasm src/player-2.asm player-2.com
+score/sheet.py src/data-3.inc final
+fasm src/player-3.asm player-3.com
