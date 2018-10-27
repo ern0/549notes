@@ -658,8 +658,8 @@ class Sheet:
 		self.render.renderHeader("data")
 		self.render.renderLine()
 		self.resetDataBits()
-		self.renderFirstBytes(noteType,5)
 		self.renderData2Notes(noteType)
+		self.renderFirstBytes(noteType,5)
 
 
 	def renderData2Notes(self,noteType):
@@ -692,6 +692,8 @@ class Sheet:
 
 		self.renderPaddingBits()
 		self.renderDataLine()
+		self.render.renderLine()
+
 
 
 # ---- data, common -------------------------------------------------------------------
