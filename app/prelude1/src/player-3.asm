@@ -7,197 +7,179 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;	AL - param, result: loaded word on LSBs
-;	AH - param, word length loop counter (SHL until zero)
-;	BL - local, play_note
-;	BH - local, data sub correction
-;	CL - global, latch counter (SHL until zero)
-;	CH - global, latch value
-;	DX - (free)
-;	SI - local, 5-byte rotation
-;	DI - global, 5-byte rotation, used in 5+3 repeat
-;	BP - global, load data pointer
-;	ES - (free)
+;       AL - param, result: loaded word on LSBs
+;       AH - param, word length loop counter (SHL until zero)
+;       BL - local, play_note
+;       BH - local, data sub correction
+;       DL - global, latch counter (SHL until zero)
+;       DH - global, latch value
+;       CL - global, line
+;       CH - local, 5of8 counter
+;       SI - local, 5-byte rotation
+;       DI - global, 5-byte rotation, used in 5+3 repeat
+;       BP - global, load data pointer
+;       ES - (free)
 ;
 ;-----------------------------------------------------------------------
-	org 	100H
+        org     100H
 
-	mov 	al,3fH
-	mov 	dx,331H
-	out 	dx,al
+        DB      3FH
+        MOV     DX,331H
+        OUTSB
 
-	lea	bp,[data_notes]
-	xor	cl,cl
+        MOV     BP,data_notes
+        CWD
+        MOV     CL,32
 
 @next_line:
-	
-	pusha
-	push	cx
-	lea	si,[data_start]
-	lea	di,[snapshot_start]
-	mov	cx,5
-	rep	movsb
-	pop	cx
+        
+        pusha
 
-	call	eight_of_eight
+        MOV     SI,data_start
+        MOV     DI,snapshot_start
+        PUSH    SI
+        PUSH    DI
+        MOVSW
+        MOVSW
+        MOVSB
 
-	lea	si,[snapshot_start]
-	lea	di,[data_start]
-	mov	cx,5
-	rep	movsb
-	popa
+        call    eight_of_eight
 
-	call	eight_of_eight
+        POP     SI
+        POP     DI
+        MOVSW
+        MOVSW
+        MOVSB
 
-	cmp	byte [line],2
-	jne	@not1
-	mov	byte [delay],5
+        popa
+
+        call    eight_of_eight
+
+        CMP     CL,2
+        jne     @not1
+        mov     byte [delay-2],5
 @not1:
-	dec	byte [line]
-	jne	@next_line
+        LOOP    @next_line
 
-	mov	byte [delay],6
-	mov	byte [line],16
-@next_simple:
-	call	load_play_note
-	dec	byte [line]
-	jne	@next_simple
+        MOV     CL,5+16+16
+@next:
+        MOV     AL,6            ; next_simple
+        CMP     CL,5+16
+        JA      @set_delay
+        INC     AX              ; next_last
+        CMP     CL,5
+        JA      @set_delay
+        MOV     AL,1            ; next_finish
+@set_delay:
+        MOV     [delay-2],AL
+        call    load_play_note
+        LOOP    @next
 
-	mov	byte [delay],7
-	mov	byte [line],16
-@next_last:
-	call	load_play_note
-	dec	byte [line]
-	jne	@next_last
+        RETN
 
-	mov	byte [delay],1
-	mov	byte [line],5
-@next_finish:
-	call	load_play_note
-	dec	byte [line]
-	jne	@next_finish
-
-	int	20H
-
-line:
-	db 32
-delay:
-	dw 5
-snapshot_start:
-	db 0,0,0,0,0
 ;-----------------------------------------------------------------------
 eight_of_eight:
 
-	mov	dx,5
+        MOV     CH,5
 @five_of_eight:
-	call	load_play_note
-	dec	dx
-	jnz	@five_of_eight
+        call    load_play_note
+        DEC     CH
+        jnz     @five_of_eight
 
-	mov	bx,-3
+        mov     bx,-3
 @three_of_eight:
-	mov	al,[di + bx]		; DI is from rotate_notes
-	call	play_note
-	inc	bx
-	jnz	@three_of_eight
+        mov     al,[di + bx]            ; DI is from rotate_notes
+        call    play_note
+        inc     bx
+        jnz     @three_of_eight
 
-	ret
+        ret
 ;-----------------------------------------------------------------------
 load_play_note:
-	mov	bl,DATA_CSUB
-	mov	ax,$2000 	; AL:=0, AH:=%xx10'0000: 3 SHL from zero
+        mov     bl,DATA_CSUB
+        mov     ax,$2000        ; AL:=0, AH:=%xx10'0000: 3 SHL from zero
 
 @next_bit:
-	or	ah,ah
-	jnz	@read_bit
+        or      ah,ah
+        jnz     @read_bit
 
 ;word_read:
-	or	al,al		; check for %000 special value
-	jnz	@adjust_word
+        or      al,al           ; check for %000 special value
+        jnz     @adjust_word
 
 ;load_uncompressed:
-	mov	bl,DATA_USUB	; 42, also a good value for bit counter
-	mov	ah,bl		; %xxxx'xx10: 7 SHL from zero
-	jmp	@next_bit
+        mov     bl,DATA_USUB    ; 42, also a good value for bit counter
+        mov     ah,bl           ; %xxxx'xx10: 7 SHL from zero
+        jmp     @next_bit
 
 @read_bit:
-	or	cl,cl
-	jnz	@shift_latch
+        TEST    DL,DL
+        jnz     @shift_latch
 
 ;load_latch:
-	inc	cx		; INC CX for CL:=1, %xxxx'xxx1: 8 SHL from zero
-	mov	ch,[bp]
-	inc	bp
+        INC     DX              ; INC DX for DL:=1, %xxxx'xxx1: 8 SHL from zero
+        MOV     DH,[BP]
+        inc     bp
 
 @shift_latch:
-	sal	ax,1
-	sal	cx,1
-	adc	al,0
+        sal     ax,1
+        SAL     DX,1
+        adc     al,0
 
-	jmp	@next_bit
+        jmp     @next_bit
 
 @adjust_word:
-	sub	al,bl
+        sub     al,bl
 
 ;rotate_notes:
-	lea	di,[data_start]
-	add	al,[di]
-	lea	si,[di + 1]
+        MOV     DI,data_start
+        add     al,[di]
+        lea     si,[di + 1]
 
-	movsw
-	movsw
-	stosb
+        movsw
+        movsw
+        stosb
 
-	; fall play_note
+        ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
 
-	;call	print_note ;;;;;;;;;;;;;
+        ;call   print_note ;;;;;;;;;;;;;
 
 @ply:
-	pusha
+        pusha
 
-	push	ax
-	mov	bl,90H		; Note On, Channel 1
-	call	play_byte
+        PUSH   AX
+        MOV    DX,330H
+        MOV    AL,90H
+        OUT    DX,AL
+        POP    AX
+        OUT    DX,AL
+        MOV    AL,7FH
+        OUT    DX,AL
 
-	pop	bx		; Pitch
-	call	play_byte
-
-	mov	bl,7fH		; Velocity
-	call	play_byte
-
-	; fall wait
+        ; fall wait
 ;-----------------------------------------------------------------------
 ;wait:
-	mov	si,[delay]
+        mov     si,5
+delay:
 
 @wait_some:
-	mov	ah,2cH
-	int	21H
-	mov	bl,dl
+        mov     ah,2cH
+        int     21H
+        mov     bl,dl
 
 @wait_tick:
-	int	21H
-	cmp	bl,dl
-	je	@wait_tick
-	dec	si
-	jne	@wait_some
+        int     21H
+        cmp     bl,dl
+        je      @wait_tick
+        dec     si
+        jne     @wait_some
 
-	popa
-	ret
-;-----------------------------------------------------------------------
-play_byte:
-	mov	dx,331H
-	in	al,dx
-	test	al,40H
-	jnz	play_byte
-
-	dec	dx
-	mov	al,bl
-	out	dx,al
-
-	ret
+        popa
+        ret
 ;-----------------------------------------------------------------------
 ;include "dump.asm"
 include "data-3.inc"
+
+snapshot_start:
