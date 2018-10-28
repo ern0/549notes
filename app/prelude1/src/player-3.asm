@@ -9,10 +9,8 @@
 ;
 ;       AL - global, latch value
 ;       AH - result: loaded word on LSBs
-;       BL - param, word adjusment
-;       BH - param, word length loop counter (SHL until zero)
-;       DL - global, latch counter (SHL until zero)
-;       DH - free
+;       BX - global, delay
+;       DX - free
 ;       CL - local, line counter, note counter
 ;       CH - global, constant zero
 ;       SI - local, 5-byte rotation
@@ -27,9 +25,22 @@
         MOV     DX,331H
         OUTSB
 
-        MOV     BP,data_notes
-        CWD
+;flip bits
+;       MOV     DI,data_notes
+;       MOV     CX,snapshot_start-data_notes
+.1:
+;       MOV     BL,8
+.2:
+;       SHL     BYTE [DI],1
+;       RCR     AL,1
+;       DEC     BX
+;       JNZ     .2
+;       STOSB
+;       LOOP    .1
+
+        MOV     BP,(data_notes-data_start)*8
         MOV     CL,32
+        MOV     BL,5
 
 @next_line:
 
@@ -50,17 +61,16 @@
 ;@not1:
         LOOP    @next_line
 
+        INC     BX              ; next_simple
         MOV     CL,5+16+16
 @next:
-        MOV     AL,6            ; next_simple
         CMP     CL,5+16
         JA      @set_delay
-        INC     AX              ; next_last
+        MOV     BL,7            ; next_last
         CMP     CL,5
         JA      @set_delay
-        MOV     AL,1            ; next_finish
+        MOV     BL,1            ; next_finish
 @set_delay:
-        MOV     [delay-2],AL
         call    load_play_note
         LOOP    @next
 
@@ -82,8 +92,6 @@ eight_of_eight:
         MOV     CL,3
         SUB     SI,CX            ; SI is from rotate_notes
 @three_of_eight:
-;        MOV     AL,[DI-3]       ; DI is from rotate_notes
-;        INC     DI
         LODSB
         call    play_note
         LOOP    @three_of_eight
@@ -92,44 +100,28 @@ eight_of_eight:
         ret
 ;-----------------------------------------------------------------------
 load_play_note:
-        XCHG    AX,BX
-        DB      0BBH            ; hardcoded MOV BX,
-        DB      -DATA_CSUB      ; BL:=DATA_CSUB * -1
-        DB      20H             ; BH:=%xx10'0000: 3 SHL from zero
-;       MOV     AH,0            ; reset result
+        MOV     DI,data_start
+        MOV     AX,256*DATA_CSUB+32;AH:DATA_CSUB, AL:%xx10'0000: 3 SHL to carry
 
 @read_bit:
-        SHL     DL,1
-        jnz     @shift_latch
-
-;load_latch:
-        INC     DX              ; INC DX for DL:=1, %xxxx'xxx1: 8 SHL from zero
-        MOV     AL,[BP]
-        inc     bp
-
-@shift_latch:
-        SHL     AX,1
-
-;next_bit:
-        SHL     BH,1
-        jnz     @read_bit
+        BT      [DI],BP
+        INC     BP
+        RCL     AL,1
+        JNC     @read_bit
 
 ;word_read:
-        TEST    AH,AH           ; check for %000 special value
+        CMP     AL,2            ; check for %010 special value
+;       TEST    AL,AL           ; check for %000 special value
         jnz     @adjust_word
 
 ;load_uncompressed:
-        DB      0BBH            ; hardcoded MOV BX,
-        DB      -DATA_USUB      ; BL:=DATA_USUB * -1
-        DB      02H             ; BH:=%xxxx'xx10: 7 SHL from zero
+        MOV     AH,DATA_USUB    ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
         JMP     @read_bit
 
 @adjust_word:
-        XCHG    AL,BL
-        ADD     AL,AH
+        SUB     AL,AH
 
 ;rotate_notes:
-        MOV     DI,data_start
         add     al,[di]
         lea     si,[di + 1]
 
@@ -141,9 +133,6 @@ load_play_note:
 ;-----------------------------------------------------------------------
 play_note:
 
-        ;call   print_note ;;;;;;;;;;;;;
-
-@ply:
         pusha
 
         PUSH   AX
@@ -158,25 +147,22 @@ play_note:
         ; fall wait
 ;-----------------------------------------------------------------------
 ;wait:
-        mov     si,3
-delay:
 
 @wait_some:
         mov     ah,2cH
         int     21H
-        mov     bl,dl
+        MOV     SI,DX
 
 @wait_tick:
         int     21H
-        cmp     bl,dl
+        CMP     SI,DX
         je      @wait_tick
-        dec     si
+        DEC     BX
         jne     @wait_some
 
         popa
         ret
 ;-----------------------------------------------------------------------
-;include "dump.asm"
 include "data-3.inc"
 
 snapshot_start:
