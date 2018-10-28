@@ -7,15 +7,15 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;       AL - result: loaded word on LSBs
-;       AH - local, latch counter (SHL until carry)
+;       AL - local, bit counter (SHL until carry) + result
+;       AH - local, data sub correction
 ;       BX - global, delay
 ;       DX - free
 ;       CL - local, line counter, note counter
 ;       CH - global, constant zero
-;       SI - local, 5-byte rotation
-;       DI - global, 5-byte rotation, used in 5+3 repeat
-;       BP - global, load data pointer
+;       SI - local, 5-byte rotation, used in 5+3 repeat
+;       DI - global, 5-byte rotation
+;       BP - global, load bit pointer
 ;       ES - DS=CS
 ;
 ;-----------------------------------------------------------------------
