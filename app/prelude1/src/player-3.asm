@@ -80,9 +80,11 @@ eight_of_eight:
         LOOP    @five_of_eight
 
         MOV     CL,3
+        SUB     SI,CX            ; SI is from rotate_notes
 @three_of_eight:
-        MOV     AL,[DI-3]       ; DI is from rotate_notes
-        INC     DI
+;        MOV     AL,[DI-3]       ; DI is from rotate_notes
+;        INC     DI
+        LODSB
         call    play_note
         LOOP    @three_of_eight
 
@@ -94,7 +96,7 @@ load_play_note:
         DB      0BBH            ; hardcoded MOV BX,
         DB      -DATA_CSUB      ; BL:=DATA_CSUB * -1
         DB      20H             ; BH:=%xx10'0000: 3 SHL from zero
-        MOV     AH,0            ; reset result
+;       MOV     AH,0            ; reset result
 
 @read_bit:
         SHL     DL,1
@@ -123,8 +125,8 @@ load_play_note:
         JMP     @read_bit
 
 @adjust_word:
-        XCHG    AX,BX
-        ADD     AL,BH
+        XCHG    AL,BL
+        ADD     AL,AH
 
 ;rotate_notes:
         MOV     DI,data_start
