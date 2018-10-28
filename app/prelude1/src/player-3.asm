@@ -7,8 +7,8 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;       AL - global, latch value
-;       AH - result: loaded word on LSBs
+;       AL - result: loaded word on LSBs
+;       AH - local, latch counter (SHL until carry)
 ;       BX - global, delay
 ;       DX - free
 ;       CL - local, line counter, note counter
