@@ -24,33 +24,45 @@
         org     100H
 
         aas
-        mov     DX,331H
+        mov     dx,331H
         outsb
         xor     dx,dx
 
-        MOV     BP,data_notes
+        mov     bp,data_notes
 
+;-------------------------------------------
+        mov     cx,32*5
+part1:
         call    load_note
-        add     al,60
+
+;rotate_notes:
+        mov     di,data_start
+        add     al,[di]
+        lea     si,[di + 1]
+        movsw
+        movsw
+        stosb
+
         call    play_note
 
+        loop    part1
+;-------------------------------------------
+        mov     cx,5+16+16
+part2:
         call    load_note
-        add     al,64
+
+;rotate_notes:
+        mov     di,data_start
+        add     al,[di]
+        lea     si,[di + 1]
+        movsw
+        movsw
+        stosb
+
         call    play_note
 
-        call    load_note
-        add     al,67
-        call    play_note
-
-        call    load_note
-        add     al,72
-        call    play_note
-
-        call    load_note
-        add     al,76
-        call    play_note
-
-
+        loop    part2
+;-------------------------------------------
         ret
 ;-----------------------------------------------------------------------
 load_note:
@@ -93,7 +105,7 @@ load_note:
 ;-----------------------------------------------------------------------
 play_note:
 
-        call   print_note ;;;;;;;;;;;;;
+        ;call   print_note ;;;;;;;;;;;;;
 
 @ply:
         pusha
