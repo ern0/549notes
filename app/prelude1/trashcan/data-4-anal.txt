@@ -1,0 +1,9 @@
+raw-diff-5 @ 3 nctab nutab:
+-rw-r--r--  1 ern0  wheel  118 Oct 28 22:12 /tmp/data3.bin
+raw-diff-5,1 @ 3 nctab nutab:
+-rw-r--r--  1 ern0  wheel  114 Oct 28 22:12 /tmp/data4.bin
+
+raw-diff-5,1: 
+ - part1: raw-diff-5
+ - part2: raw-diff-1
+ - fin5: raw-diff-1

@@ -27,8 +27,10 @@ class Sheet:
 		else:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()
-			else:
+			elif str(sys.argv[2]) == "2":
 				self.renderData2()
+			else:
+				self.renderData2(mode3=True)
 		self.saveFile()
 
 
@@ -185,6 +187,8 @@ class Sheet:
 			self.calcSimpleDiff(sourceType,targetType,distance)
 		elif distance == "mixed/1/5":
 			self.calcMixed1x5xDiff(sourceType,targetType)
+		elif distance == "split/5/1":
+			self.calcSplit5x1xDiff(sourceType,targetType)
 		else:
 			print("invalid diff type: " + distance)
 			quit()
@@ -215,6 +219,24 @@ class Sheet:
 			else:
 
 				if i % 5 == 0: distance = 5
+				else: distance = 1
+
+				diff = note.get(sourceType)
+				diff -= self.notes[i - distance].get(sourceType)
+
+			note.set(targetType,diff)
+
+
+	def calcSplit5x1xDiff(self,sourceType,targetType):
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+
+			if i < 5:
+				diff = None
+			else:
+				
+				if i < self.splitPoint: distance = 5
 				else: distance = 1
 
 				diff = note.get(sourceType)
@@ -643,17 +665,20 @@ class Sheet:
 
 # ---- data, method 2 -----------------------------------------------------------------
 
-	def renderData2(self):
+	def renderData2(self,mode3 = False):
 
-		noteType = "raw-diff-5"
+		noteType = "raw-diff-5,1"
 		diffId = noteType + " @ 3 nctab nutab"
 
-		self.calcDiff("raw",noteType,5)
+		if mode3:
+			self.calcDiff("raw",noteType,"split/5/1")			
+		else:
+			self.calcDiff("raw",noteType,5)
 
 		self.renderIntro(diffId)
 		self.render.renderScore(noteType,("text","raw",noteType,))
 		self.renderHistogram(noteType,orderBy = "count")
-		self.renderEstimation(noteType,3,5,True,True)
+		if not mode3: self.renderEstimation(noteType,3,5,True,True)
 
 		self.render.renderHeader("data")
 		self.render.renderLine()

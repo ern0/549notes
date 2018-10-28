@@ -2,4 +2,4 @@
 clear
 
 score/sheet.py src/data-3.inc final
-fasm src/player-4.asm player-4.com
+fasm src/player-3.asm player-3.com

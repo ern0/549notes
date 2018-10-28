@@ -43,26 +43,19 @@ part1:
         movsw
         stosb
 
-        call    play_note
+        nop     ; do not play note
 
         loop    part1
 ;-------------------------------------------
-        mov     cx,5+16+16
-part2:
+        mov     cx,16
+part2:  
+        mov     si,ax
         call    load_note
-
-;rotate_notes:
-        mov     di,data_start
-        add     al,[di]
-        lea     si,[di + 1]
-        movsw
-        movsw
-        stosb
-
+        add     ax,si
         call    play_note
 
         loop    part2
-;-------------------------------------------
+
         ret
 ;-----------------------------------------------------------------------
 load_note:
@@ -143,5 +136,5 @@ delay:
         ret
 ;-----------------------------------------------------------------------
 include "dump.asm"
-include "data-3.inc"
+include "data-4.inc"
 data_cont:
