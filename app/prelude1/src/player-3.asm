@@ -32,33 +32,22 @@
         MOV     CL,32
 
 @next_line:
-        
-        pusha
 
         MOV     SI,data_start
         MOV     DI,snapshot_start
-        PUSH    SI
-        PUSH    DI
-        MOVSW
-        MOVSW
-        MOVSB
 
+        pusha
         call    eight_of_eight
-
-        POP     SI
-        POP     DI
-        MOVSW
-        MOVSW
-        MOVSB
-
         popa
 
+        XCHG    SI,DI
+
         call    eight_of_eight
 
-        CMP     CL,2
-        jne     @not1
-        mov     byte [delay-2],5
-@not1:
+;       CMP     CL,2
+;       jne     @not1
+;       mov     byte [delay-2],5
+;@not1:
         LOOP    @next_line
 
         MOV     CL,5+16+16
@@ -79,20 +68,25 @@
 
 ;-----------------------------------------------------------------------
 eight_of_eight:
+        PUSH    CX
 
-        MOV     CH,5
+        MOVSW
+        MOVSW
+        MOVSB
+
+        MOV     CL,5
 @five_of_eight:
         call    load_play_note
-        DEC     CH
-        jnz     @five_of_eight
+        LOOP    @five_of_eight
 
-        mov     bx,-3
+        MOV     CL,3
 @three_of_eight:
-        mov     al,[di + bx]            ; DI is from rotate_notes
+        MOV     AL,[DI-3]       ; DI is from rotate_notes
+        INC     DI
         call    play_note
-        inc     bx
-        jnz     @three_of_eight
+        LOOP    @three_of_eight
 
+        POP     CX
         ret
 ;-----------------------------------------------------------------------
 load_play_note:
@@ -122,9 +116,8 @@ load_play_note:
         inc     bp
 
 @shift_latch:
-        sal     ax,1
-        SAL     DX,1
-        adc     al,0
+        SHL     DX,1
+        RCL     AX,1
 
         jmp     @next_bit
 
