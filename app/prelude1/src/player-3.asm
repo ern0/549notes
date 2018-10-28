@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------------
-; Prelude1 - PC-DOS 256-byte intro by ern0
+; Prelude1 - PC-DOS 256-byte intro by ern0 & TomCat
 ; Prototype-2: raw-diff-5 nctab nutab
 ;
 ; Target: 80386 real mode, assembler: FASM
@@ -7,18 +7,18 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;       AL - param, result: loaded word on LSBs
-;       AH - param, word length loop counter (SHL until zero)
-;       BL - local, play_note
-;       BH - local, data sub correction
+;       AL - global, latch value
+;       AH - result: loaded word on LSBs
+;       BL - param, word adjusment
+;       BH - param, word length loop counter (SHL until zero)
 ;       DL - global, latch counter (SHL until zero)
-;       DH - global, latch value
-;       CL - global, line
-;       CH - local, 5of8 counter
+;       DH - free
+;       CL - local, line counter, note counter
+;       CH - global, constant zero
 ;       SI - local, 5-byte rotation
 ;       DI - global, 5-byte rotation, used in 5+3 repeat
 ;       BP - global, load data pointer
-;       ES - (free)
+;       ES - DS=CS
 ;
 ;-----------------------------------------------------------------------
         org     100H
@@ -90,39 +90,41 @@ eight_of_eight:
         ret
 ;-----------------------------------------------------------------------
 load_play_note:
-        mov     bl,DATA_CSUB
-        mov     ax,$2000        ; AL:=0, AH:=%xx10'0000: 3 SHL from zero
-
-@next_bit:
-        or      ah,ah
-        jnz     @read_bit
-
-;word_read:
-        or      al,al           ; check for %000 special value
-        jnz     @adjust_word
-
-;load_uncompressed:
-        mov     bl,DATA_USUB    ; 42, also a good value for bit counter
-        mov     ah,bl           ; %xxxx'xx10: 7 SHL from zero
-        jmp     @next_bit
+        XCHG    AX,BX
+        DB      0BBH            ; hardcoded MOV BX,
+        DB      -DATA_CSUB      ; BL:=DATA_CSUB * -1
+        DB      20H             ; BH:=%xx10'0000: 3 SHL from zero
+        MOV     AH,0            ; reset result
 
 @read_bit:
-        TEST    DL,DL
+        SHL     DL,1
         jnz     @shift_latch
 
 ;load_latch:
         INC     DX              ; INC DX for DL:=1, %xxxx'xxx1: 8 SHL from zero
-        MOV     DH,[BP]
+        MOV     AL,[BP]
         inc     bp
 
 @shift_latch:
-        SHL     DX,1
-        RCL     AX,1
+        SHL     AX,1
 
-        jmp     @next_bit
+;next_bit:
+        SHL     BH,1
+        jnz     @read_bit
+
+;word_read:
+        TEST    AH,AH           ; check for %000 special value
+        jnz     @adjust_word
+
+;load_uncompressed:
+        DB      0BBH            ; hardcoded MOV BX,
+        DB      -DATA_USUB      ; BL:=DATA_USUB * -1
+        DB      02H             ; BH:=%xxxx'xx10: 7 SHL from zero
+        JMP     @read_bit
 
 @adjust_word:
-        sub     al,bl
+        XCHG    AX,BX
+        ADD     AL,BH
 
 ;rotate_notes:
         MOV     DI,data_start
