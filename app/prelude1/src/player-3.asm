@@ -55,49 +55,23 @@
 
         call    eight_of_eight
 
-;       CMP     CL,2
-;       jne     @not1
-;       mov     byte [delay-2],5
-;@not1:
         LOOP    @next_line
 
         INC     BX              ; next_simple
-        MOV     CL,5+16+16
+        MOV     CL,5+16+16-1
 @next:
-        CMP     CL,5+16
+        CMP     CL,5+16-1
         JA      @set_delay
         MOV     BL,7            ; next_last
-        CMP     CL,5
+        CMP     CL,5-1
         JA      @set_delay
         MOV     BL,1            ; next_finish
 @set_delay:
         call    load_play_note
         LOOP    @next
 
-        RETN
+;       RETN
 
-;-----------------------------------------------------------------------
-eight_of_eight:
-        PUSH    CX
-
-        MOVSW
-        MOVSW
-        MOVSB
-
-        MOV     CL,5
-@five_of_eight:
-        call    load_play_note
-        LOOP    @five_of_eight
-
-        MOV     CL,3
-        SUB     SI,CX            ; SI is from rotate_notes
-@three_of_eight:
-        LODSB
-        call    play_note
-        LOOP    @three_of_eight
-
-        POP     CX
-        ret
 ;-----------------------------------------------------------------------
 load_play_note:
         MOV     DI,data_start
@@ -110,12 +84,13 @@ load_play_note:
         JNC     @read_bit
 
 ;word_read:
-        CMP     AL,2            ; check for %010 special value
-;       TEST    AL,AL           ; check for %000 special value
+        TEST    AL,AL           ; check for %000 special value
+;       CMP     AL,2            ; check for %010 special value
         jnz     @adjust_word
 
 ;load_uncompressed:
-        MOV     AH,DATA_USUB    ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
+        MOV     AX,256*DATA_USUB+2 ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
+;       MOV     AH,DATA_USUB       ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
         JMP     @read_bit
 
 @adjust_word:
@@ -161,6 +136,29 @@ play_note:
         jne     @wait_some
 
         popa
+        ret
+
+;-----------------------------------------------------------------------
+eight_of_eight:
+        PUSH    CX
+
+        MOVSW
+        MOVSW
+        MOVSB
+
+        MOV     CL,5
+@five_of_eight:
+        call    load_play_note
+        LOOP    @five_of_eight
+
+        MOV     CL,3
+        SUB     SI,CX            ; SI is from rotate_notes
+@three_of_eight:
+        LODSB
+        call    play_note
+        LOOP    @three_of_eight
+
+        POP     CX
         ret
 ;-----------------------------------------------------------------------
 include "data-3.inc"
