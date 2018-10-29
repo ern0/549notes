@@ -15,12 +15,18 @@ from render import Render
 class Sheet:
 
 
-	def main(self):
+	def __init__(self):
 
+		self.render = Render(self)
+		self.totals = {}
 		self.pure8 = False
 
 		self.createScore()
 		self.calcMapping()
+
+
+	def main(self):
+
 		if len(sys.argv) < 3:
 			self.renderIntro(None)
 			self.renderAnalysis()
@@ -72,12 +78,6 @@ class Sheet:
 		self.renderStoreRawWithoutTable()
 
 		self.renderTotal()
-
-
-	def __init__(self):
-
-		self.render = Render(self)
-		self.totals = {}
 
 
 	def createScore(self):
@@ -663,6 +663,7 @@ class Sheet:
 		self.renderPaddingBits()
 		self.renderDataLine()
 
+
 # ---- data, method 2 -----------------------------------------------------------------
 
 	def renderData2(self,mode3 = False):
@@ -683,8 +684,8 @@ class Sheet:
 		self.render.renderHeader("data")
 		self.render.renderLine()
 		self.resetDataBits()
-		self.renderData2Notes(noteType)
 		self.renderFirstBytes(noteType,5)
+		self.renderData2Notes(noteType)
 
 
 	def renderData2Notes(self,noteType):
@@ -719,8 +720,6 @@ class Sheet:
 		self.renderDataLine()
 		self.render.renderLine()
 
-
-
 # ---- data, common -------------------------------------------------------------------
 
 	def renderFirstBytes(self,noteType,count):
@@ -750,16 +749,16 @@ class Sheet:
 
 	def renderDataBits(self,length,value):
 
-		if length != 0: value <<= 8 - length
+		#if length != 0: value << 8 - length
 
 		for i in range(0,length):
 
-			value <<= 1
-			if value & 0x100: bit = 1
+			if value & 0x1: bit = 0x80
 			else: bit = 0
+			value >>= 1
 			value = value & 0xff
 
-			self.latchByte <<= 1
+			self.latchByte >>= 1
 			self.latchByte |= bit
 
 			self.shiftCounter += 1
@@ -793,6 +792,24 @@ class Sheet:
 
 		if self.itemCounter == 0: return
 		self.render.renderLine(self.dataLine)
+
+# -------------------------------------------------------------------------------------
+
+	def test(self):
+
+		self.resetDataBits()
+		self.renderDataBits(4,1)
+		self.renderDataBits(4,2)
+		self.renderDataBits(7,1)
+		self.renderDataBits(1,1)
+		self.renderPaddingBits()
+		self.renderDataLine()
+
+		# $12,$03 -> $21,$81
+
+		for line in self.render.lines:
+			print(line)
+
 
 # -------------------------------------------------------------------------------------
 
