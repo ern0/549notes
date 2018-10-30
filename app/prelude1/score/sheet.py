@@ -20,6 +20,7 @@ class Sheet:
 		self.render = Render(self)
 		self.totals = {}
 		self.pure8 = False
+		self.mirror = True
 
 		self.createScore()
 		self.calcMapping()
@@ -749,16 +750,16 @@ class Sheet:
 
 	def renderDataBits(self,length,value):
 
-		#if length != 0: value << 8 - length
+		if length != 0: value <<= 8 - length
 
 		for i in range(0,length):
 
-			if value & 0x1: bit = 0x80
+			value <<= 1
+			if value & 0x100: bit = 1
 			else: bit = 0
-			value >>= 1
 			value = value & 0xff
 
-			self.latchByte >>= 1
+			self.latchByte <<= 1
 			self.latchByte |= bit
 
 			self.shiftCounter += 1
@@ -780,13 +781,19 @@ class Sheet:
 		if self.itemCounter == 0: self.dataLine = "\tdb "
 		if self.itemCounter > 0: self.dataLine += ","
 		self.dataLine += "$"
-		self.dataLine += hex(self.latchByte).replace("x","")[-2:]
+		value = self.latchByte
+		if self.mirror: value = self.mirrorByte(value)
+		self.dataLine += hex(value).replace("x","")[-2:]
 		self.itemCounter += 1
 
 		if self.itemCounter != 8: return
 		self.renderDataLine()
 		self.itemCounter = 0
 
+
+	def mirrorByte(self,value):
+		return int('{:08b}'.format(value)[::-1], 2)		
+		
 
 	def renderDataLine(self):
 
@@ -805,7 +812,7 @@ class Sheet:
 		self.renderPaddingBits()
 		self.renderDataLine()
 
-		# $12,$03 -> $21,$81
+		# mirror: $12,$03 -> $48,$C0
 
 		for line in self.render.lines:
 			print(line)
