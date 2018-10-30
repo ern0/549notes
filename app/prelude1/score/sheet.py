@@ -669,7 +669,7 @@ class Sheet:
 
 	def renderData2(self,mode3 = False):
 
-		noteType = "raw-diff-5,1"
+		noteType = "raw-diff-5"
 		diffId = noteType + " @ 3 nctab nutab"
 
 		if mode3:
