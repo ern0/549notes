@@ -25,21 +25,7 @@
         MOV     DX,331H
         OUTSB
 
-;flip bits
-;       MOV     DI,data_notes
-;       MOV     CX,snapshot_start-data_notes
-.1:
-;       MOV     BL,8
-.2:
-;       SHL     BYTE [DI],1
-;       RCR     AL,1
-;       DEC     BX
-;       JNZ     .2
-;       STOSB
-;       LOOP    .1
-
         MOV     BP,(data_notes-data_start)*8
-        MOV     CL,32
         MOV     BL,5
 
 @next_line:
@@ -55,7 +41,8 @@
 
         call    eight_of_eight
 
-        LOOP    @next_line
+        SUB     DX,331H/32+1
+        JNC     @next_line
 
         INC     BX              ; next_simple
         MOV     CL,5+16+16-1
@@ -84,19 +71,15 @@ load_play_note:
         JNC     @read_bit
 
 ;word_read:
-        TEST    AL,AL           ; check for %000 special value
-;       CMP     AL,2            ; check for %010 special value
-        jnz     @adjust_word
+        SUB     AL,AH           ; adjust_word
+        CMP     AL,3            ; check for %011 special value
+        JNE     @rotate_notes
 
 ;load_uncompressed:
-        MOV     AX,256*DATA_USUB+2 ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
-;       MOV     AH,DATA_USUB       ;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
+        MOV     AH,128+DATA_USUB;AH:DATA_USUB, AL:%xxxx'xx11: 7 SHL to carry
         JMP     @read_bit
 
-@adjust_word:
-        SUB     AL,AH
-
-;rotate_notes:
+@rotate_notes:
         add     al,[di]
         lea     si,[di + 1]
 
@@ -110,14 +93,15 @@ play_note:
 
         pusha
 
-        PUSH   AX
-        MOV    DX,330H
-        MOV    AL,90H
-        OUT    DX,AL
-        POP    AX
-        OUT    DX,AL
-        MOV    AL,7FH
-        OUT    DX,AL
+        PUSH    AX
+        INT     29H
+        MOV     DX,330H
+        MOV     AL,90H
+        OUT     DX,AL
+        POP     AX
+        OUT     DX,AL
+        MOV     AL,7FH
+        OUT     DX,AL
 
         ; fall wait
 ;-----------------------------------------------------------------------
@@ -140,7 +124,6 @@ play_note:
 
 ;-----------------------------------------------------------------------
 eight_of_eight:
-        PUSH    CX
 
         MOVSW
         MOVSW
@@ -158,7 +141,6 @@ eight_of_eight:
         call    play_note
         LOOP    @three_of_eight
 
-        POP     CX
         ret
 ;-----------------------------------------------------------------------
 include "data-3.inc"
