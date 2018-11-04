@@ -26,7 +26,7 @@
         OUTSB
 
         MOV     BP,(data_notes-data_start)*8
-        MOV     BL,5
+        MOV     BL,2
 
 @next_line:
 

@@ -691,15 +691,16 @@ class Sheet:
 
 	def renderData2Notes(self,noteType):
 
-		cSub = 4  # log2(3) - 1
+		cSub = 3
 		uSub = 0
+		spec = 7
 		for note in self.notes:
 			value = note.get(noteType)
 			if value > uSub: uSub = value
 		uSub += 1 # avoid zero
 
 		self.render.renderLine("; value to substract from compressed data")
-		self.render.renderLine("\tDATA_CSUB = 4")
+		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
 		self.render.renderLine("; value to substract from uncompressed data")
 		self.render.renderLine("\tDATA_USUB = " + str(uSub))
 		self.render.renderLine()
@@ -714,7 +715,7 @@ class Sheet:
 			if diff in (-3,-2,-1,0,1,2,3):
 				self.renderDataBits(3,diff + cSub)
 			else:
-				self.renderDataBits(3,0)
+				self.renderDataBits(3,spec)
 				self.renderDataBits(7,diff + uSub)
 
 		self.renderPaddingBits()
