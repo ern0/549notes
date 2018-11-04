@@ -34,17 +34,17 @@ class Sheet:
 		else:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()
-			elif str(sys.argv[2]) == "2":
-				self.renderData2()
-			else:
+			elif str(sys.argv[2]) == "3":
 				self.renderData2(mode3=True)
+			else:
+				self.renderData2()
 		self.saveFile()
 
 
 	def renderAnalysis(self):
 
 		#self.calcDiff("raw","raw-diff-5",5)
-		#self.renderEstimation("raw-diff-5",3,5,False,True)
+		#self.renderHistogram("raw-diff-5",orderBy = "count")
 		#return
 
 		diffs = (1,2,3,4,5,6,7,8,9,10,"mixed/1/5",)
@@ -673,7 +673,7 @@ class Sheet:
 		diffId = noteType + " @ 3 nctab nutab"
 
 		if mode3:
-			self.calcDiff("raw",noteType,"split/5/1")			
+			self.calcDiff("raw",noteType,"split/5/1")
 		else:
 			self.calcDiff("raw",noteType,5)
 
@@ -691,13 +691,14 @@ class Sheet:
 
 	def renderData2Notes(self,noteType):
 
-		cSub = 3
-		uSub = 0
+		cSub = 4
+		uSub = 42
 		spec = 7
-		for note in self.notes:
-			value = note.get(noteType)
-			if value > uSub: uSub = value
-		uSub += 1 # avoid zero
+
+		#for note in self.notes:
+		#	value = note.get(noteType)
+		#	if value > uSub: uSub = value
+		#uSub += 1 # avoid zero
 
 		self.render.renderLine("; value to substract from compressed data")
 		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
@@ -712,7 +713,7 @@ class Sheet:
 			note = self.notes[i]
 			diff = note.get(noteType)
 
-			if diff in (-3,-2,-1,0,1,2,3):
+			if diff in (-4,-3,-2,-1,0,1,2):
 				self.renderDataBits(3,diff + cSub)
 			else:
 				self.renderDataBits(3,spec)
