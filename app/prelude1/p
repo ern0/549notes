@@ -3,5 +3,5 @@ clear
 
 #score/sheet.py analysis-5p3.txt
 
-score/sheet.py src/data-3.inc 3
+score/sheet.py src/data-3.inc 2
 fasm src/player-3.asm player-3.com
