@@ -1,5 +1,5 @@
 ; **** generated file, do not edit *********************************************
-; compression method: raw-diff-5 @ 3 nctab nutab
+; compression method: raw-diff-5 @ 4 nctab nutab
 ; 
 ; Transformed score data and analysis of
 ;  J.S.Bach: Prelude in C major, BWV 846
@@ -83,40 +83,41 @@
 ; 26. +12  1 196 #
 ; 27. +10  1 197 #
 
-; ---- estimation for raw-diff-5 @ 3 nctab nutab -------------------------------
+; ---- estimation for raw-diff-5 @ 4 nctab nutab -------------------------------
 ; 
-; note num:      7.c   20.u   27.t
-; note count:  153.c   44.u  197.t
-; note bits:     3.c   10.u
-; storage:      57.c   55.u  112.t
+; note num:     13.c   14.u   27.t
+; note count:  181.c   16.u  197.t
+; note bits:     4.c   11.u
+; storage:      90.c   22.u  112.t
 ; table:         0.c    0.u    0.t
 ; total bytes (storage + leading + table): 118
 
 ; ---- data --------------------------------------------------------------------
 ; 
 
+data_start: ; starting raw bytes
+	db 60,64,67,72,76
+
 ; value to substract from compressed data
-        DATA_CSUB = 4
+	DATA_CSUB = 8
 ; value to substract from uncompressed data
-        DATA_USUB = 42
+	DATA_USUB = 42
 
 data_notes: ; bit packed note data
 
-        db $49,$92,$68,$ab,$a3,$a4,$8b,$9c
-        db $0c,$3a,$e8,$23,$42,$0c,$b1,$53
-        db $e8,$a1,$8f,$08,$31,$c4,$4a,$12
-        db $88,$29,$07,$fa,$a5,$8e,$97,$c9
-        db $5a,$e3,$40,$46,$5b,$6b,$44,$88
-        db $21,$56,$92,$40,$4c,$39,$d0,$2f
-        db $75,$fe,$04,$62,$39,$29,$a4,$49
-        db $06,$fd,$22,$07,$32,$27,$4e,$17
-        db $25,$4d,$e2,$a4,$6b,$53,$a5,$51
-        db $a2,$24,$0e,$c4,$8a,$9d,$c8,$90
-        db $21,$0e,$1b,$74,$27,$78,$84,$0c
-        db $02,$c8,$08,$2a,$24,$70,$c3,$83
-        db $10,$ca,$88,$42,$77,$42,$40,$08
-        db $21,$84,$18,$52,$c0,$c1,$f1,$61
-        db $a9
+	db $11,$11,$11,$56,$95,$1e,$16,$91
+	db $15,$e6,$11,$35,$1b,$a6,$88,$1e
+	db $b9,$1b,$a6,$88,$16,$11,$81,$6a
+	db $1e,$5b,$91,$1e,$5e,$51,$e6,$56
+	db $19,$1e,$a2,$ee,$56,$19,$a6,$88
+	db $16,$11,$81,$6a,$1e,$5b,$91,$1e
+	db $dd,$11,$68,$1e,$91,$1c,$11,$b5
+	db $15,$e6,$21,$1e,$e1,$91,$15,$16
+	db $91,$11,$e1,$11,$59,$99,$91,$16
+	db $19,$16,$61,$11,$e1,$81,$16,$ee
+	db $11,$e6,$e2,$71,$b7,$4d,$ab,$f3
+	db $54,$5c,$20,$ea,$54,$72,$b7,$7b
+	db $3c,$e4,$65,$8f,$4e,$ab,$0b,$d4
+	db $85,$2e,$44,$76,$b8,$73,$bc,$dd
+	db $a2
 
-data_start: ; starting raw bytes
-        db 60,64,67,72,76

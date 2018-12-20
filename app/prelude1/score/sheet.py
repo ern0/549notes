@@ -35,9 +35,11 @@ class Sheet:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()
 			elif str(sys.argv[2]) == "3":
+				self.renderData2()
+			elif str(sys.argv[2]) == "3":
 				self.renderData2(mode3=True)
 			else:
-				self.renderData2()
+				self.renderData4()
 		self.saveFile()
 
 
@@ -665,7 +667,7 @@ class Sheet:
 		self.renderDataLine()
 
 
-# ---- data, method 2 -----------------------------------------------------------------
+# ---- data, method 2-3 ---------------------------------------------------------------
 
 	def renderData2(self,mode3 = False):
 
@@ -695,11 +697,6 @@ class Sheet:
 		uSub = 42
 		spec = 7
 
-		#for note in self.notes:
-		#	value = note.get(noteType)
-		#	if value > uSub: uSub = value
-		#uSub += 1 # avoid zero
-
 		self.render.renderLine("; value to substract from compressed data")
 		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
 		self.render.renderLine("; value to substract from uncompressed data")
@@ -717,6 +714,57 @@ class Sheet:
 				self.renderDataBits(3,diff + cSub)
 			else:
 				self.renderDataBits(3,spec)
+				self.renderDataBits(7,diff + uSub)
+
+		self.renderPaddingBits()
+		self.renderDataLine()
+		self.render.renderLine()
+
+
+# ---- data, method 4 -----------------------------------------------------------------
+
+	def renderData4(self):
+
+		noteType = "raw-diff-5"
+		diffId = noteType + " @ 4 nctab nutab"
+
+		self.calcDiff("raw",noteType,5)
+
+		self.renderIntro(diffId)
+		self.render.renderScore(noteType,("text","raw",noteType,))
+		self.renderHistogram(noteType,orderBy = "count")
+		self.renderEstimation(noteType,4,5,True,True)
+
+		self.render.renderHeader("data")
+		self.render.renderLine()
+		self.resetDataBits()
+		self.renderFirstBytes(noteType,5)
+		self.renderData4Notes(noteType)
+
+
+	def renderData4Notes(self,noteType):
+
+		cSub = 8
+		uSub = 42
+		spec = 7
+
+		self.render.renderLine("; value to substract from compressed data")
+		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
+		self.render.renderLine("; value to substract from uncompressed data")
+		self.render.renderLine("\tDATA_USUB = " + str(uSub))
+		self.render.renderLine()
+
+		self.render.renderLine("data_notes: ; bit packed note data")
+		self.render.renderLine()
+
+		for i in range(0,len(self.notes)):
+			note = self.notes[i]
+			diff = note.get(noteType)
+
+			if diff in (-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6):
+				self.renderDataBits(4,diff + cSub)
+			else:
+				self.renderDataBits(4,spec)
 				self.renderDataBits(7,diff + uSub)
 
 		self.renderPaddingBits()
