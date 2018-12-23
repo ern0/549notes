@@ -80,6 +80,8 @@ load_play_note:
         JMP     @read_bit
 
 @rotate_notes:
+        call    test_diff
+
         add     al,[di]
         lea     si,[di + 1]
 
@@ -90,6 +92,8 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
+        jmp    test_note
 
         pusha
 
@@ -144,5 +148,6 @@ eight_of_eight:
         ret
 ;-----------------------------------------------------------------------
 include "data-3.inc"
+include "test.asm"
 
 snapshot_start:
