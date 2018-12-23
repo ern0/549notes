@@ -4,4 +4,4 @@ clear
 #score/sheet.py analysis-5p3.txt
 
 score/sheet.py src/data-4.inc 4
-fasm src/player-3.asm player-3.com
+#fasm src/player-3.asm player-3.com

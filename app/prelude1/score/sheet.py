@@ -34,7 +34,7 @@ class Sheet:
 		else:
 			if str(sys.argv[2]) == "1":
 				self.renderData1()
-			elif str(sys.argv[2]) == "3":
+			elif str(sys.argv[2]) == "2":
 				self.renderData2()
 			elif str(sys.argv[2]) == "3":
 				self.renderData2(mode3=True)
@@ -746,12 +746,14 @@ class Sheet:
 
 		cSub = 8
 		uSub = 42
-		spec = 7
+		spec = 2
 
 		self.render.renderLine("; value to substract from compressed data")
 		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
 		self.render.renderLine("; value to substract from uncompressed data")
 		self.render.renderLine("\tDATA_USUB = " + str(uSub))
+		self.render.renderLine("; special value before uncompressed data")
+		self.render.renderLine("\tDATA_SPEC = " + str(spec))
 		self.render.renderLine()
 
 		self.render.renderLine("data_notes: ; bit packed note data")
@@ -761,7 +763,7 @@ class Sheet:
 			note = self.notes[i]
 			diff = note.get(noteType)
 
-			if diff in (-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6):
+			if diff in (-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1 , 3,4,5):
 				self.renderDataBits(4,diff + cSub)
 			else:
 				self.renderDataBits(4,spec)
