@@ -854,10 +854,6 @@ class Sheet:
 						line += ","
 					line += str(value)
 
-				#for i in (2,3,4):
-				#	value = self.notes[index + i].get(noteType)
-				#	line += "," + str(value)
-
 				if round == 1: index += 5
 
 				self.render.renderLine(line)
