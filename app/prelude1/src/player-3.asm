@@ -19,6 +19,12 @@
 ;       ES - DS=CS
 ;
 ;-----------------------------------------------------------------------
+        TEST_MODE = 1
+
+        if TEST_MODE > 0
+        display "----[ test mode ]------------"
+        end if
+;-----------------------------------------------------------------------
         org     100H
 
         DB      3FH
@@ -80,7 +86,10 @@ load_play_note:
         JMP     @read_bit
 
 @rotate_notes:
+
+        if TEST_MODE > 0
         call    test_diff
+        end if
 
         add     al,[di]
         lea     si,[di + 1]
@@ -93,7 +102,9 @@ load_play_note:
 ;-----------------------------------------------------------------------
 play_note:
 
+        if TEST_MODE > 0
         jmp    test_note
+        end if
 
         pusha
 
