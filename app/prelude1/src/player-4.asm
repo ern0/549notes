@@ -19,6 +19,12 @@
 ;       ES - global, =DS
 ;
 ;-----------------------------------------------------------------------
+        TEST_MODE = 0
+
+        if TEST_MODE > 0
+        display "----[ test mode ]------------"
+        end if
+;-----------------------------------------------------------------------
         org     100H
 
         DB      3FH
@@ -67,6 +73,10 @@
         call    load_play_note
         LOOP    @next
 
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
 ;       RETN
 
 ;-----------------------------------------------------------------------
@@ -90,6 +100,10 @@ load_play_note:
         SUB     AL,AH
 
 ;rotate_notes:
+        if TEST_MODE > 0
+        call    test_diff
+        end if
+
         ADD     AL,[SI]
         PUSH    DI
         MOV     DI,SI
@@ -103,6 +117,12 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
+        if TEST_MODE > 0
+        call    test_note
+        jmp     skip_wait
+        end if
+
         PUSHA
         MOV     AX,0E90H
         OUT     DX,AL
@@ -125,8 +145,14 @@ play_note:
         jne     @wait_tick
 
         POPA
+skip_wait:
         MOVSB
         ret
 
 ;-----------------------------------------------------------------------
 include "data-4.inc"
+
+if TEST_MODE > 0
+include "test.asm"
+end if
+
