@@ -3,6 +3,6 @@ clear
 
 #score/sheet.py analysis-5p3.txt
 
-#score/sheet.py src/data-4.inc 4
-#score/sheet.py src/test-score.inc t
+score/sheet.py src/data-4.inc 4
+score/sheet.py src/test-score.inc t
 fasm src/player-3.asm player-3.com

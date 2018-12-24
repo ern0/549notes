@@ -746,7 +746,7 @@ class Sheet:
 
 	def renderData4Notes(self,noteType):
 
-		cSub = 8
+		cSub = 10
 		uSub = 42
 		spec = 2
 
