@@ -19,6 +19,12 @@
 ;       ES - DS=CS
 ;
 ;-----------------------------------------------------------------------
+        TEST_MODE = 1
+
+        if TEST_MODE > 0
+        display "----[ test mode ]------------"
+        end if
+;-----------------------------------------------------------------------
         org     100H
 
         DB      3FH
@@ -57,6 +63,10 @@
         call    load_play_note
         LOOP    @next
 
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
 ;       RETN
 
 ;-----------------------------------------------------------------------
@@ -80,6 +90,11 @@ load_play_note:
         JMP     @read_bit
 
 @rotate_notes:
+
+        if TEST_MODE > 0
+        call    test_diff
+        end if
+
         add     al,[di]
         lea     si,[di + 1]
 
@@ -90,6 +105,10 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
+        if TEST_MODE > 0
+        jmp    test_note
+        end if
 
         pusha
 
@@ -144,5 +163,6 @@ eight_of_eight:
         ret
 ;-----------------------------------------------------------------------
 include "data-3.inc"
+include "test.asm"
 
 snapshot_start:

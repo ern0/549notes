@@ -38,6 +38,8 @@ class Sheet:
 				self.renderData2()
 			elif str(sys.argv[2]) == "3":
 				self.renderData2(mode3=True)
+			elif str(sys.argv[2]) == "t":
+				self.renderTest()
 			else:
 				self.renderData4()
 		self.saveFile()
@@ -772,6 +774,137 @@ class Sheet:
 		self.renderPaddingBits()
 		self.renderDataLine()
 		self.render.renderLine()
+
+# ---- test ---------------------------------------------------------------------------
+
+	def renderTest(self):
+
+		line = "; note data and diff data for test"
+		self.render.renderLine(line)
+		self.render.renderLine()
+
+		self.renderTestNote()
+		self.render.renderLine()
+		self.renderTestDiff()
+
+
+	def renderTestNote(self):
+
+		self.render.renderLine("test_note_data:")
+		noteType = "raw"
+		index = 0
+
+		while True:
+			
+			for round in (0,1):
+
+				line = ""
+				for i in (0,1,2,3,4):
+					value = self.notes[index + i].get(noteType)
+					if line == "":
+						line += "\tdb "
+					else:
+						line += ","
+					line += str(value)
+
+				for i in (2,3,4):
+					value = self.notes[index + i].get(noteType)
+					line += "," + str(value)
+
+				if round == 1: index += 5
+
+				self.render.renderLine(line)
+
+			if index >= self.splitPoint: break
+
+		while True:
+
+			line = ""
+			for i in range(0,8):
+				if index >= len(self.notes): break
+
+				value = self.notes[index].get(noteType)
+				if line == "":
+					line += "\tdb "
+				else:
+					line += ","
+				line += str(value)
+				index += 1
+
+			self.render.renderLine(line)
+			if index >= len(self.notes): break
+
+
+	def renderTestDiff(self):
+
+		self.render.renderLine("test_diff_data:")
+		noteType = "raw-diff-5"
+
+		self.calcDiff("raw",noteType,5)
+
+		index = 0
+		while True:
+			
+			for round in (0,1):
+
+				line = ""
+				for i in (0,1,2,3,4):
+					value = self.notes[index + i].get(noteType)
+					if line == "":
+						line += "\tdb "
+					else:
+						line += ","
+					line += str(value)
+
+				if round == 1: index += 5
+
+				self.render.renderLine(line)
+
+			if index >= self.splitPoint: break
+
+		while True:
+
+			line = ""
+			for i in range(0,8):
+				if index >= len(self.notes): break
+
+				value = self.notes[index].get(noteType)
+				if line == "":
+					line += "\tdb "
+				else:
+					line += ","
+				line += str(value)
+				index += 1
+
+			self.render.renderLine(line)
+			if index >= len(self.notes): break
+
+
+	def renderTestDiff_NotThisWay(self):
+
+		self.render.renderLine("test_diff_data:")
+		noteType = "raw-diff-5"
+
+		self.calcDiff("raw",noteType,5)
+
+		line = ""
+		for index in range(0,len(self.notes)):
+
+			value = self.notes[index].get(noteType)
+
+			if line == "":
+				line += "\tdb "
+			else:
+				line += ","
+			line += str(value)
+
+			if len(line) > 40:
+				self.render.renderLine(line)
+				line = ""
+
+		if line != "":
+			self.render.renderLine(line)
+
 
 # ---- data, common -------------------------------------------------------------------
 
