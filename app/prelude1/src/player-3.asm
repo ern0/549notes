@@ -63,6 +63,10 @@
         call    load_play_note
         LOOP    @next
 
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
 ;       RETN
 
 ;-----------------------------------------------------------------------
