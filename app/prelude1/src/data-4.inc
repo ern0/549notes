@@ -95,9 +95,6 @@
 ; ---- data --------------------------------------------------------------------
 ; 
 
-data_start: ; starting raw bytes
-	db 60,64,67,72,76
-
 ; value to substract from compressed data
 	DATA_CSUB = 10
 ; value to substract from uncompressed data
@@ -124,3 +121,5 @@ data_notes: ; bit packed note data
 	db $d6,$c1,$11,$59,$09,$4e,$9c,$5c
 	db $b2,$a8
 
+data_start: ; starting raw bytes
+	db 60,64,67,72,76
