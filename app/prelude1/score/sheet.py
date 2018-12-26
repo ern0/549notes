@@ -747,7 +747,7 @@ class Sheet:
 	def renderData4Notes(self,noteType):
 
 		cSub = 10
-		uSub = 42
+		uSub = 44
 		spec = 2
 
 		self.render.renderLine("; value to substract from compressed data")
@@ -845,7 +845,7 @@ class Sheet:
 		index = 0
 		while True:
 			
-			for round in (0,1):
+			for round in (1,):
 
 				line = ""
 				for i in (0,1,2,3,4):
@@ -968,7 +968,9 @@ class Sheet:
 		self.dataLine += "$"
 		value = self.latchByte
 		if self.mirror: value = self.mirrorByte(value)
-		self.dataLine += hex(value).replace("x","")[-2:]
+		hexValue = hex(value).replace("x","")[-2:]
+		if self.mirror: hexValue = hexValue.upper()
+		self.dataLine += hexValue
 		self.itemCounter += 1
 
 		if self.itemCounter != 8: return
@@ -977,7 +979,7 @@ class Sheet:
 
 
 	def mirrorByte(self,value):
-		return int('{:08b}'.format(value)[::-1], 2)		
+		return int('{:08b}'.format(value)[::-1], 2)
 		
 
 	def renderDataLine(self):

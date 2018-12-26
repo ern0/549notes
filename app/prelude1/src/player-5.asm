@@ -1,6 +1,6 @@
 ;-----------------------------------------------------------------------
 ; Prelude1 - PC-DOS 256-byte intro by ern0 & TomCat
-; Prototype-2: raw-diff-5 nctab nutab
+; Compression: raw-diff-5 @ 4 nctab nutab
 ;
 ; Target: 80386 real mode, assembler: FASM
 ;
@@ -18,6 +18,12 @@
 ;       BP - global, load bit pointer
 ;       ES - global, =DS
 ;
+;-----------------------------------------------------------------------
+        TEST_MODE = 1
+
+        if TEST_MODE > 0
+        display "----[ Test mode, result will be written to TEST.TXT ]--------"
+        end if
 ;-----------------------------------------------------------------------
         org     100H
 
@@ -67,6 +73,10 @@
         call    load_play_note
         LOOP    @next
 
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
 ;       RETN
 
 ;-----------------------------------------------------------------------
@@ -90,6 +100,10 @@ load_play_note:
         SUB     AL,AH
 
 ;rotate_notes:
+        if TEST_MODE > 0
+        call    test_diff
+        end if
+
         ADD     AL,[SI]
         PUSH    DI
         MOV     DI,SI
@@ -103,6 +117,13 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
+        if TEST_MODE > 0
+        lodsb
+        call    test_note
+        jmp     skip_wait
+        end if
+
         PUSHA
         MOV     AX,0E90H
         OUT     DX,AL
@@ -125,8 +146,13 @@ play_note:
         jne     @wait_tick
 
         POPA
+skip_wait:
         MOVSB
         ret
 
 ;-----------------------------------------------------------------------
 include "data-5.inc"
+
+if TEST_MODE > 0
+include "test.asm"
+end if
