@@ -6,6 +6,7 @@ import os
 import math
 from collections import OrderedDict
 from operator import itemgetter
+import numpy
 
 import data
 from note import Note
@@ -748,7 +749,7 @@ class Sheet:
 
 		cSub = 10
 		uSub = 44
-		spec = 2 + cSub
+		spec = 2
 
 		self.render.renderLine("; value to substract from compressed data")
 		self.render.renderLine("\tDATA_CSUB = " + str(cSub))
@@ -761,11 +762,23 @@ class Sheet:
 		self.render.renderLine("data_notes: ; bit packed note data")
 		self.render.renderLine()
 
+		compressedList = [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5]
+		
+		if len(compressedList) != 16:
+			print("invalid compressed list:",compressedList)
+			quit()
+
+		try:
+			compressedList.remove(spec - cSub)
+		except ValueError:
+			print("invalid SPEC:",spec)
+			quit()
+
 		for i in range(0,len(self.notes)):
 			note = self.notes[i]
 			diff = note.get(noteType)
 
-			if diff in (-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1 , 3,4,5):
+			if diff in compressedList:
 				self.renderDataBits(4,diff + cSub)
 			else:
 				self.renderDataBits(4,spec)
