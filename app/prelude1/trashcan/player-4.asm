@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------------
-; Prelude1 - PC-DOS 256-byte intro by ern0
+; Prelude1 - PC-DOS 256-byte intro by ern0 & TomCat
 ; Prototype-2: raw-diff-5 nctab nutab
 ;
 ; Target: 80386 real mode, assembler: FASM
@@ -7,134 +7,152 @@
 ;-----------------------------------------------------------------------
 ; Register allocation:
 ;
-;       AL - param, result: loaded word on LSBs
-;       AH - param, word length loop counter (SHL until zero)
-;       BL - local, play_note
-;       BH - local, data sub correction
-;       DL - global, latch counter (SHL until zero)
-;       DH - global, latch value
-;       CL - 
-;       CH - 
-;       SI - 
-;       DI - 
-;       BP - global, load data pointer
-;       ES - (free)
+;       AL - local, bit counter (SHL until carry) + result
+;       AH - local, data sub correction
+;       BL - global, line counter
+;       BH - global, delay
+;       DX - global, constant, 330H - the midi data port
+;       CX - local, line counter, note counter
+;       SI - local, 5-byte rotation
+;       DI - global, used in 5+3 repeat
+;       BP - global, load bit pointer
+;       ES - global, =DS
 ;
+;-----------------------------------------------------------------------
+        TEST_MODE = 1
+
+        if TEST_MODE > 0
+        display "----[ test mode ]------------"
+        end if
 ;-----------------------------------------------------------------------
         org     100H
 
-        aas
-        mov     dx,331H
-        outsb
-        xor     dx,dx
+        DB      3FH
+        MOV     DX,331H
+        OUTSB
+        DEC     DX
+        SUB     CX,CX
+.1:
+        XOR     AL,13H
+        INT     10H
+        MOV     AX,CX
+        MUL     AH
+        AND     AL,15
+        MOV     AH,0CH
+        LOOP    .1
 
-        mov     bp,data_notes
+        SUB     BP,BP
+        MOV     BH,5+1
 
-;-------------------------------------------
-        mov     cx,32*5
-part1:
-        call    load_note
+@next_line:
+        MOV     DI,data_start+5
 
-;rotate_notes:
-        mov     di,data_start
-        add     al,[di]
-        lea     si,[di + 1]
-        movsw
-        movsw
-        stosb
+        MOV     CL,5
+@five_of_eight:
+        call    load_play_note
+        LOOP    @five_of_eight
 
-        nop     ; do not play note
-
-        loop    part1
-;-------------------------------------------
-        mov     cx,16
-part2:  
-        mov     si,ax
-        call    load_note
-        add     ax,si
+        SUB     SI,3            ; SI is from rotate_notes
+        MOV     CL,3+8
+@three_of_eight:
         call    play_note
+        LOOP    @three_of_eight
+        ADC     BL,DH           ; ADD BL,4
+        JNS     @next_line      ; LOOP 32x (BP:26CH)
 
-        loop    part2
+        MOV     CL,5+16+16-1
+@next:
+        MOV     BH,6+1          ; next_simple
+        CMP     CL,5+16-1
+        JA      @set_delay
+        MOV     BH,7+1          ; next_last
+        CMP     CL,5-1
+        JA      @set_delay
+        MOV     BH,1+1          ; next_finish
+@set_delay:
+        call    load_play_note
+        LOOP    @next
 
-        ret
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
+;       RETN
+
 ;-----------------------------------------------------------------------
-load_note:
-        mov     bl,DATA_CSUB
-        mov     ax,2000H        ; AL:=0, AH:=%xx10'0000: 3 SHL from zero
-
-@next_bit:
-        or      ah,ah
-        jnz     @read_bit
+load_play_note:
+        MOV     SI,data_start
+        MOV     AX,256*DATA_CSUB+16;AH:DATA_CSUB, AL:%xxx1'0000: 4 SHL to carry
+        DB      38H                ;CMP ?,BH - to skip the next instruction
+@load_uncompressed:
+        MOV     AH,DATA_USUB;*256+2;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
+@read_bit:
+        BT      [SI-data_start+data_notes],BP
+        INC     BP
+        RCL     AL,1
+        JNC     @read_bit
 
 ;word_read:
-        or      al,al           ; check for %000 special value
-        jnz     @adjust_word
+        CMP     AL,2            ; check for %010 special value
+        JE      @load_uncompressed
 
-;load_uncompressed:
-        mov     bl,DATA_USUB    ; 42, also a good value for bit counter
-        mov     ah,bl           ; %xxxx'xx10: 7 SHL from zero
-        jmp     @next_bit
+;adjust_word:
+        SUB     AL,AH
 
-@read_bit:
-        test    DL,DL
-        jnz     @shift_latch
+;rotate_notes:
+        if TEST_MODE > 0
+        call    test_diff
+        end if
 
-;load_latch:
-        inc     dx              ; INC DX for DL:=1, %xxxx'xxx1: 8 SHL from zero
-        mov     dh,[bp]
-        inc     bp
+        ADD     AL,[SI]
+        PUSH    DI
+        MOV     DI,SI
+        INC     SI
+        MOVSW
+        MOVSW
+        STOSB
+        DEC     SI
+        POP     DI
 
-@shift_latch:
-        sal     ax,1
-        sal     dx,1
-        adc     al,0
-
-        jmp     @next_bit
-
-@adjust_word:
-        sub     al,bl
-
-        ret        
+        ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
 
-        ;call   print_note ;;;;;;;;;;;;;
+        if TEST_MODE > 0
+        call    test_note
+        jmp     skip_wait
+        end if
 
-@ply:
-        pusha
-
-        push   ax
-        mov    dx,330h
-        mov    al,90h           ; MIDI note on cmd
-        out    dx,al
-
-        pop    ax               ; MIDI pitch
-        out    dx,al
-
-        mov    al,7fh           ; MIDI velocity (127, max)
-        out    dx,al
+        PUSHA
+        MOV     AX,0E90H
+        OUT     DX,AL
+        LODSB
+        OUT     DX,AL
+        MOV     BL,AL
+        INT     10H             ; dump note
+        MOV     AX,7FH;2C7FH
+        OUT     DX,AL
 
         ; fall wait
 ;-----------------------------------------------------------------------
-;wait:
-        mov     si,5
-delay:
-
-@wait_some:
-        mov     ah,2cH
-        int     21H
-        mov     bl,dl
 
 @wait_tick:
-        int     21H
-        cmp     bl,dl
+        INT     1AH;21H
+        CMP     BP,DX
         je      @wait_tick
-        dec     si
-        jne     @wait_some
+        MOV     BP,DX
+        DEC     BH
+        jne     @wait_tick
 
-        popa
+        POPA
+skip_wait:
+        MOVSB
         ret
+
 ;-----------------------------------------------------------------------
-include "dump.asm"
 include "data-4.inc"
-data_cont:
+
+if TEST_MODE > 0
+include "test.asm"
+end if
+

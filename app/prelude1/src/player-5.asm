@@ -22,7 +22,7 @@
         TEST_MODE = 1
 
         if TEST_MODE > 0
-        display "----[ Test mode, result will be written to TEST.TXT ]--------"
+        display "----[ Test mode, result will be written to TEST-5.TXT ]--------"
         end if
 ;-----------------------------------------------------------------------
         org     100H
@@ -155,4 +155,7 @@ include "data-5.inc"
 
 if TEST_MODE > 0
 include "test.asm"
+include "test-5.inc"
+test_file_name:
+        db      "TEST-5.TXT",0
 end if

@@ -174,9 +174,6 @@ test_create_file:
 	mov	ax,4c01H
 	int	21H
 
-test_file_name:
-	db	"TEST.TXT",0
-
 test_creat_fail_text:
 	db	"failed to create file",13,10,'$'
 
@@ -339,4 +336,3 @@ test_test:
 	mov	ax,4c00H
 	int	21H
 ;-----------------------------------------------------------------------
-include "test-score.inc"
