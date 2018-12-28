@@ -748,7 +748,7 @@ class Sheet:
 
 		cSub = 10
 		uSub = 44
-		spec = 2
+		spec = 2 + cSub
 
 		self.render.renderLine("; value to substract from compressed data")
 		self.render.renderLine("\tDATA_CSUB = " + str(cSub))

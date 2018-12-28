@@ -3,6 +3,14 @@
 ;-----------------------------------------------------------------------
 test_summary:
 	
+	lea	dx,[test_note_count_text]
+	mov	ah,9
+	int	21H
+
+	mov	ax,word [test_note_count]
+	call	test_print_u3
+	call	test_print_crlf
+
 	test 	word [test_error_count],-1
 	jz	.no_errors
 
@@ -10,14 +18,9 @@ test_summary:
 	mov	ah,9
 	int	21H
 
-	mov	ax,[test_error_count]
-	call	test_fill_u3
-	
-	mov	byte [test_conv_buffer + 3],'$'
-	lea	dx,[test_conv_buffer]
-	mov	ah,9
-	int	21H
-	mov	byte [test_conv_buffer + 3],0
+	mov	ax,[test_error_count]	
+	call	test_print_u3
+	call	test_print_crlf
 
 	jmp	test_quit
 
@@ -30,6 +33,9 @@ test_quit:
 	mov	ax,4c00H
 	int	21H
 
+test_note_count_text:
+	db	"number of notes: $"
+
 test_error_count:
 	dw	0
 
@@ -38,6 +44,30 @@ test_summary_text:
 
 test_no_errors:
 	db	" -=[  P E R F E C T  ]=-",13,10,'$'
+
+;-----------------------------------------------------------------------
+test_print_u3:
+
+	call	test_fill_u3
+
+	mov	byte [test_conv_buffer + 3],'$'
+	lea	dx,[test_conv_buffer]
+	mov	ah,9
+	int	21H
+	mov	byte [test_conv_buffer + 3],0
+
+	ret
+;-----------------------------------------------------------------------
+test_print_crlf:
+
+	lea	dx,[test_print_crlf_text]
+	mov	ah,9
+	int	21H
+
+	ret
+
+test_print_crlf_text:
+	db	13,10,'$'	
 ;-----------------------------------------------------------------------
 test_diff:
 
@@ -93,6 +123,8 @@ test_note:
 	jmp	test_test
 	end if
 
+	inc	word [test_note_count]
+
 	pusha
 	
 	call	test_create_file
@@ -129,6 +161,9 @@ test_note:
 	ret
 
 test_note_index:
+	dw	0
+
+test_note_count:
 	dw	0
 
 test_note_prefix:

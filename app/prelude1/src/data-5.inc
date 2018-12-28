@@ -103,24 +103,24 @@ data_start: ; starting raw bytes
 ; value to substract from uncompressed data
 	DATA_USUB = 44
 ; special value before uncompressed data
-	DATA_SPEC = 2
+	DATA_SPEC = 12
 
 data_notes: ; bit packed note data
 
-	db $55,$55,$55,$41,$3A,$D2,$75,$56
-	db $54,$35,$E9,$2A,$B2,$8A,$74,$F7
+	db $55,$55,$55,$31,$BA,$D1,$75,$56
+	db $54,$F5,$E8,$2A,$B2,$6A,$74,$F7
 	db $15,$CE,$9C,$D5,$FF,$15,$CE,$1C
-	db $55,$55,$EC,$91,$F5,$A4,$AB,$CE
-	db $4A,$D2,$15,$E9,$22,$83,$74,$5D
-	db $59,$E6,$99,$41,$BA,$AE,$70,$E6
-	db $A8,$AA,$62,$8F,$AC,$27,$5D,$75
-	db $D6,$6E,$15,$47,$56,$B5,$56,$15
-	db $E9,$9E,$74,$15,$59,$96,$55,$59
-	db $4D,$BA,$8A,$AA,$AE,$AA,$AC,$6A
-	db $D2,$75,$57,$47,$75,$45,$55,$54
-	db $55,$16,$47,$65,$56,$45,$1A,$25
-	db $C9,$71,$EB,$24,$70,$03,$73,$A2
-	db $0B,$79,$C9,$47,$11,$AA,$52,$FC
-	db $D6,$C1,$11,$59,$09,$49,$BC,$5C
-	db $B2,$A9
+	db $55,$55,$EC,$91,$F5,$A3,$AB,$CE
+	db $CA,$D1,$D5,$E8,$22,$63,$74,$5D
+	db $59,$E6,$99,$31,$BA,$AE,$70,$E6
+	db $A8,$AA,$62,$8F,$AC,$1F,$5D,$75
+	db $D6,$6E,$15,$47,$56,$B5,$56,$D5
+	db $E8,$7E,$74,$15,$59,$96,$55,$59
+	db $3D,$BA,$8A,$AA,$AE,$AA,$AC,$EA
+	db $D1,$75,$57,$47,$75,$45,$55,$54
+	db $55,$16,$47,$65,$56,$45,$DA,$24
+	db $C7,$71,$EB,$23,$70,$03,$F3,$A1
+	db $CB,$78,$C7,$37,$91,$A9,$4E,$FC
+	db $D6,$C1,$11,$59,$07,$39,$BC,$DC
+	db $B1,$A9
 
