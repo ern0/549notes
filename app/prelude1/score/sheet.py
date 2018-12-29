@@ -741,8 +741,8 @@ class Sheet:
 		self.render.renderHeader("data")
 		self.render.renderLine()
 		self.resetDataBits()
-		self.renderFirstBytes(noteType,5)
 		self.renderData4Notes(noteType)
+		self.renderFirstBytes(noteType,5)
 
 
 	def renderData4Notes(self,noteType):
@@ -891,32 +891,6 @@ class Sheet:
 
 			self.render.renderLine(line)
 			if index >= len(self.notes): break
-
-
-	def renderTestDiff_NotThisWay(self):
-
-		self.render.renderLine("test_diff_data:")
-		noteType = "raw-diff-5"
-
-		self.calcDiff("raw",noteType,5)
-
-		line = ""
-		for index in range(0,len(self.notes)):
-
-			value = self.notes[index].get(noteType)
-
-			if line == "":
-				line += "\tdb "
-			else:
-				line += ","
-			line += str(value)
-
-			if len(line) > 40:
-				self.render.renderLine(line)
-				line = ""
-
-		if line != "":
-			self.render.renderLine(line)
 
 
 # ---- data, common -------------------------------------------------------------------

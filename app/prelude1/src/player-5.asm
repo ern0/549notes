@@ -149,13 +149,12 @@ play_note:
 skip_wait:
         MOVSB
         ret
-
 ;-----------------------------------------------------------------------
-include "data-5.inc"
-
 if TEST_MODE > 0
 include "test.asm"
 include "test-5.inc"
 test_file_name:
         db      "TEST-5.TXT",0
 end if
+;-----------------------------------------------------------------------
+include "data-5.inc"
