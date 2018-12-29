@@ -92,6 +92,13 @@ test_diff:
 
 	call	test_write_s2
 
+	cmp	word [test_note_index],548
+	jbe	.test_data
+	lea	dx,[test_diff_overflow_text]
+	call	test_write_string
+	jmp	.close_line
+
+.test_data:
 	lea	bx,[test_diff_data]
 	call	test_check_value
 	je	.close_line
@@ -116,6 +123,9 @@ test_diff_prefix:
 
 test_diff_error_text:
 	db	" <---- ",0
+
+test_diff_overflow_text:
+	db	" ..... overflow",0
 ;-----------------------------------------------------------------------
 test_note:
 
@@ -142,6 +152,14 @@ test_note:
 
 	call	test_write_u3b
 
+	cmp	word [si],548
+	jbe	.test_data
+	inc	word [si]
+	lea	dx,[test_note_overflow_text]
+	call	test_write_string
+	jmp	.close_line
+
+.test_data:
 	lea	bx,[test_note_data]
 	call	test_check_value
 	je	.close_line
@@ -171,6 +189,9 @@ test_note_prefix:
 
 test_note_error_text:
 	db	" <-- ",0
+
+test_note_overflow_text:
+	db	" ... overflow",0
 ;-----------------------------------------------------------------------
 test_check_value:
 
