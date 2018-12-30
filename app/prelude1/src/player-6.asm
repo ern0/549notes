@@ -39,7 +39,7 @@
         LOOP    .1
 
         SUB     BP,BP
-        MOV     BH,2+1
+        MOV     BH,5+1
 
 @next_line:
         MOV     DI,data_start+5
@@ -59,9 +59,10 @@
 
         MOV     CL,5+16+16-1
 @next:
-        CMP     CL,10-1
+        MOV     BH,6+1          ; next_simple
+        CMP     CL,10-1;5+16-1
         JA      @set_delay
-        MOV     BH,3+1          ; next_last
+        MOV     BH,7+1          ; next_last
         CMP     CL,5-1
         JA      @set_delay
         MOV     BH,1+1          ; next_finish
@@ -164,13 +165,13 @@ ffwd_cont:
         OUT     DX,AL
         MOV     BL,AL
         INT     10H             ; dump note
-        MOV     AX,7FH;2C7FH
+        MOV     AX,2C7FH
         OUT     DX,AL
 
         ; fall wait
 ;-----------------------------------------------------------------------
 @wait_tick:
-        INT     1AH;21H
+        INT     21H
         CMP     BP,DX
         je      @wait_tick
         MOV     BP,DX
