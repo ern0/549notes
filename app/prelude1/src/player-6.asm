@@ -19,6 +19,8 @@
 ;       ES - global, =DS
 ;
 ;-----------------------------------------------------------------------
+        TEST_MODE = 1
+;-----------------------------------------------------------------------
         org     100H
 
         DB      3FH
@@ -28,7 +30,7 @@
         SUB     CX,CX
 .1:
         XOR     AL,13H
-        INT     10H
+        ;;INT     10H
         MOV     AX,CX
         MUL     AH
         AND     AL,15
@@ -67,6 +69,10 @@
         call    load_play_note
         LOOP    @next
 
+        if TEST_MODE > 0
+        call    test_summary
+        end if
+
 ;       RETN
 
 ;-----------------------------------------------------------------------
@@ -90,6 +96,11 @@ load_play_note:
         SUB     AL,AH
 
 ;rotate_notes:
+
+        if TEST_MODE > 0
+        call    test_diff
+        end if
+
         ADD     AL,[SI]
         PUSH    DI
         MOV     DI,SI
@@ -103,10 +114,17 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
+
         PUSHA
         MOV     AX,0E90H
         OUT     DX,AL
         LODSB
+
+        if TEST_MODE > 0
+        call    test_note
+        jmp     skip_wait
+        end if
+
         OUT     DX,AL
         MOV     BL,AL
         INT     10H             ; dump note
@@ -115,7 +133,6 @@ play_note:
 
         ; fall wait
 ;-----------------------------------------------------------------------
-
 @wait_tick:
         INT     1AH;21H
         CMP     BP,DX
@@ -124,9 +141,21 @@ play_note:
         DEC     BH
         jne     @wait_tick
 
+skip_wait:
         POPA
         MOVSB
         ret
-
 ;-----------------------------------------------------------------------
-include "data-5.inc"
+        if TEST_MODE > 0
+
+        display "----[ Test mode, result will be written to TEST-6.TXT ]--------"
+     
+        include "test.asm"
+        include "test-6.inc"
+test_file_name:
+        db      "TEST-6.TXT",0
+
+        end if
+;-----------------------------------------------------------------------
+include "data-6.inc"
+

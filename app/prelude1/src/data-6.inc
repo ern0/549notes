@@ -1,5 +1,5 @@
 ; **** generated file, do not edit *********************************************
-; compression method: raw-diff-5 @ 3 nctab nutab
+; compression method: raw-diff-5 @ 4 nctab nutab
 ; 
 ; Transformed score data and analysis of
 ;  J.S.Bach: Prelude in C major, BWV 846
@@ -83,40 +83,42 @@
 ; 26. +12  1 196 #
 ; 27. +10  1 197 #
 
-; ---- estimation for raw-diff-5 @ 3 nctab nutab -------------------------------
+; ---- estimation for raw-diff-5 @ 4 nctab nutab -------------------------------
 ; 
-; note num:      7.c   20.u   27.t
-; note count:  153.c   44.u  197.t
-; note bits:     3.c   10.u
-; storage:      57.c   55.u  112.t
+; note num:     13.c   14.u   27.t
+; note count:  181.c   16.u  197.t
+; note bits:     4.c   11.u
+; storage:      90.c   22.u  112.t
 ; table:         0.c    0.u    0.t
 ; total bytes (storage + leading + table): 118
 
 ; ---- data --------------------------------------------------------------------
 ; 
 
-data_start: ; starting raw bytes
-	db 60,64,67,72,76
-
 ; value to substract from compressed data
-	DATA_CSUB = 4
+	DATA_CSUB = 10
 ; value to substract from uncompressed data
-	DATA_USUB = 42
+	DATA_USUB = 44
+; special value before uncompressed data
+	DATA_SPEC = 2
 
 data_notes: ; bit packed note data
 
-	db $92,$49,$16,$d5,$c5,$25,$d1,$39
-	db $30,$5c,$17,$c4,$42,$30,$8d,$ca
-	db $17,$85,$f1,$10,$8c,$23,$52,$48
-	db $11,$94,$e0,$5f,$a5,$71,$e9,$93
-	db $5a,$c7,$02,$62,$da,$d6,$22,$11
-	db $84,$6a,$49,$02,$32,$9c,$0b,$f4
-	db $ae,$7f,$20,$46,$9c,$94,$25,$92
-	db $60,$bf,$44,$e0,$4c,$e4,$72,$e8
-	db $a4,$b2,$47,$25,$d6,$ca,$a5,$8a
-	db $45,$24,$70,$23,$51,$b9,$13,$09
-	db $84,$70,$d8,$2e,$e4,$1e,$21,$30
-	db $40,$13,$10,$54,$24,$0e,$c3,$c1
-	db $08,$53,$11,$42,$ee,$42,$02,$10
-	db $84,$21,$18,$4a,$03,$83,$8f,$86
-	db $95
+	db $55,$55,$55,$31,$D3,$59,$51,$D5
+	db $53,$91,$55,$73,$5F,$E1,$CC,$59
+	db $FD,$5F,$E1,$CC,$51,$55,$C5,$1E
+	db $59,$3F,$D5,$59,$39,$35,$91,$31
+	db $5D,$59,$E6,$99,$31,$5D,$E1,$CC
+	db $51,$55,$C5,$1E,$59,$3F,$D5,$59
+	db $BB,$55,$1C,$59,$D5,$5A,$55,$F3
+	db $53,$91,$65,$59,$95,$D5,$53,$51
+	db $D5,$55,$95,$55,$3D,$DD,$D5,$51
+	db $5D,$51,$15,$55,$95,$C5,$51,$99
+	db $55,$91,$46,$49,$72,$DC,$3A,$09
+	db $DC,$C0,$9C,$E8,$42,$5E,$F2,$51
+	db $84,$AA,$14,$BF,$75,$70,$44,$56
+	db $42,$12,$2F,$97,$6C
+
+data_start: ; starting raw bytes
+	db 60,64,67,72,76
+

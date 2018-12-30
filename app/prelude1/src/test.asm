@@ -76,6 +76,7 @@ test_diff:
 	end if
 
 	pusha
+	pushf
 	
 	call	test_create_file
 
@@ -112,6 +113,7 @@ test_diff:
 .close_line:
 	call	test_write_crlf
 
+	popf
 	popa
 	ret
 
@@ -128,16 +130,17 @@ test_diff_overflow_text:
 	db	" ..... overflow",0
 ;-----------------------------------------------------------------------
 test_note:
-
+	
 	if TEST_TESTING > 0
 	jmp	test_test
 	end if
 
-	inc	word [test_note_count]
-
 	pusha
-	
+	pushf
+
 	call	test_create_file
+
+	inc	word [test_note_count]
 	
 	lea	dx,[test_note_prefix]
 	call	test_write_string
@@ -156,10 +159,11 @@ test_note:
 	jbe	.test_data
 	inc	word [si]
 	lea	dx,[test_note_overflow_text]
+
 	call	test_write_string
 	jmp	.close_line
 
-.test_data:
+.test_data:	
 	lea	bx,[test_note_data]
 	call	test_check_value
 	je	.close_line
@@ -175,6 +179,7 @@ test_note:
 .close_line:
 	call	test_write_crlf
 
+	popf
 	popa
 	ret
 
@@ -223,18 +228,99 @@ test_create_file:
 	ret
 
 .fail:
+	push	ax
 	lea	dx,[test_creat_fail_text]
 	mov	ah,9
 	int	21H
+	pop	ax
+
+	call	test_print_u3
+	call	test_print_crlf
 
 	mov	ax,4c01H
 	int	21H
 
 test_creat_fail_text:
-	db	"failed to create file",13,10,'$'
+	db	"failed to create file, code: $"
 
 test_file_handle:
 	dw	0
+;-----------------------------------------------------------------------
+test_write:
+
+	pusha
+
+	mov	ah,40H
+	int	21H
+	jc	.fail
+
+	call	test_reopen
+
+	popa
+	ret
+
+.fail:
+	push	ax
+	lea	dx,[test_write_failed_text]
+	mov	ah,9
+	int	21H
+	pop	ax
+
+	call	test_print_u3
+	call	test_print_crlf
+
+	mov 	ax,4c02H
+	int	21H
+
+test_write_failed_text:
+	db	"failed to write file, code: $"
+;-----------------------------------------------------------------------
+test_reopen:
+
+	mov	bx,[test_file_handle]
+	mov	ah,3eH
+	int	21H
+	lea	dx,[test_close_failed_text]
+	jc	.fail
+
+	lea	dx,[test_file_name]
+	mov	ax,3d02H
+	int	21H
+	lea	dx,[test_reopen_failed_text]
+	jc	.fail
+
+	mov	[test_file_handle],ax
+
+	xor	cx,cx
+	xor	dx,dx
+	mov	bx,ax
+	mov	ax,4202H
+	int	21H
+	lea	dx,[test_lseek_failed_text]
+	jc	.fail
+
+	ret
+
+.fail:
+	push	ax
+	mov	ah,9
+	int	21H
+	pop	ax
+
+	call	test_print_u3
+	call	test_print_crlf
+
+	mov 	ax,4c02H
+	int	21H
+
+test_close_failed_text:
+	db	"failed to close file, code: $"
+
+test_reopen_failed_text:
+	db	"failed to reopen file, code: $"
+
+test_lseek_failed_text:
+	db	"failed to seek in file, code: $"
 ;-----------------------------------------------------------------------
 test_write_string:
 	
@@ -253,8 +339,7 @@ test_write_string:
 
 .quit_char:
 	mov	bx,[test_file_handle]
-	mov	ah,40H
-	int	21H
+	call	test_write	
 
 	popf
 	popa
@@ -292,8 +377,8 @@ test_write_char:
 	mov	cx,1
 	lea	dx,[test_char_buffer]
 	mov	bx,[test_file_handle]
-	mov	ah,40H
-	int	21H
+
+	call	test_write
 
 	popa
 	ret
