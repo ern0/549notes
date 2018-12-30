@@ -79,10 +79,9 @@
 ;-----------------------------------------------------------------------
 load_play_note:
         MOV     SI,data_start
-        DB      66H             ; MOV EAX prefix to skip the MOV AH instruction
-        MOV     AX,256*DATA_CSUB+16;AH:DATA_CSUB, AL:%xxx1'0000: 4 SHL to carry
+        MOV     AX,256*(DATA_CSUB-48)+16;AH:DATA_CSUB, AL:%xxx1'0000: 4 SHL to carry
 @load_uncompressed:
-        MOV     AH,DATA_USUB;*256+2;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
+        ADD     AH,DL           ; AH = AH + 48
 @read_bit:
         BT      [SI-data_start+data_notes],BP
         INC     BP
@@ -90,7 +89,7 @@ load_play_note:
         JNC     @read_bit
 
 ;word_read:
-        CMP     AL,2            ; check for %010 special value
+        CMP     AL,2            ; check for special value, AL:%xxxx'xx10: 7 SHL to carry
         JE      @load_uncompressed
 
 ;adjust_word:
