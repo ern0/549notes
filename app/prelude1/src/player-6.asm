@@ -20,6 +20,7 @@
 ;
 ;-----------------------------------------------------------------------
         TEST_MODE = 0
+        FFWD_TO = 0
 ;-----------------------------------------------------------------------
         org     100H
 
@@ -38,7 +39,7 @@
         LOOP    .1
 
         SUB     BP,BP
-        MOV     BH,5+1
+        MOV     BH,2+1
 
 @next_line:
         MOV     DI,data_start+5
@@ -58,10 +59,9 @@
 
         MOV     CL,5+16+16-1
 @next:
-        MOV     BH,6+1          ; next_simple
-        CMP     CL,5+16-1
+        CMP     CL,10-1
         JA      @set_delay
-        MOV     BH,7+1          ; next_last
+        MOV     BH,3+1          ; next_last
         CMP     CL,5-1
         JA      @set_delay
         MOV     BH,1+1          ; next_finish
@@ -70,11 +70,12 @@
         LOOP    @next
 
         if TEST_MODE > 0
+        call    load_play_note
         call    test_summary
+        ret
         end if
 
-;       RETN
-
+        ; fall load_play_note
 ;-----------------------------------------------------------------------
 load_play_note:
         MOV     SI,data_start
@@ -122,7 +123,43 @@ play_note:
 
         if TEST_MODE > 0
         call    test_note
+
+        MOV     BL,AL
+        MOV     AX,7FH
+        INT     1AH
+        CMP     BP,DX
+        MOV     BP,DX
+        DEC     BH
+
         jmp     skip_wait
+        end if
+
+        if FFWD_TO > 0
+
+        push    ax
+        in      al,60H
+        cmp     al,1
+        jne     .noquit
+        mov     ax,4c00H
+        int     21H
+.noquit:
+        pop     ax
+
+        test    word [ffwd_counter],-1
+        jz      ffwd_cont
+        dec     word [ffwd_counter]
+
+        MOV     BL,AL
+        MOV     AX,7FH
+        INT     1AH
+        CMP     BP,DX
+        MOV     BP,DX
+        DEC     BH
+
+        jmp     skip_wait
+ffwd_counter:
+        dw      FFWD_TO
+ffwd_cont:
         end if
 
         OUT     DX,AL
