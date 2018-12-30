@@ -7,7 +7,7 @@ test_summary:
 	mov	ah,9
 	int	21H
 
-	mov	ax,word [test_note_count]
+	mov	ax,word [test_note_index]
 	call	test_print_u3
 	call	test_print_crlf
 
@@ -140,8 +140,6 @@ test_note:
 
 	call	test_create_file
 
-	inc	word [test_note_count]
-	
 	lea	dx,[test_note_prefix]
 	call	test_write_string
 
@@ -184,9 +182,6 @@ test_note:
 	ret
 
 test_note_index:
-	dw	0
-
-test_note_count:
 	dw	0
 
 test_note_prefix:
