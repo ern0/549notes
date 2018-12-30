@@ -19,7 +19,7 @@
 ;       ES - global, =DS
 ;
 ;-----------------------------------------------------------------------
-        TEST_MODE = 1
+        TEST_MODE = 0
 ;-----------------------------------------------------------------------
         org     100H
 
@@ -30,7 +30,7 @@
         SUB     CX,CX
 .1:
         XOR     AL,13H
-        ;;INT     10H
+        INT     10H
         MOV     AX,CX
         MUL     AH
         AND     AL,15
@@ -78,8 +78,8 @@
 ;-----------------------------------------------------------------------
 load_play_note:
         MOV     SI,data_start
+        DB      66H             ; MOV EAX prefix to skip the MOV AH instruction
         MOV     AX,256*DATA_CSUB+16;AH:DATA_CSUB, AL:%xxx1'0000: 4 SHL to carry
-        DB      38H                ;CMP ?,BH - to skip the next instruction
 @load_uncompressed:
         MOV     AH,DATA_USUB;*256+2;AH:DATA_USUB, AL:%xxxx'xx10: 7 SHL to carry
 @read_bit:
