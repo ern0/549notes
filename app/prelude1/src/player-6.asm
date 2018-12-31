@@ -59,21 +59,19 @@
 
         MOV     CL,5+16+16-1
 @next:
-        MOV     BH,6+1          ; next_simple
-        CMP     CL,10-1;5+16-1
+        CMP     CL,16-1         ; tempo: slow down
         JA      @set_delay
-        MOV     BH,7+1          ; next_last
-        CMP     CL,5-1
+        MOV     BH,6+1          
+        CMP     CL,5-1          ; tempo: final 5 notes
         JA      @set_delay
-        MOV     BH,1+1          ; next_finish
+        MOV     BH,1+1          
 @set_delay:
         call    load_play_note
         LOOP    @next
 
         if TEST_MODE > 0
         call    load_play_note
-        call    test_summary
-        ret
+        jmp     test_summary
         end if
 
         ; fall load_play_note
