@@ -78,9 +78,9 @@
 ;-----------------------------------------------------------------------
 load_play_note:
         MOV     SI,data_start
-        MOV     AX,256*(DATA_CSUB-48)+16;AH:DATA_CSUB, AL:%xxx1'0000: 4 SHL to carry
+        MOV     AL,16                  ; AL:%xxx1'0000: 4 SHL to carry
 @load_uncompressed:
-        ADD     AH,DL           ; AH = AH + 48
+        SUB     BYTE [SI],DL           ; DL = DATA_USUB - DATA_CSUB
 @read_bit:
         BT      [SI-data_start+data_notes],BP
         INC     BP
@@ -92,7 +92,7 @@ load_play_note:
         JE      @load_uncompressed
 
 ;adjust_word:
-        SUB     AL,AH
+        ADD     AL,DATA_USUB - 2*DATA_CSUB
 
 ;rotate_notes:
 
