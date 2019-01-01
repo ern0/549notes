@@ -111,7 +111,9 @@ if TEST_MODE > 1
         INT     29H
 end if
         IMUL    DI,AX,-320*2
-        STOSB
+        MOV     CL,BL
+        REP     STOSB
+        INC     CX
         MOV     AX,2C7FH
         OUT     DX,AL
 
@@ -129,7 +131,7 @@ end if
         CMP     BP,DX
         je      @wait_tick
         MOV     BP,DX
-        MOV     CH,53H
+        MOV     CH,54H
         DEC     BX
 if TEST_MODE < 1
         jne     @loop_tick
