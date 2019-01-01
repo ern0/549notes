@@ -98,7 +98,7 @@
 ; value to substract from compressed data
 	DATA_CSUB = 10
 ; value to substract from uncompressed data
-	DATA_USUB = 44
+	DATA_USUB = 58
 ; special value before uncompressed data
 	DATA_SPEC = 2
 
@@ -114,10 +114,10 @@ data_notes: ; bit packed note data
 	db $53,$91,$65,$59,$95,$D5,$53,$51
 	db $D5,$55,$95,$55,$3D,$DD,$D5,$51
 	db $5D,$51,$15,$55,$95,$C5,$51,$99
-	db $55,$91,$46,$49,$72,$DC,$3A,$09
-	db $DC,$C0,$9C,$E8,$42,$5E,$F2,$51
-	db $84,$AA,$14,$BF,$75,$70,$44,$56
-	db $42,$12,$2F,$97,$6C
+	db $55,$91,$46,$75,$8A,$DD,$3A,$E9
+	db $DC,$C0,$9C,$A4,$42,$69,$CA,$50
+	db $89,$C6,$54,$BD,$75,$70,$44,$56
+	db $A2,$93,$26,$97,$22
 
 data_start: ; starting raw bytes
 	db 60,64,67,72,76

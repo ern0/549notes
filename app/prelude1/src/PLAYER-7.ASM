@@ -8,19 +8,21 @@
 ; Register allocation:
 ;
 ;       AL - local, bit counter (SHL until carry) + result
-;       AH - local, data sub correction
-;       BL - global, line counter
-;       BH - global, delay
+;       AH - global, line counter
+;       BX - global, delay
 ;       DX - global, constant, 330H - the midi data port
 ;       CX - local, line counter, note counter
 ;       SI - local, 5-byte rotation
 ;       DI - global, used in 5+3 repeat
 ;       BP - global, load bit pointer
-;       ES - global, =DS
+;       ES - global DS, local vscreen
 ;
 ;-----------------------------------------------------------------------
         TEST_MODE = 0
-        FFWD_TO = 0
+;
+; TEST_MODE #0: compo version
+; TEST_MODE #1: instant play (GoD mode)
+; TEST_MODE #2: dump notes
 ;-----------------------------------------------------------------------
         org     100H
 
@@ -28,18 +30,12 @@
         MOV     DX,331H
         OUTSB
         DEC     DX
-        SUB     CX,CX
-.1:
-        XOR     AL,13H
+
+        MOV     AL,13H
         INT     10H
-        MOV     AX,CX
-        MUL     AH
-        AND     AL,15
-        MOV     AH,0CH
-        LOOP    .1
 
         SUB     BP,BP
-        MOV     BH,5+1
+        MOV     BL,5+1
 
 @next_line:
         MOV     DI,data_start+5
@@ -54,25 +50,20 @@
 @three_of_eight:
         call    play_note
         LOOP    @three_of_eight
-        ADC     BL,DH           ; ADD BL,4
+        ADC     AH,DH           ; ADD AH,4
         JNS     @next_line      ; LOOP 32x (BP:26CH)
 
         MOV     CL,5+16+16-1
 @next:
         CMP     CL,16-1         ; tempo: slow down
         JA      @set_delay
-        MOV     BH,6+1          
+        MOV     BL,6+1          
         CMP     CL,5-1          ; tempo: final 5 notes
         JA      @set_delay
-        MOV     BH,1+1          
+        MOV     BL,1+1          
 @set_delay:
         call    load_play_note
         LOOP    @next
-
-        if TEST_MODE > 0
-        call    load_play_note
-        jmp     test_summary
-        end if
 
         ; fall load_play_note
 ;-----------------------------------------------------------------------
@@ -96,10 +87,6 @@ load_play_note:
 
 ;rotate_notes:
 
-        if TEST_MODE > 0
-        call    test_diff
-        end if
-
         ADD     AL,[SI]
         PUSH    DI
         MOV     DI,SI
@@ -113,84 +100,48 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
-
+        PUSH    0A000H
+        POP     ES
         PUSHA
-        MOV     AX,0E90H
+        MOV     AL,90H
         OUT     DX,AL
-        LODSB
-
-        if TEST_MODE > 0
-        call    test_note
-
-        MOV     BL,AL
-        MOV     AX,7FH
-        INT     1AH
-        CMP     BP,DX
-        MOV     BP,DX
-        DEC     BH
-
-        jmp     skip_wait
-        end if
-
-        if FFWD_TO > 0
-
-        push    ax
-        in      al,60H
-        cmp     al,1
-        jne     .noquit
-        mov     ax,4c00H
-        int     21H
-.noquit:
-        pop     ax
-
-        test    word [ffwd_counter],-1
-        jz      ffwd_cont
-        dec     word [ffwd_counter]
-
-        MOV     BL,AL
-        MOV     AX,7FH
-        INT     1AH
-        CMP     BP,DX
-        MOV     BP,DX
-        DEC     BH
-
-        jmp     skip_wait
-ffwd_counter:
-        dw      FFWD_TO
-ffwd_cont:
-        end if
-
-        OUT     DX,AL
-        MOV     BL,AL
-        INT     10H             ; dump note
-        MOV     AX,2C7FH
+        MOV     CL,[SI]
+        OUTSB
+        MOV     AL,7FH
         OUT     DX,AL
 
         ; fall wait
 ;-----------------------------------------------------------------------
+        MOV     AX,-320*2
+        IMUL    CX
+        XCHG    DI,AX
+        XCHG    AX,CX
+        STOSB
 @wait_tick:
+        SUB     DI,DI
+        MOV     AH,2CH
         INT     21H
         CMP     BP,DX
         je      @wait_tick
         MOV     BP,DX
-        DEC     BH
+        MOV     SI,1
+        MOV     CH,53H
+if TEST_MODE < 2
+        ES
+        REP     MOVSW
+end if
+        DEC     BX
+if TEST_MODE < 1
         jne     @wait_tick
-
-skip_wait:
+end if
         POPA
+        PUSH    CS
+        POP     ES
         MOVSB
+if TEST_MODE > 1
+        MOV     AL,[SI-1]
+        INT     29H
+end if
         ret
 ;-----------------------------------------------------------------------
-        if TEST_MODE > 0
-
-        display "----[ Test mode, result will be written to TEST-6.TXT ]--------"
-     
-        include "test.asm"
-        include "test-6.inc"
-test_file_name:
-        db      "TEST-6.TXT",0
-
-        end if
-;-----------------------------------------------------------------------
 include "data-6.inc"
-

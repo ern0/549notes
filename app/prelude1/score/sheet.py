@@ -748,7 +748,7 @@ class Sheet:
 	def renderData4Notes(self,noteType):
 
 		cSub = 10
-		uSub = 44
+		uSub = 58
 		spec = 2
 
 		self.render.renderLine("; value to substract from compressed data")
