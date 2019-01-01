@@ -8,15 +8,14 @@
 ; Register allocation:
 ;
 ;       AL - local, bit counter (SHL until carry) + result
-;       AH - local, data sub correction
-;       BL - global, line counter
-;       BH - global, delay
+;       AH - global, line counter
+;       BX - global, delay
 ;       DX - global, constant, 330H - the midi data port
 ;       CX - local, line counter, note counter
 ;       SI - local, 5-byte rotation
 ;       DI - global, used in 5+3 repeat
 ;       BP - global, load bit pointer
-;       ES - global, =DS
+;       ES - global DS, local vscreen
 ;
 ;-----------------------------------------------------------------------
         TEST_MODE = 0
@@ -101,7 +100,8 @@ load_play_note:
         ; fall play_note
 ;-----------------------------------------------------------------------
 play_note:
-
+        PUSH    0A000H
+        POP     ES
         PUSHA
         MOV     AL,90H
         OUT     DX,AL
@@ -112,10 +112,8 @@ play_note:
 
         ; fall wait
 ;-----------------------------------------------------------------------
-        PUSH    0A000H
-        POP     ES
-        MOV     AX,320
-        MUL     CX
+        MOV     AX,-320*2
+        IMUL    CX
         XCHG    DI,AX
         XCHG    AX,CX
         STOSB
@@ -127,7 +125,7 @@ play_note:
         je      @wait_tick
         MOV     BP,DX
         MOV     SI,1
-        MOV     CH,33H
+        MOV     CH,53H
 if TEST_MODE < 2
         ES
         REP     MOVSW
@@ -136,9 +134,9 @@ end if
 if TEST_MODE < 1
         jne     @wait_tick
 end if
+        POPA
         PUSH    CS
         POP     ES
-        POPA
         MOVSB
 if TEST_MODE > 1
         MOV     AL,[SI-1]
