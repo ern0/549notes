@@ -1,3 +1,2 @@
 @cls
-@rem score/sheet.py src/data-3.inc final
-@\progs\fasm\fasm src/player-3.asm player-3.com
+@\progs\fasm\fasm src/player-7.asm player-7.com
