@@ -1,0 +1,123 @@
+==== opening ====
+
+1.
+ 549.com
+	
+2.
+ 549.com 
+ (filename, not URL)
+
+3.
+ 549.com 
+ (filename, not URL)
+ < screenshot of directory >
+	
+4.
+ 549.com
+ creating a 256-byte intro
+ which playe 549 notes
+ < screenshot of directory >
+  
+
+==== 256-byte demoscene: strong competition ====
+
+1. 3d effects
+ < Rrrola connected dots >
+ < az a szürke házas dolog >
+
+2. raytracin/raycasting 
+ < Rrrola diamond screenshot >
+
+3. surprising objects
+ < kacsák és hajók >
+ < vonat >
+ 
+   
+==== 256-byte intro cutting edge: playing music ====
+
+1. 
+ < tctronic >
+ technique: bytebeat
+ code: TomCat, music: ern0
+
+2. 
+ < no sleep >
+ technique: buzzer
+ code: TomCat, music: ern0
+
+3. 
+ successfull co-operation
+ 
+
+==== fail story: create bytebeat editor (TomCat) ====
+
+...
+
+
+==== fail story: create bytebeat compiler (ern0) ====
+
+1. Modern compiler optimization: wow
+
+2. No compiler for 8086 target
+
+3. Write formula transpiler]
+   bytebeat => easy-to-assembly
+
+5. Example
+
+5. failed:
+   - ( ? : ) operator
+   - a = b + c  =>  a = a + b
+
+6. pro tip: don't write compiler at home
+
+
+==== learn from fail stories ====
+
+1. song-specific code
+
+2. search a song...
+
+3. ...found!
+
+
+==== the concept ====
+
+1. repeating parts:
+   549 = 64 * 8 + xxx
+   ...
+
+2. compressed and uncompressed words
+
+   3 + 7 or 4 + 7 or...?
+   
+3. notes or diffs?
+   diff-1 or diff-5 or diff-1-5?
+   
+3. calculate ALL cases!
+
+4. without tables
+
+5. the winner is: diff-5 @ 3 nctab nutab
+   spoiler: not.
+
+
+==== the decompressor ====
+
+ player-2.asm részlet
+ 
+
+==== optimization ====
+
+...
+
+
+==== test ====
+
+...
+
+
+==== visual ====
+
+- diff-5 @ 4 pls
+...
