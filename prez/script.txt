@@ -1,4 +1,4 @@
-==== opening ====
+﻿==== opening ====
 
 1.
  549.com
@@ -36,12 +36,12 @@
 ==== 256-byte intro cutting edge: playing music ====
 
 1. 
- < tctronic >
+ < 2(56)unlimited >
  technique: bytebeat
  code: TomCat, music: ern0
 
 2. 
- < no sleep >
+ < no sleep! >
  technique: buzzer
  code: TomCat, music: ern0
 
@@ -51,8 +51,22 @@
 
 ==== fail story: create bytebeat editor (TomCat) ====
 
-...
+< screenshot >
 
+1. pros:
+ realtime feedback
+ graphical sound wave
+ up to 4 instruments
+ save/restore modified code
+
+2. cons:
+ more than 70 hotkeys
+ need some x86 coder knowladge
+ for example:
+ you can set any condition flag to a conditional jump
+
+failed:
+ too complex for a musician :-(
 
 ==== fail story: create bytebeat compiler (ern0) ====
 
@@ -62,6 +76,22 @@
 
 3. Write formula transpiler]
    bytebeat => easy-to-assembly
+
+bytebeat formula input:
+((t&4096)?((t*(t^t%255)|(t>>4))>>1):(t>>3)|((t&8192)?t <<2:t))
+
+JavaScript ByteBeat AssembLYZATOR output:
+tmp01 = t&4096
+tmp02 = t%255
+tmp03 = t^tmp02
+tmp04 = t>>4
+tmp05 = t*tmp03
+tmp06 = tmp05|tmp04
+tmp07 = tmp06>>1
+tmp08 = t>>3
+tmp09 = t&8192
+tmp10 = tmp09?t<<2:t
+tmp11 = tmp01?tmp07:tmp08|tmp10
 
 5. Example
 
@@ -107,17 +137,71 @@
  player-2.asm részlet
  
 
-==== optimization ====
+==== sizecoding beauty ====
 
-...
+- impossible mission?
 
+ from ~400 to ~200 bytes
+ "pofon a zsákutcában?" ern0
+
+- milestones
+
+ 1. shorter instructions
+  (LEA->MOV, string instructions)
+ 2. reorgnizing the code (less branch&calls)
+ 3. bitfields instead of byte read
+ 4. replay notes without copying
+
+- every byte has it's own story
+
+ when things go crazy
+  ADC AH,DH
+  (max the benefit from the inital values of regs)
+ decrasing the register pressure
+ optimal data for decoder (the perfect spec.char, CSUB, USUB) 
+
+- "no such an optimized code, which couldn't be a byte shorter" TC
+
+< Nincs az a mempúpozott szénás szekér, amire ne férne még fel egy villával. >
+
+"Mine are such a big bucket that yours falling in will never fill it."
+Ernest Hemingway - For Whom the Bell Tolls
 
 ==== test ====
 
+PC vs MAC (BIOS timer resolution)
 ...
 
 
 ==== visual ====
 
-- diff-5 @ 4 pls
-...
+< screenshot >
+
+- plot routine
+
+; AL:input value - midi note number
+        IMUL    DI,AX,-320*2
+; long and complex instruction, but the otherhand
+; we don't need other regs for the calculation
+; multiplying by the num of pixels in row
+; *2 - scaling in vertical direction
+; *-1 - flipping in vertical direction
+; (deeper sounds goes to the lower side of the scr)
+        MOV     CL,BL
+; length of the plotted bar equal to the delay
+        REP     STOSB
+; the color of the bar equal to the midi note
+
+- scroll routine
+
+; ES: 0A000H - segment of the video screen
+        SUB     DI,DI
+; cheap destination address: 0
+        MOV     SI,1
+; source addr, scrolling to the left by 1 byte
+        MOV     CH,54H
+; but not the whole screen, 54H*256 are enough pixels
+        ES
+; the seg prefix cheaper than changing DS too
+        REP     MOVSW
+; copying by words
