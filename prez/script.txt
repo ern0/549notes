@@ -156,10 +156,11 @@ tmp11 = tmp01?tmp07:tmp08|tmp10
 
 - every byte has it's own story
 
+ learn tricks from others - sizecoding.org
+ decreasing the register pressure
  when things go crazy
   ADC AH,DH
   (max the benefit from the inital values of regs)
- decrasing the register pressure
  optimal data for decoder (the perfect spec.char, CSUB, USUB) 
 
 - "no such an optimized code, which couldn't be a byte shorter" TC
@@ -170,10 +171,13 @@ tmp11 = tmp01?tmp07:tmp08|tmp10
 Ernest Hemingway - For Whom the Bell Tolls
 
 
-==== timer issue ====
+==== fucking bugs ====
 
-PC vs MAC (BIOS timer resolution)
-...
+- PC vs MAC (BIOS timer resolution)
+
+- dummy instruction trick to skip a branch
+ but the branch became shorter
+ and we lost the control :)
 
 
 ==== test ====
