@@ -198,9 +198,9 @@ PC vs MAC (BIOS timer resolution)
         SUB     DI,DI
 ; cheap destination address: 0
         MOV     SI,1
-; source addr, scrolling to the left by 1 byte
+; source addr, scrolling to the left by 1 pixel
         MOV     CH,54H
-; but not the whole screen, 54H*256 are enough pixels
+; but not the whole screen, 54H*256*2 pixels are enough
         ES
 ; the seg prefix cheaper than changing DS too
         REP     MOVSW
