@@ -135,6 +135,8 @@ tmp11 = tmp01?tmp07:tmp08|tmp10
 ==== the decompressor ====
 
  player-2.asm részlet
+ reverse data
+ kielemzés részlet
  
 
 ==== sizecoding beauty ====
@@ -162,15 +164,21 @@ tmp11 = tmp01?tmp07:tmp08|tmp10
 
 - "no such an optimized code, which couldn't be a byte shorter" TC
 
-< Nincs az a mempúpozott szénás szekér, amire ne férne még fel egy villával. >
+< Nincs az a megpúpozott szénás szekér, amire ne férne még fel egy villával. >
 
 "Mine are such a big bucket that yours falling in will never fill it."
 Ernest Hemingway - For Whom the Bell Tolls
 
-==== test ====
+
+==== timer issue ====
 
 PC vs MAC (BIOS timer resolution)
 ...
+
+
+==== test ====
+
+
 
 
 ==== visual ====
