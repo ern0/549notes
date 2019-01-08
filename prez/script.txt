@@ -56,7 +56,7 @@
 1. pros:
  realtime feedback
  graphical sound wave
- up to 4 instruments
+ up to 5 instruments
  save/restore modified code
 
 2. cons:
