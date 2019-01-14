@@ -1,8 +1,8 @@
 #!/bin/bash
 clear
 
-#score/sheet.py analysis-5p3.txt
+score/sheet.py analysis-5p3.txt
 
-score/sheet.py src/data-6.inc 4
+#score/sheet.py src/data-6.inc 4
 #score/sheet.py src/test-6.inc t
 #fasm src/player-7.asm player-7.com
