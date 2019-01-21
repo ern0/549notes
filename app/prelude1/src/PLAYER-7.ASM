@@ -103,45 +103,44 @@ play_note:
         PUSH    0A000H
         POP     ES
         PUSHA
-        MOV     AL,90H
+        MOV     AX,90H
         OUT     DX,AL
-        MOV     CL,[SI]
-        OUTSB
-        MOV     AL,7FH
+        LODSB
+        OUT     DX,AL
+if TEST_MODE > 1
+        INT     29H
+end if
+        IMUL    DI,AX,-320*2
+        MOV     CL,BL
+        REP     STOSB
+        INC     CX
+        MOV     AX,2C7FH
         OUT     DX,AL
 
         ; fall wait
 ;-----------------------------------------------------------------------
-        MOV     AX,-320*2
-        IMUL    CX
-        XCHG    DI,AX
-        XCHG    AX,CX
-        STOSB
-@wait_tick:
-        SUB     DI,DI
-        MOV     AH,2CH
-        INT     21H
-        CMP     BP,DX
-        je      @wait_tick
-        MOV     BP,DX
+@loop_tick:
         MOV     SI,1
-        MOV     CH,53H
+        SUB     DI,DI
 if TEST_MODE < 2
         ES
         REP     MOVSW
 end if
+@wait_tick:
+        INT     21H
+        CMP     BP,DX
+        je      @wait_tick
+        MOV     BP,DX
+        MOV     CH,54H
         DEC     BX
 if TEST_MODE < 1
-        jne     @wait_tick
+        jne     @loop_tick
 end if
+
         POPA
         PUSH    CS
         POP     ES
         MOVSB
-if TEST_MODE > 1
-        MOV     AL,[SI-1]
-        INT     29H
-end if
         ret
 ;-----------------------------------------------------------------------
 include "data-6.inc"
