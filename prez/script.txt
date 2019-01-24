@@ -1,32 +1,4 @@
-﻿==== the concept ====
-
-1. repeating parts:
-   549 = 64 * 8 + xxx
-   ...
-
-2. compressed and uncompressed words
-
-   3 + 7 or 4 + 7 or...?
-   
-3. notes or diffs?
-   diff-1 or diff-5 or diff-1-5?
-   
-3. calculate ALL cases!
-
-4. without tables
-
-5. the winner is: diff-5 @ 3 nctab nutab
-   spoiler: not.
-
-
-==== the decompressor ====
-
- player-2.asm részlet
- reverse data
- kielemzés részlet
- 
-
-==== sizecoding beauty ====
+﻿==== sizecoding beauty ====
 
 - impossible mission?
 
@@ -65,11 +37,6 @@ Ernest Hemingway - For Whom the Bell Tolls
 - dummy instruction trick to skip a branch
  but the branch became shorter
  and we lost the control :)
-
-
-==== test ====
-
-
 
 
 ==== visual ====
