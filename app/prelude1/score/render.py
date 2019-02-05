@@ -41,7 +41,7 @@ class Render:
 		for i in range (0,len(notes)):
 			note = notes[i]
 
-			if i == splitPoint: itemsInLine = 8
+			if i > splitPoint: itemsInLine = 8
 
 			if i % itemsInLine == 0 and line is not None:
 				if not self.sheet.pure8:
@@ -63,6 +63,7 @@ class Render:
 					line += ","
 					line += note.render(typeTuple[0],isComment)
 
+		self.renderLine(line)
 		self.renderLine()
 
 

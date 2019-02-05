@@ -1,0 +1,73 @@
+﻿==== sizecoding beauty ====
+
+- impossible mission?
+
+ from ~400 to ~200 bytes
+ "pofon a zsákutcában?" ern0
+
+- milestones
+
+ 1. shorter instructions
+  (LEA->MOV, string instructions)
+ 2. reorgnizing the code (less branch&calls)
+ 3. bitfields instead of byte read
+ 4. replay notes without copying
+
+- every byte has it's own story
+
+ learn tricks from others - sizecoding.org
+ decreasing the register pressure
+ when things go crazy
+  ADC AH,DH
+  (max the benefit from the inital values of regs)
+ optimal data for decoder (the perfect spec.char, CSUB, USUB) 
+
+- "no such an optimized code, which couldn't be a byte shorter" TC
+
+< Nincs az a megpúpozott szénás szekér, amire ne férne még fel egy villával. >
+
+"Mine are such a big bucket that yours falling in will never fill it."
+Ernest Hemingway - For Whom the Bell Tolls
+
+
+==== fucking bugs ====
+
+- PC vs MAC (BIOS timer resolution)
+
+- dummy instruction trick to skip a branch
+ but the branch became shorter
+ and we lost the control :)
+
+
+==== visual ====
+
+< screenshot >
+
+- plot routine
+
+; AL:input value - midi note number
+        IMUL    DI,AX,-320*2
+; long and complex instruction, but the otherhand
+; we don't need other regs for the calculation
+; multiplying by the num of pixels in row
+; *2 - scaling in vertical direction
+; *-1 - flipping in vertical direction
+; (deeper sounds goes to the lower side of the scr)
+        MOV     CL,BL
+; length of the plotted bar equal to the delay
+        REP     STOSB
+; the color of the bar equal to the midi note
+
+- scroll routine
+
+; ES: 0A000H - segment of the video screen
+        SUB     DI,DI
+; cheap destination address: 0
+        MOV     SI,1
+; source addr, scrolling to the left by 1 pixel
+        MOV     CH,54H
+; but not the whole screen, 54H*256*2 pixels are enough
+        ES
+; the seg prefix cheaper than changing DS too
+        REP     MOVSW
+; copying by words
