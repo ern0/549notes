@@ -30,15 +30,6 @@
 Ernest Hemingway - For Whom the Bell Tolls
 
 
-==== fucking bugs ====
-
-- PC vs MAC (BIOS timer resolution)
-
-- dummy instruction trick to skip a branch
- but the branch became shorter
- and we lost the control :)
-
-
 ==== visual ====
 
 < screenshot >
