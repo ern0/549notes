@@ -1,35 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>549Notes</title>
-
+    <title>549notes</title>
     <style>
-        html, body {
-            height: 100%;
-        }
-
-        #dos {
-            width: 100%;
-            height: 100%;
+        body {
+            background-color: gray;
         }
     </style>
-
-    <!-- js-dos style sheet -->
-    <link rel="stylesheet" href="web/js-dos.css">
-
-    <!-- js-dos -->
-    <script src="web/js-dos.js"></script>
 </head>
 <body>
-
-    <div id="dos" style="width: 100%; height: 100%"></div>
-
-    <script>
-        Dos(document.getElementById("dos"), {
-            url: "web/549notes.zip?DoNotCache=" + ((new Date()).getTime()),
-			autoStart: true,
-        });
-    </script>
+    <a href="play.html">
+        <button>Play</button>
+    </a>
 </body>
 </html>
